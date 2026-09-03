@@ -2,13 +2,13 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import { PDF_COLORS, drawHeader, drawFooter } from "./pdfTheme";
-import type { Requisition, Allocation, Vehicle, Staff } from "../../types";
+import type { Requisition, Allocation, Vehicle, Driver } from "../../types";
 
 export function generateConfirmationSlip(
   requisition: Requisition,
   allocations: Allocation[],
   vehicles: Vehicle[],
-  staff: Staff[],
+  driver: Driver[],
 ) {
   const doc = new jsPDF();
 
@@ -51,8 +51,8 @@ export function generateConfirmationSlip(
     const vehicle = allocation
       ? vehicles.find((item) => item.id === allocation.vehicleId)
       : undefined;
-    const driver = allocation?.driverId
-      ? staff.find((item) => item.id === allocation.driverId)
+    const assignedDriver = allocation?.driverId
+      ? driver.find((item) => item.id === allocation.driverId)
       : undefined;
 
     return [
@@ -61,7 +61,7 @@ export function generateConfirmationSlip(
       vehicle
         ? `${vehicle.registrationNumber}\n${vehicle.category}`
         : "Not allocated",
-      driver ? `${driver.name}\n${driver.phone ?? ""}` : "—",
+      assignedDriver ? `${assignedDriver.name}\n${assignedDriver.phone ?? ""}` : "—",
       trip.stoppageSequence.join(" -> ") || trip.route,
       trip.status === "Rejected"
         ? `Rejected\n${trip.rejectionReason ?? ""}${

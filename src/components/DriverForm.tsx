@@ -2,27 +2,27 @@ import { useState } from "react";
 import {
   DRIVER_DESIGNATIONS,
   type DriverDesignation,
-  type Staff,
+  type Driver,
 } from "../types";
 
-interface StaffFormProps {
-  staff?: Staff;
-  onSubmit: (staff: Staff) => void;
+interface DriverFormProps {
+  driver?: Driver;
+  onSubmit: (driver: Driver) => void;
   onCancel: () => void;
 }
 
-export default function StaffForm({
-  staff,
+export default function DriverForm({
+  driver,
   onSubmit,
   onCancel,
-}: StaffFormProps) {
-  const [name, setName] = useState(staff?.name ?? "");
+}: DriverFormProps) {
+  const [name, setName] = useState(driver?.name ?? "");
 
   const [designation, setDesignation] = useState<DriverDesignation>(
-    staff?.designation ?? "Driver",
+    driver?.designation ?? "Driver",
   );
 
-  const [phone, setPhone] = useState(staff?.phone ?? "");
+  const [phone, setPhone] = useState(driver?.phone ?? "");
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,8 +31,8 @@ export default function StaffForm({
       return;
     }
 
-    const updatedStaff: Staff = {
-      id: staff?.id ?? crypto.randomUUID(),
+    const updatedDriver: Driver = {
+      id: driver?.id ?? crypto.randomUUID(),
 
       name: name.trim(),
 
@@ -40,12 +40,12 @@ export default function StaffForm({
 
       phone: phone.trim() || undefined,
 
-      status: staff?.status ?? "Active",
+      status: driver?.status ?? "Active",
 
-      permanentVehicleId: staff?.permanentVehicleId,
+      permanentVehicleId: driver?.permanentVehicleId,
     };
 
-    onSubmit(updatedStaff);
+    onSubmit(updatedDriver);
   }
 
   return (
@@ -164,7 +164,7 @@ export default function StaffForm({
             hover:bg-[#334E68]
           "
         >
-          {staff ? "Save Changes" : "Add Driver"}
+          {driver ? "Save Changes" : "Add Driver"}
         </button>
       </div>
     </form>

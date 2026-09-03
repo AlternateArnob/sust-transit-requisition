@@ -1,6 +1,6 @@
 export const STORAGE_KEYS = {
   vehicles: "sust-transit-vehicles",
-  staff: "sust-transit-staff",
+  driver: "sust-transit-driver",
   routes: "sust-transit-routes",
   requisitions: "sust-transit-requisitions",
   allocations: "sust-transit-allocations",
@@ -9,4 +9,7 @@ export const STORAGE_KEYS = {
   mileage: "sust-transit-mileage",
   dutySlips: "sust-transit-duty-slips",
   confirmationSlips: "sust-transit-confirmation-slips",
+  users: "sust-transit-users",
+  otpChallenges: "sust-transit-otp-challenges",
+  session: "sust-transit-session",
 } as const;

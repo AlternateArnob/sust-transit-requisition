@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
@@ -13,6 +14,7 @@ import type { AppNotification } from "../types";
 
 export default function NotificationBell() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const {
     notifications,
     addNotification,
@@ -82,11 +84,21 @@ export default function NotificationBell() {
   function handleClick(notification: AppNotification) {
     markAsRead(notification.id);
     setIsOpen(false);
-    navigate(
-      notification.linkType === "requisition"
-        ? "/admin/requisitions"
-        : "/admin/conflicts",
-    );
+
+    // Phase 5 — DepartmentHeads go straight to the recommender detail
+    // page for requisition pings so they can act on the inbox directly.
+    // Admins land on the requisitions queue; everyone else still falls
+    // back to the requisitions list.
+    if (notification.linkType === "requisition") {
+      const target =
+        currentUser?.role === "DepartmentHead"
+          ? `/admin/recommender/${notification.linkId}`
+          : "/admin/requisitions";
+      navigate(target);
+      return;
+    }
+
+    navigate("/admin/conflicts");
   }
 
   return (

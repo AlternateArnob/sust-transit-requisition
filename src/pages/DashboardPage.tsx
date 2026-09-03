@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import useVehicles from "../hooks/useVehicles";
-import useStaff from "../hooks/useStaff";
+import useDriver from "../hooks/useDriver";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useOffDays from "../hooks/useOffDays";
@@ -18,7 +18,7 @@ function todayString(): string {
 
 export default function DashboardPage() {
   const { vehicles } = useVehicles();
-  const { staff } = useStaff();
+  const { driver } = useDriver();
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { offDays } = useOffDays();
@@ -52,7 +52,7 @@ export default function DashboardPage() {
     (conflict) => conflict.severity === "Blocking",
   ).length;
 
-  const activeDrivers = staff.filter(
+  const activeDrivers = driver.filter(
     (member) => member.status === "Active",
   ).length;
 
@@ -69,7 +69,7 @@ export default function DashboardPage() {
     }
 
     return (
-      staff.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
+      driver.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
     );
   }
 
@@ -92,20 +92,20 @@ export default function DashboardPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Total Fleet"
+          label="Total Vehicle"
           value={vehicles.length}
-          href="/admin/fleet"
+          href="/admin/vehicle"
         />
         <StatCard
           label="Active Vehicles"
           value={activeVehicles}
-          href="/admin/fleet"
+          href="/admin/vehicle"
           accent="success"
         />
         <StatCard
           label="Under Maintenance"
           value={underMaintenance}
-          href="/admin/fleet"
+          href="/admin/vehicle"
           accent="warning"
         />
         <StatCard
@@ -133,7 +133,7 @@ export default function DashboardPage() {
         <StatCard
           label="Active Drivers"
           value={activeDrivers}
-          href="/admin/staff"
+          href="/admin/driver"
         />
       </div>
 

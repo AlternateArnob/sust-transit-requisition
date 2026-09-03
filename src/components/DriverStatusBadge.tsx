@@ -1,11 +1,11 @@
-import type { StaffStatus } from "../types";
+import type { DriverStatus } from "../types";
 
-interface StaffStatusBadgeProps {
-  status: StaffStatus;
+interface DriverStatusBadgeProps {
+  status: DriverStatus;
 }
 
-export default function StaffStatusBadge({ status }: StaffStatusBadgeProps) {
-  const styles: Record<StaffStatus, string> = {
+export default function DriverStatusBadge({ status }: DriverStatusBadgeProps) {
+  const styles: Record<DriverStatus, string> = {
     Active: "bg-[#DCFCE7] text-[#15803D]",
     Inactive: "bg-[#F1F5F9] text-[#64748B]",
   };

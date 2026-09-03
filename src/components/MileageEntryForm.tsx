@@ -3,42 +3,81 @@ import type { Trip } from "../types";
 import { isPositiveNumber } from "../utils/validators";
 
 interface MileageEntryFormProps {
-  trip: Trip;
-  onSubmit: (distanceKm: number) => void;
+  /**
+   * Every trip on this requisition still awaiting a recorded distance.
+   * Almost always a single trip under the new single-journey form, but a
+   * legacy multi-trip Club/Official requisition can have several — hence
+   * the trip selector below.
+   */
+  trips: Trip[];
+  onSubmit: (tripId: string, distanceKm: number) => void;
   onCancel: () => void;
 }
 
 export default function MileageEntryForm({
-  trip,
+  trips,
   onSubmit,
   onCancel,
 }: MileageEntryFormProps) {
+  const [selectedTripId, setSelectedTripId] = useState(trips[0]?.id ?? "");
   const [distanceKm, setDistanceKm] = useState("");
   const [error, setError] = useState("");
+
+  const selectedTrip =
+    trips.find((trip) => trip.id === selectedTripId) ?? trips[0];
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const value = Number(distanceKm);
+    if (!selectedTrip) {
+      setError("Select a trip to record mileage for.");
+      return;
+    }
 
-  // ...
-  if (!isPositiveNumber(distanceKm)) {
-    setError("Enter a distance greater than 0.");
-    return;
-  }
+    if (!isPositiveNumber(distanceKm)) {
+      setError("Enter a distance greater than 0.");
+      return;
+    }
 
-    onSubmit(value);
+    onSubmit(selectedTrip.id, Number(distanceKm));
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-sm text-[#1E293B]">
-        <p className="font-medium">
-          {trip.date} · {trip.startTime}–{trip.endTime}
-        </p>
+      {trips.length > 1 && (
+        <div>
+          <label
+            htmlFor="mileageTrip"
+            className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          >
+            Trip
+          </label>
 
-        <p className="mt-1 text-[#64748B]">{trip.route}</p>
-      </div>
+          <select
+            id="mileageTrip"
+            value={selectedTripId}
+            onChange={(event) => setSelectedTripId(event.target.value)}
+            className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          >
+            {trips.map((trip) => (
+              <option key={trip.id} value={trip.id}>
+                {trip.date} · {trip.startTime}–{trip.endTime} · {trip.route}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {selectedTrip && (
+        <div className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-sm text-[#1E293B]">
+          <p className="font-medium">
+            {selectedTrip.date} · {selectedTrip.startTime}–
+            {selectedTrip.endTime}
+          </p>
+
+          <p className="mt-1 text-[#64748B]">{selectedTrip.route}</p>
+        </div>
+      )}
 
       <div>
         <label

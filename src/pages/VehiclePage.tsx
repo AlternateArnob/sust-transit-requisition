@@ -1,18 +1,19 @@
 import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
-import useStaff from "../hooks/useStaff";
+import useDriver from "../hooks/useDriver";
 
 import StatusBadge from "../components/StatusBadge";
 import Modal from "../components/Modal";
 import VehicleForm from "../components/VehicleForm";
 
 import type { Vehicle } from "../types";
+import { isDuplicateRegistration } from "../utils/vehicleUtils";
 
-export default function FleetPage() {
+export default function VehiclePage() {
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useVehicles();
 
-  const { staff, updateStaff } = useStaff();
+  const { driver, updateDriver } = useDriver();
 
   const [search, setSearch] = useState("");
 
@@ -41,13 +42,25 @@ export default function FleetPage() {
       return "No Driver";
     }
 
-    const driver = staff.find((member) => member.id === driverId);
+    const foundDriver = driver.find((member) => member.id === driverId);
 
-    return driver?.name ?? "No Driver";
+    return foundDriver?.name ?? "No Driver";
   }
 
   function handleVehicleSubmit(vehicle: Vehicle) {
     const oldVehicle = vehicles.find((item) => item.id === vehicle.id);
+
+    if (
+      isDuplicateRegistration(
+        vehicles,
+        vehicle.registrationNumber,
+        vehicle.id,
+      )
+    ) {
+      throw new Error(
+        `Registration number "${vehicle.registrationNumber}" is already registered.`,
+      );
+    }
 
     const newDriverId = vehicle.permanentDriverId;
 
@@ -56,13 +69,15 @@ export default function FleetPage() {
      */
     if (!oldVehicle) {
       if (newDriverId) {
-        const driver = staff.find((member) => member.id === newDriverId);
+        const foundDriver = driver.find(
+          (member) => member.id === newDriverId,
+        );
 
-        if (!driver) {
+        if (!foundDriver) {
           throw new Error("Selected driver was not found.");
         }
 
-        if (driver.status !== "Active") {
+        if (foundDriver.status !== "Active") {
           throw new Error("Inactive drivers cannot be assigned.");
         }
 
@@ -72,7 +87,7 @@ export default function FleetPage() {
          * Normally this cannot happen because
          * VehicleForm hides assigned drivers.
          */
-        if (driver.permanentVehicleId) {
+        if (foundDriver.permanentVehicleId) {
           throw new Error(
             "This driver is already assigned to another vehicle.",
           );
@@ -80,8 +95,8 @@ export default function FleetPage() {
 
         addVehicle(vehicle);
 
-        updateStaff({
-          ...driver,
+        updateDriver({
+          ...foundDriver,
           permanentVehicleId: vehicle.id,
         });
       } else {
@@ -110,7 +125,7 @@ export default function FleetPage() {
      * A new driver was selected.
      */
     if (newDriverId) {
-      const newDriver = staff.find((member) => member.id === newDriverId);
+      const newDriver = driver.find((member) => member.id === newDriverId);
 
       if (!newDriver) {
         throw new Error("Selected driver was not found.");
@@ -136,12 +151,12 @@ export default function FleetPage() {
      * vehicle assignment.
      */
     if (oldVehicle.permanentDriverId) {
-      const oldDriver = staff.find(
+      const oldDriver = driver.find(
         (member) => member.id === oldVehicle.permanentDriverId,
       );
 
       if (oldDriver) {
-        updateStaff({
+        updateDriver({
           ...oldDriver,
           permanentVehicleId: undefined,
         });
@@ -153,10 +168,10 @@ export default function FleetPage() {
      * to this vehicle.
      */
     if (newDriverId) {
-      const newDriver = staff.find((member) => member.id === newDriverId);
+      const newDriver = driver.find((member) => member.id === newDriverId);
 
       if (newDriver) {
-        updateStaff({
+        updateDriver({
           ...newDriver,
           permanentVehicleId: vehicle.id,
         });
@@ -184,13 +199,13 @@ export default function FleetPage() {
      * assignment first.
      */
     if (vehicle.permanentDriverId) {
-      const driver = staff.find(
+      const foundDriver = driver.find(
         (member) => member.id === vehicle.permanentDriverId,
       );
 
-      if (driver) {
-        updateStaff({
-          ...driver,
+      if (foundDriver) {
+        updateDriver({
+          ...foundDriver,
           permanentVehicleId: undefined,
         });
       }
@@ -359,6 +374,8 @@ export default function FleetPage() {
 
                 <th className="px-4 py-3 font-medium">Status</th>
 
+                <th className="px-4 py-3 font-medium">Reserved For</th>
+
                 <th className="px-4 py-3 font-medium">Requisition</th>
 
                 <th
@@ -377,7 +394,7 @@ export default function FleetPage() {
               {filteredVehicles.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="
                       px-4 py-12
                       text-center
@@ -452,6 +469,10 @@ export default function FleetPage() {
 
                     <td className="px-4 py-3">
                       <StatusBadge status={vehicle.operationalStatus} />
+                    </td>
+
+                    <td className="px-4 py-3 text-[#64748B]">
+                      {vehicle.reservedFor ?? "—"}
                     </td>
 
                     <td className="px-4 py-3">

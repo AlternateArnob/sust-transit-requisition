@@ -5,14 +5,14 @@ import { PDF_COLORS, drawHeader, drawFooter } from "./pdfTheme";
 import type {
   Requisition,
   Vehicle,
-  Staff,
+  Driver,
   Trip,
   Allocation,
 } from "../../types";
 
 export function generateDutySlipPdf(
   requisition: Requisition,
-  driver: Staff,
+  driver: Driver,
   trips: { trip: Trip; allocation: Allocation }[],
   vehicles: Vehicle[],
 ) {

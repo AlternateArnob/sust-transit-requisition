@@ -4,12 +4,15 @@ import type {
   Trip,
   Vehicle,
   VehicleOffDay,
-  RecurringRoute,
+  StudentTransportVehicle,
 } from "../types";
 import { isVehicleEligibleForRequisition } from "./vehicleUtils";
 import {
   getOffDayForVehicleOnDate,
-  getRoutesForVehicleOnDate,
+  getStudentTransportEntry,
+  getStudentTransportTimeForDate,
+  isVehicleFreeAtTime,
+  formatTimeDisplay,
 } from "./routeUtils";
 
 export interface TripContext {
@@ -89,7 +92,7 @@ export function getVehicleEligibility(
   context: {
     allocations: Allocation[];
     offDays: VehicleOffDay[];
-    routes: RecurringRoute[];
+    routes: StudentTransportVehicle[];
     excludeAllocationId?: string;
   },
 ): VehicleEligibility {
@@ -145,15 +148,20 @@ export function getVehicleEligibility(
     );
   }
 
-  const scheduledRoutes = getRoutesForVehicleOnDate(
+  const studentTransportTime = getStudentTransportTimeForDate(
     vehicle.id,
     trip.date,
     context.routes,
   );
 
-  if (scheduledRoutes.length > 0) {
-    warnings.push(
-      `Vehicle has ${scheduledRoutes.length} recurring route trip(s) on this weekday — verify timing`,
+  if (
+    studentTransportTime &&
+    !isVehicleFreeAtTime(vehicle.id, trip.date, trip.startTime, context.routes)
+  ) {
+    blockers.push(
+      `Used for student transport on ${trip.date} until ${formatTimeDisplay(
+        studentTransportTime,
+      )} — not free yet`,
     );
   }
 

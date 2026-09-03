@@ -5,13 +5,13 @@ export type DriverDesignation =
   | "Driver (Grade-1)"
   | "Driver (Outsourced)";
 
-export type StaffStatus = "Active" | "Inactive";
+export type DriverStatus = "Active" | "Inactive";
 
-export interface Staff {
+export interface Driver {
   id: string;
   name: string;
   designation: DriverDesignation;
   phone?: string;
-  status: StaffStatus;
+  status: DriverStatus;
   permanentVehicleId?: string;
 }

@@ -1,9 +1,9 @@
 import useVehicles from "./useVehicles";
-import useStaff from "./useStaff";
+import useDriver from "./useDriver";
 
 export default function useVehicleDriverAssignment() {
   const { vehicles, updateVehicle } = useVehicles();
-  const { staff, updateStaff } = useStaff();
+  const { driver, updateDriver } = useDriver();
 
   function assignDriver(vehicleId: string, driverId?: string) {
     const vehicle = vehicles.find((item) => item.id === vehicleId);
@@ -18,12 +18,12 @@ export default function useVehicleDriverAssignment() {
     // 1. Remove driver path
     if (!driverId) {
       if (vehicle.permanentDriverId) {
-        const previousDriver = staff.find(
+        const previousDriver = driver.find(
           (item) => item.id === vehicle.permanentDriverId,
         );
 
         if (previousDriver) {
-          updateStaff({
+          updateDriver({
             ...previousDriver,
             permanentVehicleId: undefined,
           });
@@ -42,16 +42,16 @@ export default function useVehicleDriverAssignment() {
     }
 
     // 2. Validate target driver before performing any state mutations
-    const driver = staff.find((item) => item.id === driverId);
+    const targetDriver = driver.find((item) => item.id === driverId);
 
-    if (!driver) {
+    if (!targetDriver) {
       return {
         success: false,
         message: "Driver not found.",
       };
     }
 
-    if (driver.status !== "Active") {
+    if (targetDriver.status !== "Active") {
       return {
         success: false,
         message: "Inactive drivers cannot be assigned.",
@@ -67,12 +67,12 @@ export default function useVehicleDriverAssignment() {
 
     // 3. Safe mutation step: unassign previous driver only after target passes validation
     if (vehicle.permanentDriverId && vehicle.permanentDriverId !== driverId) {
-      const previousDriver = staff.find(
+      const previousDriver = driver.find(
         (item) => item.id === vehicle.permanentDriverId,
       );
 
       if (previousDriver) {
-        updateStaff({
+        updateDriver({
           ...previousDriver,
           permanentVehicleId: undefined,
         });
@@ -85,7 +85,7 @@ export default function useVehicleDriverAssignment() {
       permanentDriverId: driverId,
     });
 
-    updateStaff({
+    updateDriver({
       ...driver,
       permanentVehicleId: vehicleId,
     });

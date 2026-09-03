@@ -10,23 +10,15 @@ export const WEEKDAYS: Weekday[] = [
   "Sat",
 ];
 
-export type RouteSlot = "Morning" | "Afternoon" | "Evening" | "Night";
+export type StudentTransportSchedule = Partial<Record<Weekday, string>>;
 
-export const ROUTE_SLOTS: RouteSlot[] = [
-  "Morning",
-  "Afternoon",
-  "Evening",
-  "Night",
-];
-
-export interface RecurringRoute {
+export interface StudentTransportVehicle {
   id: string;
   vehicleId: string;
-  slot: RouteSlot;
-  campusDeparture?: string;
-  pointDeparture?: string;
-  weekdays: Weekday[];
-  stops: string[];
-  isActive: boolean;
-  notes?: string;
+  /*
+   * Free-after time keyed by weekday.
+   * Days that are not keys (or whose value is empty) mean
+   * the vehicle is free all day on that weekday.
+   */
+  schedule: StudentTransportSchedule;
 }

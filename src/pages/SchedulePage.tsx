@@ -1,15 +1,15 @@
 import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
-import useStaff from "../hooks/useStaff";
+import useDriver from "../hooks/useDriver";
 import useRoutes from "../hooks/useRoutes";
 import useOffDays from "../hooks/useOffDays";
 
 import {
   getWeekdayFromDate,
   getOffDayForVehicleOnDate,
-  getRoutesForVehicleOnDate,
-  getRouteTime,
+  getStudentTransportTimeForDate,
+  formatTimeDisplay,
 } from "../utils/routeUtils";
 
 type LookupMode = "vehicle" | "driver";
@@ -20,7 +20,7 @@ function todayString(): string {
 
 export default function SchedulePage() {
   const { vehicles } = useVehicles();
-  const { staff } = useStaff();
+  const { driver } = useDriver();
   const { routes } = useRoutes();
   const { offDays } = useOffDays();
 
@@ -29,7 +29,7 @@ export default function SchedulePage() {
   const [selectedDriverId, setSelectedDriverId] = useState("");
   const [date, setDate] = useState(todayString());
 
-  const activeDrivers = staff.filter((member) => member.status === "Active");
+  const activeDrivers = driver.filter((member) => member.status === "Active");
 
   const selectedDriver = activeDrivers.find(
     (member) => member.id === selectedDriverId,
@@ -49,13 +49,13 @@ export default function SchedulePage() {
       ? getOffDayForVehicleOnDate(targetVehicleId, date, offDays)
       : undefined;
 
-  const scheduledRoutes =
+  const studentTransportTime =
     targetVehicleId && date
-      ? getRoutesForVehicleOnDate(targetVehicleId, date, routes)
-      : [];
+      ? getStudentTransportTimeForDate(targetVehicleId, date, routes)
+      : undefined;
 
   const assignedDriver = targetVehicle?.permanentDriverId
-    ? staff.find((member) => member.id === targetVehicle.permanentDriverId)
+    ? driver.find((member) => member.id === targetVehicle.permanentDriverId)
     : undefined;
 
   function formatDate(dateString: string) {
@@ -189,7 +189,7 @@ export default function SchedulePage() {
             </p>
 
             <p className="mt-1 text-sm text-[#64748B]">
-              Assign a vehicle to this driver from Fleet Management to see their
+              Assign a vehicle to this driver from Vehicle Management to see their
               schedule.
             </p>
           </div>
@@ -260,50 +260,35 @@ export default function SchedulePage() {
               </div>
             )}
 
-            {/* Scheduled routes */}
+            {/* Student transport commitment */}
             <div>
               <p className="mb-2 text-sm font-medium text-[#1E293B]">
-                {offDay ? "Trips that would normally run" : "Scheduled trips"}
+                Student Transport
               </p>
 
-              {scheduledRoutes.length === 0 ? (
-                <p className="rounded-md border border-dashed border-[#E2E8F0] px-4 py-6 text-center text-sm text-[#64748B]">
-                  No recurring routes scheduled for this vehicle on this
-                  weekday.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {scheduledRoutes.map((route) => (
-                    <div
-                      key={route.id}
-                      className={`flex items-start justify-between rounded-md border px-4 py-3 ${
-                        offDay
-                          ? "border-[#E2E8F0] bg-[#F8FAFC] opacity-70"
-                          : "border-[#E2E8F0] bg-white"
-                      }`}
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-[#1E293B]">
-                          {route.slot}
-                          {getRouteTime(route)
-                            ? ` · ${getRouteTime(route)}`
-                            : ""}
-                          {route.notes ? ` (${route.notes})` : ""}
-                        </p>
+              {studentTransportTime ? (
+                <div
+                  className={`rounded-md border px-4 py-3 ${
+                    offDay
+                      ? "border-[#E2E8F0] bg-[#F8FAFC] opacity-70"
+                      : "border-[#E2E8F0] bg-white"
+                  }`}
+                >
+                  <p className="text-sm font-medium text-[#1E293B]">
+                    Used for student transport on this day until{" "}
+                    {formatTimeDisplay(studentTransportTime)}
+                  </p>
 
-                        <p className="mt-1 max-w-xl text-sm text-[#64748B]">
-                          {route.stops.join(" → ")}
-                        </p>
-                      </div>
-
-                      {offDay && (
-                        <span className="inline-flex shrink-0 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-xs font-medium text-[#B91C1C]">
-                          Skipped — Off-Day
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                  <p className="mt-1 text-sm text-[#64748B]">
+                    Requisition allocations cannot start before this time on{" "}
+                    {weekday}.
+                  </p>
                 </div>
+              ) : (
+                <p className="rounded-md border border-dashed border-[#E2E8F0] px-4 py-6 text-center text-sm text-[#64748B]">
+                  This vehicle is free all day on {weekday ?? "this date"} —
+                  no student transport schedule applies.
+                </p>
               )}
             </div>
 

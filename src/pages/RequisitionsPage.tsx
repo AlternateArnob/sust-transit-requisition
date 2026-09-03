@@ -3,11 +3,13 @@ import { useState } from "react";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
-import useStaff from "../hooks/useStaff";
+import useDriver from "../hooks/useDriver";
 import useDutySlips from "../hooks/useDutySlips";
+import useMileageEntries from "../hooks/useMileageEntries";
 
 import Modal from "../components/Modal";
 import RequisitionDetail from "../components/RequisitionDetail";
+import MileageEntryForm from "../components/MileageEntryForm";
 
 import {
   isInActiveQueue,
@@ -17,12 +19,17 @@ import {
 import { getEligibleDutySlipGroups } from "../utils/dutySlipUtils";
 import { generateConfirmationSlip } from "../utils/pdf/confirmationSlip";
 import { generateDutySlipPdf } from "../utils/pdf/dutySlip";
+import {
+  getMileageColumnStatus,
+  type MileageTripContext,
+} from "../utils/mileageUtils";
 
 import type { ApplicationStatus } from "../types";
 
 type Tab = "queue" | "approved" | "rejected" | "all";
 
 function statusBadgeClass(status: ApplicationStatus) {
+  if (status === "Final Approved") return "bg-[#BBF7D0] text-[#15803D]";
   if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
   if (status === "Ready for Accounts") return "bg-[#E2E8F0] text-[#334E68]";
   if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
@@ -32,16 +39,26 @@ function statusBadgeClass(status: ApplicationStatus) {
 }
 
 export default function RequisitionsPage() {
-  const { requisitions, approveTrip, rejectTrip, resetTripDecision } =
-    useRequisitions();
+  const {
+    requisitions,
+    approveTrip,
+    rejectTrip,
+    resetTripDecision,
+    markReadyForAccounts,
+    finalApprove,
+  } = useRequisitions();
   const { allocations, addAllocation, updateAllocation, removeAllocation } =
     useAllocations();
   const { vehicles } = useVehicles();
-  const { staff } = useStaff();
+  const { driver } = useDriver();
   const { dutySlips, addDutySlip } = useDutySlips();
+  const { mileageEntries, addMileageEntry } = useMileageEntries();
 
   const [tab, setTab] = useState<Tab>("queue");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mileageTarget, setMileageTarget] = useState<
+    MileageTripContext[] | null
+  >(null);
 
   const sorted = [...requisitions].sort((a, b) =>
     a.createdAt.localeCompare(b.createdAt),
@@ -52,6 +69,7 @@ export default function RequisitionsPage() {
     if (tab === "approved")
       return (
         requisition.status === "Approved" ||
+        requisition.status === "Final Approved" ||
         requisition.status === "Ready for Accounts"
       );
     if (tab === "rejected") return requisition.status === "Rejected";
@@ -91,6 +109,8 @@ export default function RequisitionsPage() {
     });
   }
 
+  // Reserved for a future in-modal reassign flow. Kept here so we don't
+  // reintroduce the existing AllocationPicker path twice.
   function handleReassignTrip(
     tripId: string,
     vehicleId: string,
@@ -106,6 +126,8 @@ export default function RequisitionsPage() {
         allocatedAt: new Date().toISOString(),
       });
     }
+
+    void tripId;
   }
 
   function handleResetTrip(requisitionId: string, tripId: string) {
@@ -118,9 +140,14 @@ export default function RequisitionsPage() {
     }
   }
 
+  function handleFinalApprove() {
+    if (!selected) return;
+    finalApprove(selected.id);
+  }
+
   function handleGenerateConfirmationSlip() {
     if (!selected) return;
-    generateConfirmationSlip(selected, allocations, vehicles, staff);
+    generateConfirmationSlip(selected, allocations, vehicles, driver);
   }
 
   function handleGenerateDutySlip(driverId: string) {
@@ -129,11 +156,11 @@ export default function RequisitionsPage() {
     const group = getEligibleDutySlipGroups(selected, allocations).find(
       (item) => item.driverId === driverId,
     );
-    const driver = staff.find((member) => member.id === driverId);
+    const driverMember = driver.find((member) => member.id === driverId);
 
-    if (!group || !driver) return;
+    if (!group || !driverMember) return;
 
-    generateDutySlipPdf(selected, driver, group.trips, vehicles);
+    generateDutySlipPdf(selected, driverMember, group.trips, vehicles);
 
     addDutySlip({
       id: crypto.randomUUID(),
@@ -145,6 +172,35 @@ export default function RequisitionsPage() {
       })),
       generatedAt: new Date().toISOString(),
     });
+  }
+
+  function handleRecordMileage(tripId: string, distanceKm: number) {
+    if (!mileageTarget || mileageTarget.length === 0) {
+      return;
+    }
+
+    const context = mileageTarget.find((item) => item.trip.id === tripId);
+    if (!context) {
+      return;
+    }
+
+    addMileageEntry({
+      id: crypto.randomUUID(),
+      requisitionId: context.requisition.id,
+      tripId,
+      distanceKm,
+      recordedAt: new Date().toISOString(),
+    });
+
+    // Only the last outstanding trip on this requisition promotes it to
+    // "Ready for Accounts" — a multi-trip requisition may still have
+    // other approved trips waiting on their own distance.
+    const remaining = mileageTarget.filter((item) => item.trip.id !== tripId);
+    if (remaining.length === 0) {
+      markReadyForAccounts(context.requisition.id);
+    }
+
+    setMileageTarget(null);
   }
 
   return (
@@ -191,13 +247,14 @@ export default function RequisitionsPage() {
                 <th className="px-4 py-3 font-medium">Date Range</th>
                 <th className="px-4 py-3 font-medium">Trips</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Mileage</th>
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-12 text-center">
                     <p className="font-medium text-[#1E293B]">
                       No requisitions found
                     </p>
@@ -209,6 +266,12 @@ export default function RequisitionsPage() {
               ) : (
                 filtered.map((requisition, index) => {
                   const counts = getTripStatusCounts(requisition.trips);
+                  const mileageStatus = getMileageColumnStatus(
+                    requisition,
+                    allocations,
+                    mileageEntries,
+                  );
+
                   return (
                     <tr
                       key={requisition.id}
@@ -233,8 +296,7 @@ export default function RequisitionsPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-[#64748B]">
-                        {requisition.trips.length} ({counts.approved}A /{" "}
-                        {counts.rejected}R / {counts.pending}P)
+                        {requisition.trips.length}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -242,6 +304,35 @@ export default function RequisitionsPage() {
                         >
                           {requisition.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {mileageStatus.kind === "not-applicable" && (
+                          <span className="text-[#64748B]">—</span>
+                        )}
+                        {mileageStatus.kind === "not-ready" && (
+                          <span
+                            className="text-[#64748B]"
+                            title="Approve and allocate a vehicle first"
+                          >
+                            —
+                          </span>
+                        )}
+                        {mileageStatus.kind === "recorded" && (
+                          <span className="font-medium text-[#15803D]">
+                            {mileageStatus.distanceKm} km
+                          </span>
+                        )}
+                        {mileageStatus.kind === "awaiting" && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setMileageTarget(mileageStatus.trips)
+                            }
+                            className="text-sm font-medium text-[#334E68] hover:underline"
+                          >
+                            Record Mileage
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button
@@ -270,7 +361,7 @@ export default function RequisitionsPage() {
           <RequisitionDetail
             requisition={selected}
             vehicles={vehicles}
-            staff={staff}
+            driver={driver}
             allocations={allocations}
             dutySlips={dutySlips}
             onApproveTripWithVehicle={handleApproveTripWithVehicle}
@@ -278,6 +369,17 @@ export default function RequisitionsPage() {
             onResetTrip={handleResetTrip}
             onGenerateConfirmationSlip={handleGenerateConfirmationSlip}
             onGenerateDutySlip={handleGenerateDutySlip}
+            onFinalApprove={handleFinalApprove}
+          />
+        </Modal>
+      )}
+
+      {mileageTarget && mileageTarget.length > 0 && (
+        <Modal title="Record Mileage" onClose={() => setMileageTarget(null)}>
+          <MileageEntryForm
+            trips={mileageTarget.map((item) => item.trip)}
+            onSubmit={handleRecordMileage}
+            onCancel={() => setMileageTarget(null)}
           />
         </Modal>
       )}

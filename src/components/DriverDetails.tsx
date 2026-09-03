@@ -1,15 +1,15 @@
-import type { Staff } from "../types";
-import StaffStatusBadge from "./StaffStatusBadge";
+import type { Driver } from "../types";
+import DriverStatusBadge from "./DriverStatusBadge";
 
-interface StaffDetailsProps {
-  staff: Staff;
+interface DriverDetailsProps {
+  driver: Driver;
   vehicleRegistration?: string;
 }
 
-export default function StaffDetails({
-  staff,
+export default function DriverDetails({
+  driver,
   vehicleRegistration,
-}: StaffDetailsProps) {
+}: DriverDetailsProps) {
   return (
     <div className="space-y-5">
       <div>
@@ -17,7 +17,7 @@ export default function StaffDetails({
           Driver Name
         </p>
 
-        <p className="mt-1 font-semibold text-[#1E293B]">{staff.name}</p>
+        <p className="mt-1 font-semibold text-[#1E293B]">{driver.name}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -26,7 +26,7 @@ export default function StaffDetails({
             Designation
           </p>
 
-          <p className="mt-1 text-sm text-[#1E293B]">{staff.designation}</p>
+          <p className="mt-1 text-sm text-[#1E293B]">{driver.designation}</p>
         </div>
 
         <div>
@@ -34,7 +34,7 @@ export default function StaffDetails({
             Phone
           </p>
 
-          <p className="mt-1 text-sm text-[#1E293B]">{staff.phone ?? "—"}</p>
+          <p className="mt-1 text-sm text-[#1E293B]">{driver.phone ?? "—"}</p>
         </div>
 
         <div>
@@ -43,7 +43,7 @@ export default function StaffDetails({
           </p>
 
           <div className="mt-1">
-            <StaffStatusBadge status={staff.status} />
+            <DriverStatusBadge status={driver.status} />
           </div>
         </div>
 

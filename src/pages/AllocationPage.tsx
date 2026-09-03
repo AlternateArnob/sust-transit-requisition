@@ -3,7 +3,7 @@ import { useState } from "react";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
-import useStaff from "../hooks/useStaff";
+import useDriver from "../hooks/useDriver";
 
 import Modal from "../components/Modal";
 import AllocationPicker from "../components/AllocationPicker";
@@ -24,7 +24,7 @@ export default function AllocationPage() {
   const { allocations, addAllocation, updateAllocation, removeAllocation } =
     useAllocations();
   const { vehicles } = useVehicles();
-  const { staff } = useStaff();
+  const { driver } = useDriver();
 
   const [tab, setTab] = useState<Tab>("pending");
   const [pickerTarget, setPickerTarget] = useState<TripContext | null>(null);
@@ -51,7 +51,7 @@ export default function AllocationPage() {
     }
 
     return (
-      staff.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
+      driver.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
     );
   }
 

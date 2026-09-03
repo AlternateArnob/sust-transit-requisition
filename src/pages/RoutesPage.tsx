@@ -5,50 +5,88 @@ import useRoutes from "../hooks/useRoutes";
 import useOffDays from "../hooks/useOffDays";
 
 import Modal from "../components/Modal";
-import RouteForm from "../components/RouteFrom";
+import RouteForm from "../components/RouteForm";
 import OffDayForm from "../components/OffDayForm";
 
-import type { RecurringRoute } from "../types";
+import {
+  formatTimeDisplay,
+  formatScheduledDays,
+  getScheduledDays,
+} from "../utils/routeUtils";
+import type {
+  StudentTransportVehicle,
+  StudentTransportSchedule,
+} from "../types";
 
-type Tab = "routes" | "offdays";
+type Tab = "schedule" | "offdays";
 
 export default function RoutesPage() {
   const { vehicles } = useVehicles();
-  const { routes, addRoute, updateRoute, deleteRoute, toggleRouteActive } =
-    useRoutes();
+  const { routes, addRoute, updateRoute, deleteRoute } = useRoutes();
   const { offDays, addOffDay, deleteOffDay } = useOffDays();
 
-  const [tab, setTab] = useState<Tab>("routes");
+  const [tab, setTab] = useState<Tab>("schedule");
 
   const [isAddRouteOpen, setIsAddRouteOpen] = useState(false);
-  const [editingRoute, setEditingRoute] = useState<RecurringRoute | null>(null);
+  const [editingRoute, setEditingRoute] = useState<StudentTransportVehicle | null>(
+    null,
+  );
   const [isAddOffDayOpen, setIsAddOffDayOpen] = useState(false);
 
+  function getVehicle(vehicleId: string) {
+    return vehicles.find((item) => item.id === vehicleId);
+  }
+
   function getVehicleLabel(vehicleId: string) {
-    const vehicle = vehicles.find((item) => item.id === vehicleId);
+    const vehicle = getVehicle(vehicleId);
 
     return vehicle
       ? `${vehicle.registrationNumber} (${vehicle.category})`
       : "Unknown Vehicle";
   }
 
-  function handleRouteSubmit(route: RecurringRoute) {
+  function handleRouteSubmit(entry: StudentTransportVehicle) {
     if (editingRoute) {
-      updateRoute(route);
+      updateRoute(entry);
       setEditingRoute(null);
     } else {
-      addRoute(route);
+      addRoute(entry);
       setIsAddRouteOpen(false);
     }
   }
 
-  function handleDeleteRoute(route: RecurringRoute) {
+  function formatFreeAfterSummary(schedule: StudentTransportSchedule) {
+    const days = getScheduledDays(schedule);
+
+    if (days.length === 0) {
+      return "—";
+    }
+
+    const first = days[0];
+    const firstTime = schedule[first];
+    const allSame = days.every((day) => schedule[day] === firstTime);
+
+    if (allSame && firstTime) {
+      return formatTimeDisplay(firstTime);
+    }
+
+    return days.map((day) => (
+      <div key={day} className="text-xs leading-5">
+        <span className="font-medium text-[#1E293B]">{day}:</span>{" "}
+        <span className="text-[#334E68]">
+          {formatTimeDisplay(schedule[day] ?? "")}
+        </span>
+      </div>
+    ));
+  }
+
+  function handleDeleteRoute(entry: StudentTransportVehicle) {
     const confirmed = window.confirm(
-      `Delete this route for ${getVehicleLabel(route.vehicleId)}?`,
+      `Remove ${getVehicleLabel(entry.vehicleId)} from the student transport schedule?`,
     );
 
     if (confirmed) {
-      deleteRoute(route.id);
+      deleteRoute(entry.id);
     }
   }
 
@@ -66,22 +104,22 @@ export default function RoutesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Routes & Off-Days
+            Transport Schedule
           </h1>
 
           <p className="mt-1 text-sm text-[#64748B]">
-            Manage recurring vehicle routes and off-day exclusions
+            Vehicles used for regular student transportation, and when each
+            becomes free for requisition
           </p>
         </div>
 
-        {/* Dynamic Add Button based on active tab */}
-        {tab === "routes" ? (
+        {tab === "schedule" ? (
           <button
             type="button"
             onClick={() => setIsAddRouteOpen(true)}
             className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
           >
-            + Add Route
+            + Add Vehicle
           </button>
         ) : (
           <button
@@ -98,14 +136,14 @@ export default function RoutesPage() {
       <div className="flex gap-2 border-b border-[#E2E8F0]">
         <button
           type="button"
-          onClick={() => setTab("routes")}
+          onClick={() => setTab("schedule")}
           className={`px-4 py-2 text-sm font-medium ${
-            tab === "routes"
+            tab === "schedule"
               ? "border-b-2 border-[#0F2747] text-[#0F2747]"
               : "text-[#64748B] hover:text-[#1E293B]"
           }`}
         >
-          Recurring Routes ({routes.length})
+          Student Transport Vehicles ({routes.length})
         </button>
 
         <button
@@ -121,20 +159,17 @@ export default function RoutesPage() {
         </button>
       </div>
 
-      {/* Routes Tab */}
-      {tab === "routes" && (
+      {/* Schedule Tab */}
+      {tab === "schedule" && (
         <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-[#0F2747] text-white">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Vehicle</th>
-                  <th className="px-4 py-3 font-medium">Slot</th>
-                  <th className="px-4 py-3 font-medium">Weekdays</th>
-                  <th className="px-4 py-3 font-medium">Campus Dep.</th>
-                  <th className="px-4 py-3 font-medium">Point Dep.</th>
-                  <th className="px-4 py-3 font-medium">Route Sequence</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Vehicle Number</th>
+                  <th className="px-4 py-3 font-medium">Vehicle Category</th>
+                  <th className="px-4 py-3 font-medium">Scheduled Days</th>
+                  <th className="px-4 py-3 font-medium">Free After</th>
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
@@ -142,84 +177,65 @@ export default function RoutesPage() {
               <tbody>
                 {routes.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center">
+                    <td colSpan={5} className="px-4 py-12 text-center">
                       <p className="font-medium text-[#1E293B]">
-                        No routes found
+                        No student transport vehicles found
                       </p>
 
                       <p className="mt-1 text-sm text-[#64748B]">
-                        Add a recurring route to get started.
+                        Add a vehicle used for regular student transportation.
                       </p>
                     </td>
                   </tr>
                 ) : (
-                  routes.map((route, index) => (
-                    <tr
-                      key={route.id}
-                      className={`border-t border-[#E2E8F0] ${
-                        index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
-                      }`}
-                    >
-                      <td className="px-4 py-3 font-medium text-[#1E293B]">
-                        {getVehicleLabel(route.vehicleId)}
-                      </td>
+                  routes.map((entry, index) => {
+                    const vehicle = getVehicle(entry.vehicleId);
 
-                      <td className="px-4 py-3 text-[#64748B]">{route.slot}</td>
-
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {route.weekdays.join(", ")}
-                      </td>
-
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {route.campusDeparture ?? "—"}
-                      </td>
-
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {route.pointDeparture ?? "—"}
-                      </td>
-
-                      <td
-                        className="max-w-xs truncate px-4 py-3 text-[#64748B]"
-                        title={route.stops.join(" → ")}
+                    return (
+                      <tr
+                        key={entry.id}
+                        className={`border-t border-[#E2E8F0] ${
+                          index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
+                        }`}
                       >
-                        {route.stops.join(" → ")}
-                      </td>
+                        <td className="px-4 py-3 font-medium text-[#1E293B]">
+                          {vehicle?.registrationNumber ?? "Unknown Vehicle"}
+                        </td>
 
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => toggleRouteActive(route.id)}
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                            route.isActive
-                              ? "bg-[#DCFCE7] text-[#15803D]"
-                              : "bg-[#FEE2E2] text-[#B91C1C]"
-                          }`}
-                        >
-                          {route.isActive ? "Active" : "Inactive"}
-                        </button>
-                      </td>
+                        <td className="px-4 py-3 text-[#64748B]">
+                          {vehicle?.category ?? "—"}
+                        </td>
 
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setEditingRoute(route)}
-                            className="text-sm font-medium text-[#334E68] hover:underline"
-                          >
-                            Edit
-                          </button>
+                        <td className="px-4 py-3 font-medium text-[#334E68]">
+                          {formatScheduledDays(entry.schedule)}
+                        </td>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteRoute(route)}
-                            className="text-sm font-medium text-[#B91C1C] hover:underline"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        <td className="px-4 py-3">
+                          {formatFreeAfterSummary(entry.schedule)}
+                        </td>
+
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setEditingRoute(entry)}
+                              className="text-sm font-medium text-[#334E68] hover:underline"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteRoute(entry)}
+                              className="text-sm font-medium text-[#B91C1C] hover:underline"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -227,7 +243,7 @@ export default function RoutesPage() {
         </div>
       )}
 
-      {/* Off-Days Tab */}
+      {/* Off-Days Tab — unchanged */}
       {tab === "offdays" && (
         <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
           <div className="overflow-x-auto">
@@ -299,9 +315,9 @@ export default function RoutesPage() {
         </div>
       )}
 
-      {/* Add Route Modal */}
+      {/* Add Vehicle Modal */}
       {isAddRouteOpen && (
-        <Modal title="Add Route" onClose={() => setIsAddRouteOpen(false)}>
+        <Modal title="Add Student Transport Vehicle" onClose={() => setIsAddRouteOpen(false)}>
           <RouteForm
             onSubmit={handleRouteSubmit}
             onCancel={() => setIsAddRouteOpen(false)}
@@ -309,9 +325,9 @@ export default function RoutesPage() {
         </Modal>
       )}
 
-      {/* Edit Route Modal */}
+      {/* Edit Vehicle Modal */}
       {editingRoute && (
-        <Modal title="Edit Route" onClose={() => setEditingRoute(null)}>
+        <Modal title="Edit Student Transport Schedule" onClose={() => setEditingRoute(null)}>
           <RouteForm
             route={editingRoute}
             onSubmit={handleRouteSubmit}
@@ -320,7 +336,7 @@ export default function RoutesPage() {
         </Modal>
       )}
 
-      {/* Add Off-Day Modal */}
+      {/* Add Off-Day Modal — unchanged */}
       {isAddOffDayOpen && (
         <Modal title="Mark Off-Day" onClose={() => setIsAddOffDayOpen(false)}>
           <OffDayForm

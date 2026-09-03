@@ -1,24 +1,30 @@
 import { useState } from "react";
 
-import useStaff from "../hooks/useStaff";
+import useDriver from "../hooks/useDriver";
 import useVehicles from "../hooks/useVehicles";
 
 import Modal from "../components/Modal";
-import StaffForm from "../components/StaffForm";
+import DriverForm from "../components/DriverForm";
 
-import type { Staff } from "../types";
+import type { Driver } from "../types";
 
-export default function StaffPage() {
-  const { staff, addStaff, updateStaff, deactivateStaff, deleteStaff } =
-    useStaff();
+export default function DriverPage() {
+  const {
+    driver,
+    addDriver,
+    updateDriver,
+    deactivateDriver,
+    activateDriver,
+    deleteDriver,
+  } = useDriver();
   const { vehicles, updateVehicle } = useVehicles();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
+  const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
 
-  const filteredStaff = staff.filter((member) => {
+  const filteredDriver = driver.filter((member) => {
     const matchesSearch =
       member.name.toLowerCase().includes(search.toLowerCase()) ||
       member.designation.toLowerCase().includes(search.toLowerCase());
@@ -37,7 +43,7 @@ export default function StaffPage() {
     return vehicle?.registrationNumber ?? "Unassigned";
   }
 
-  function unassignVehicleIfNeeded(member: Staff) {
+  function unassignVehicleIfNeeded(member: Driver) {
     if (!member.permanentVehicleId) {
       return;
     }
@@ -51,7 +57,7 @@ export default function StaffPage() {
     }
   }
 
-  function handleDeactivate(member: Staff) {
+  function handleDeactivate(member: Driver) {
     const confirmed = window.confirm(
       `Are you sure you want to deactivate ${member.name}?`,
     );
@@ -61,10 +67,14 @@ export default function StaffPage() {
     }
 
     unassignVehicleIfNeeded(member);
-    deactivateStaff(member.id);
+    deactivateDriver(member.id);
   }
 
-  function handleDelete(member: Staff) {
+  function handleActivate(member: Driver) {
+    activateDriver(member.id);
+  }
+
+  function handleDelete(member: Driver) {
     const confirmed = window.confirm(
       `Permanently delete ${member.name}? This cannot be undone.`,
     );
@@ -74,20 +84,20 @@ export default function StaffPage() {
     }
 
     unassignVehicleIfNeeded(member);
-    deleteStaff(member.id);
+    deleteDriver(member.id);
   }
 
-  function handleStaffSubmit(member: Staff) {
-    const existingMember = staff.find((item) => item.id === member.id);
+  function handleDriverSubmit(member: Driver) {
+    const existingMember = driver.find((item) => item.id === member.id);
 
     if (!existingMember) {
-      addStaff(member);
+      addDriver(member);
       setIsAddModalOpen(false);
       return;
     }
 
-    updateStaff(member);
-    setEditingStaff(null);
+    updateDriver(member);
+    setEditingDriver(null);
   }
 
   return (
@@ -99,7 +109,7 @@ export default function StaffPage() {
           </h1>
 
           <p className="mt-1 text-sm text-[#64748B]">
-            Manage university drivers ({staff.length} drivers)
+            Manage university drivers ({driver.length} drivers)
           </p>
         </div>
 
@@ -147,7 +157,7 @@ export default function StaffPage() {
             </thead>
 
             <tbody>
-              {filteredStaff.length === 0 ? (
+              {filteredDriver.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center">
                     <p className="font-medium text-[#1E293B]">
@@ -159,7 +169,7 @@ export default function StaffPage() {
                   </td>
                 </tr>
               ) : (
-                filteredStaff.map((member, index) => (
+                filteredDriver.map((member, index) => (
                   <tr
                     key={member.id}
                     className={`border-t border-[#E2E8F0] ${
@@ -198,19 +208,27 @@ export default function StaffPage() {
                       <div className="flex justify-end gap-3">
                         <button
                           type="button"
-                          onClick={() => setEditingStaff(member)}
+                          onClick={() => setEditingDriver(member)}
                           className="text-sm font-medium text-[#334E68] hover:underline"
                         >
                           Edit
                         </button>
 
-                        {member.status === "Active" && (
+                        {member.status === "Active" ? (
                           <button
                             type="button"
                             onClick={() => handleDeactivate(member)}
                             className="text-sm font-medium text-[#B45309] hover:underline"
                           >
                             Deactivate
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleActivate(member)}
+                            className="text-sm font-medium text-[#15803D] hover:underline"
+                          >
+                            Activate
                           </button>
                         )}
 
@@ -233,19 +251,19 @@ export default function StaffPage() {
 
       {isAddModalOpen && (
         <Modal title="Add Driver" onClose={() => setIsAddModalOpen(false)}>
-          <StaffForm
-            onSubmit={handleStaffSubmit}
+          <DriverForm
+            onSubmit={handleDriverSubmit}
             onCancel={() => setIsAddModalOpen(false)}
           />
         </Modal>
       )}
 
-      {editingStaff && (
-        <Modal title="Edit Driver" onClose={() => setEditingStaff(null)}>
-          <StaffForm
-            staff={editingStaff}
-            onSubmit={handleStaffSubmit}
-            onCancel={() => setEditingStaff(null)}
+      {editingDriver && (
+        <Modal title="Edit Driver" onClose={() => setEditingDriver(null)}>
+          <DriverForm
+            driver={editingDriver}
+            onSubmit={handleDriverSubmit}
+            onCancel={() => setEditingDriver(null)}
           />
         </Modal>
       )}

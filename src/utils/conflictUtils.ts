@@ -4,19 +4,17 @@ import type {
   Trip,
   Vehicle,
   VehicleOffDay,
-  RecurringRoute,
+  StudentTransportVehicle,
 } from "../types";
+import { isVehicleFreeAtTime } from "./routeUtils";
 import { timeRangesOverlap } from "./allocationUtils";
-import {
-  getOffDayForVehicleOnDate,
-  getRoutesForVehicleOnDate,
-} from "./routeUtils";
+import { getOffDayForVehicleOnDate } from "./routeUtils";
 
 export type ConflictType =
   | "Vehicle Double-Booked"
   | "Off-Day Conflict"
   | "Vehicle Unavailable"
-  | "Recurring Route Overlap";
+  | "Student Transport Conflict";
 
 export type ConflictSeverity = "Blocking" | "Warning";
 
@@ -36,7 +34,7 @@ export function detectConflicts(
   requisitions: Requisition[],
   vehicles: Vehicle[],
   offDays: VehicleOffDay[],
-  routes: RecurringRoute[],
+  routes: StudentTransportVehicle[],
 ): Conflict[] {
   const conflicts: Conflict[] = [];
 
@@ -136,22 +134,16 @@ export function detectConflicts(
       }
     });
 
-    const scheduledRoutes = getRoutesForVehicleOnDate(
-      vehicle.id,
-      allocation.date,
-      routes,
-    );
-
-    if (scheduledRoutes.length > 0) {
+    if (!isVehicleFreeAtTime(vehicle.id, allocation.date, allocation.startTime, routes)) {
       conflicts.push({
-        id: `route-${allocation.id}`,
-        type: "Recurring Route Overlap",
-        severity: "Warning",
+        id: `student-transport-${allocation.id}`,
+        type: "Student Transport Conflict",
+        severity: "Blocking",
         vehicleId: vehicle.id,
         allocation,
         requisition,
         trip,
-        description: `${vehicle.registrationNumber} has ${scheduledRoutes.length} recurring route trip(s) scheduled on this weekday — verify no timing clash.`,
+        description: `${vehicle.registrationNumber} is used for student transport on ${allocation.date} but is allocated to a trip starting at ${allocation.startTime}.`,
       });
     }
   });
