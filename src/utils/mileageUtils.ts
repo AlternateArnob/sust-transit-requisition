@@ -6,8 +6,21 @@ export interface MileageTripContext {
   allocation: Allocation;
 }
 
-export function isPersonalUseRequisition(requisition: Requisition): boolean {
-  return requisition.requisitionType === "Personal";
+/**
+ * Phase 6 (admin module) — FRD §23 opens with "For approved personal-use
+ * Teacher requisitions..."; the Phase 6 plan's decision extends this to
+ * Officer personal-use trips too. Student personal-use trips, though
+ * allowed per §5.3, are NOT mileage-eligible. Renamed from
+ * isPersonalUseRequisition since that name no longer matched what the
+ * function actually gates — a Student's Personal-type requisition is
+ * still "personal use" in the plain sense, just not mileage-eligible.
+ */
+export function isMileageEligibleRequisition(requisition: Requisition): boolean {
+  return (
+    requisition.requisitionType === "Personal" &&
+    (requisition.applicantProfile === "Teacher" ||
+      requisition.applicantProfile === "Officer")
+  );
 }
 
 export function getTripsAwaitingMileage(
@@ -18,9 +31,14 @@ export function getTripsAwaitingMileage(
   const recordedTripIds = new Set(mileageEntries.map((entry) => entry.tripId));
   const result: MileageTripContext[] = [];
 
-  requisitions.filter(isPersonalUseRequisition).forEach((requisition) => {
+  requisitions.filter(isMileageEligibleRequisition).forEach((requisition) => {
     requisition.trips.forEach((trip) => {
-      if (trip.status !== "Approved" || recordedTripIds.has(trip.id)) {
+      // Phase 6, §3.4 audit — was `!== "Approved"`. Mileage is recorded
+      // "after the vehicle returns to the depot" (FRD §23), which is
+      // downstream of the trip actually happening, not just being
+      // approved. Requiring Completed keeps mileage entry from opening
+      // up before Transport Office has confirmed the trip occurred.
+      if (trip.status !== "Completed" || recordedTripIds.has(trip.id)) {
         return;
       }
 
@@ -73,7 +91,9 @@ export function getAwaitingMileageTripsForRequisition(
   const result: MileageTripContext[] = [];
 
   requisition.trips.forEach((trip) => {
-    if (trip.status !== "Approved" || recordedTripIds.has(trip.id)) {
+    // Phase 6, §3.4 audit — see getTripsAwaitingMileage for why this is
+    // Completed rather than Approved.
+    if (trip.status !== "Completed" || recordedTripIds.has(trip.id)) {
       return;
     }
 
@@ -98,15 +118,20 @@ export function getMileageColumnStatus(
   allocations: Allocation[],
   mileageEntries: MileageEntry[],
 ): MileageColumnStatus {
-  if (!isPersonalUseRequisition(requisition)) {
+  if (!isMileageEligibleRequisition(requisition)) {
     return { kind: "not-applicable" };
   }
 
-  const approvedTrips = requisition.trips.filter(
-    (trip) => trip.status === "Approved",
+  // Phase 6, §3.4 audit — was "approvedTrips" gated on Approved. Mileage
+  // now only makes sense once a trip is actually Completed (see
+  // getTripsAwaitingMileage), so an Approved-but-not-yet-Completed trip
+  // correctly reads as "not-ready" rather than jumping straight to
+  // "awaiting".
+  const completedTrips = requisition.trips.filter(
+    (trip) => trip.status === "Completed",
   );
 
-  if (approvedTrips.length === 0) {
+  if (completedTrips.length === 0) {
     return { kind: "not-ready" };
   }
 
@@ -117,13 +142,13 @@ export function getMileageColumnStatus(
     requisitionEntries.map((entry) => entry.tripId),
   );
 
-  // Every approved trip on this requisition has a recorded distance —
-  // Phase 7: applicant can now see the total across all of them.
-  const allApprovedTripsRecorded = approvedTrips.every((trip) =>
+  // Every completed trip on this requisition has a recorded distance —
+  // applicant can now see the total across all of them.
+  const allCompletedTripsRecorded = completedTrips.every((trip) =>
     recordedTripIds.has(trip.id),
   );
 
-  if (allApprovedTripsRecorded) {
+  if (allCompletedTripsRecorded) {
     const totalKm = requisitionEntries.reduce(
       (sum, entry) => sum + entry.distanceKm,
       0,
@@ -138,7 +163,9 @@ export function getMileageColumnStatus(
   );
 
   if (awaiting.length === 0) {
-    // Approved trip(s) exist but none has a vehicle allocated yet.
+    // Completed trip(s) exist but somehow have no allocation on record
+    // (shouldn't happen — a trip can't reach Approved, let alone
+    // Completed, without one — but fail safe rather than assume).
     return { kind: "not-ready" };
   }
 

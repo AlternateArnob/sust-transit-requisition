@@ -1,17 +1,25 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import useUsers from "../../hooks/useUsers";
 import useAuth from "../../hooks/useAuth";
 import { verifyPassword } from "../../utils/passwordUtils";
+import { isAdminRole } from "../../utils/permissions";
+
+interface LocationState {
+  message?: string;
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { findByEmail } = useUsers();
   const { login } = useAuth();
 
+  const routedMessage = (location.state as LocationState | null)?.message;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(routedMessage ?? null);
   const [submitting, setSubmitting] = useState(false);
 
   function handleSubmit(event: React.FormEvent) {
@@ -23,6 +31,18 @@ export default function LoginPage() {
 
     if (!user) {
       setError("We couldn't find an account for that email.");
+      return;
+    }
+
+    // Phase 9 — deactivation is a hard block, checked before the
+    // unverified/resume-onboarding branches below. Those branches log
+    // the user in and send them somewhere to finish setup; a
+    // deactivated account must never reach that, regardless of whether
+    // it's verified or has a password yet.
+    if (user.isActive === false) {
+      setError(
+        "This account has been deactivated. Contact a Super Admin for access.",
+      );
       return;
     }
 
@@ -60,7 +80,7 @@ export default function LoginPage() {
     setSubmitting(true);
     login(user.id);
 
-    if (user.role === "Admin" || user.role === "DepartmentHead") {
+    if (isAdminRole(user.role) || user.role === "DepartmentHead") {
       navigate("/admin");
       return;
     }

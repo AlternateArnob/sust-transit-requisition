@@ -1,6 +1,6 @@
 import useVehicles from "../hooks/useVehicles";
 import useDriver from "../hooks/useDriver";
-import useRoutes from "../hooks/useRoutes";
+import useTransportSchedule from "../hooks/useTransportSchedule";
 import useOffDays from "../hooks/useOffDays";
 
 import { getVehicleEligibility } from "../utils/allocationUtils";
@@ -23,7 +23,7 @@ export default function AllocationPicker({
 }: AllocationPickerProps) {
   const { vehicles } = useVehicles();
   const { driver } = useDriver();
-  const { routes } = useRoutes();
+  const { routes } = useTransportSchedule();
   const { offDays } = useOffDays();
 
   const evaluated = vehicles

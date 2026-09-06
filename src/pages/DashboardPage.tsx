@@ -5,16 +5,13 @@ import useDriver from "../hooks/useDriver";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useOffDays from "../hooks/useOffDays";
-import useRoutes from "../hooks/useRoutes";
+import useTransportSchedule from "../hooks/useTransportSchedule";
 import useNotifications from "../hooks/useNotifications";
 
 import StatCard from "../components/StatCard";
 import { isInActiveQueue } from "../utils/requisitionUtils";
 import { detectConflicts } from "../utils/conflictUtils";
-
-function todayString(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+import { todayString } from "../utils/scheduleUtils";
 
 export default function DashboardPage() {
   const { vehicles } = useVehicles();
@@ -22,7 +19,7 @@ export default function DashboardPage() {
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { offDays } = useOffDays();
-  const { routes } = useRoutes();
+  const { routes } = useTransportSchedule();
   const { unreadCount } = useNotifications();
 
   const today = todayString();

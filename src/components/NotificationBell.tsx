@@ -7,7 +7,7 @@ import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
 import useOffDays from "../hooks/useOffDays";
-import useRoutes from "../hooks/useRoutes";
+import useTransportSchedule from "../hooks/useTransportSchedule";
 
 import { detectConflicts } from "../utils/conflictUtils";
 import type { AppNotification } from "../types";
@@ -26,7 +26,7 @@ export default function NotificationBell() {
   const { allocations } = useAllocations();
   const { vehicles } = useVehicles();
   const { offDays } = useOffDays();
-  const { routes } = useRoutes();
+  const { routes } = useTransportSchedule();
 
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -95,6 +95,12 @@ export default function NotificationBell() {
           ? `/admin/recommender/${notification.linkId}`
           : "/admin/requisitions";
       navigate(target);
+      return;
+    }
+
+    // Phase 9 — account activation/deactivation/role-change pings.
+    if (notification.linkType === "user") {
+      navigate("/admin/users");
       return;
     }
 

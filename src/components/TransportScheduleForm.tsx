@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
-import useRoutes from "../hooks/useRoutes";
+import useTransportSchedule from "../hooks/useTransportSchedule";
 
 import { WEEKDAYS } from "../types";
 import type {
@@ -10,7 +10,7 @@ import type {
   Weekday,
 } from "../types";
 
-interface RouteFormProps {
+interface TransportScheduleFormProps {
   route?: StudentTransportVehicle;
   onSubmit: (entry: StudentTransportVehicle) => void;
   onCancel: () => void;
@@ -37,15 +37,15 @@ function singleTime(schedule: StudentTransportSchedule): string {
   return values.every((v) => v === values[0]) ? (values[0] ?? "") : "";
 }
 
-export default function RouteForm({
+export default function TransportScheduleForm({
   route,
   onSubmit,
   onCancel,
-}: RouteFormProps) {
+}: TransportScheduleFormProps) {
   const isEditing = Boolean(route);
 
   const { vehicles } = useVehicles();
-  const { routes } = useRoutes();
+  const { routes } = useTransportSchedule();
 
   const initialDays: Record<Weekday, boolean> = {
     Sun: Boolean(route?.schedule.Sun),

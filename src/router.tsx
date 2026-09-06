@@ -2,16 +2,17 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import AdminLayout from "./layout/AdminLayout";
 import RequireAuth from "./components/RequireAuth";
+import { ADMIN_LAYOUT_ROLES, ADMIN_ROLES } from "./utils/permissions";
 
 import DashboardPage from "./pages/DashboardPage";
 import VehiclePage from "./pages/VehiclePage";
 import DriverPage from "./pages/DriverPage";
-import RoutesPage from "./pages/RoutesPage";
+import TransportSchedulePage from "./pages/TransportSchedulePage";
 import SchedulePage from "./pages/SchedulePage";
-import AllocationPage from "./pages/AllocationPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import VehicleDetailsPage from "./pages/VehicleDetailsPage";
 import RequisitionsPage from "./pages/RequisitionsPage";
+import UsersPage from "./pages/UsersPage";
 import ApplyRequisitionPage from "./pages/ApplyRequisitionPage";
 import MyRequisitionsPage from "./pages/MyRequisitionsPage";
 import MyMileagePage from "./pages/MyMileagePage";
@@ -76,46 +77,81 @@ const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <RequireAuth roles={["Admin", "DepartmentHead"]}>
+      <RequireAuth roles={ADMIN_LAYOUT_ROLES}>
         <AdminLayout />
       </RequireAuth>
     ),
     children: [
       {
+        // Shared landing page for everyone under the /admin shell.
         index: true,
         element: <DashboardPage />,
       },
       {
         path: "vehicle",
-        element: <VehiclePage />,
+        element: (
+          <RequireAuth roles={ADMIN_ROLES}>
+            <VehiclePage />
+          </RequireAuth>
+        ),
       },
       {
         path: "driver",
-        element: <DriverPage />,
+        element: (
+          <RequireAuth roles={ADMIN_ROLES}>
+            <DriverPage />
+          </RequireAuth>
+        ),
       },
       {
-        path: "routes",
-        element: <RoutesPage />,
+        path: "transport-schedule",
+        element: (
+          <RequireAuth roles={ADMIN_ROLES}>
+            <TransportSchedulePage />
+          </RequireAuth>
+        ),
       },
       {
         path: "schedule",
-        element: <SchedulePage />,
+        element: (
+          <RequireAuth roles={ADMIN_ROLES}>
+            <SchedulePage />
+          </RequireAuth>
+        ),
       },
       {
         path: "requisitions",
-        element: <RequisitionsPage />,
+        element: (
+          <RequireAuth roles={ADMIN_ROLES}>
+            <RequisitionsPage />
+          </RequireAuth>
+        ),
       },
       {
-        path: "allocation",
-        element: <AllocationPage />,
+        // Phase 9 — Super Admin console. Narrower than the shared
+        // ADMIN_ROLES guard every other admin page uses: this page is
+        // genuinely Super-Admin-exclusive (account activation, role
+        // reassignment), not just Transport-Office-staff-shared.
+        path: "users",
+        element: (
+          <RequireAuth roles={["SuperAdmin"]}>
+            <UsersPage />
+          </RequireAuth>
+        ),
       },
       {
+        // Left open to the whole /admin shell (admin roles + DepartmentHead)
+        // since recommenders get their own notifications too.
         path: "notifications",
         element: <NotificationsPage />,
       },
       {
         path: "vehicle/:vehicleId",
-        element: <VehicleDetailsPage />,
+        element: (
+          <RequireAuth roles={ADMIN_ROLES}>
+            <VehicleDetailsPage />
+          </RequireAuth>
+        ),
       },
       {
         path: "recommender",

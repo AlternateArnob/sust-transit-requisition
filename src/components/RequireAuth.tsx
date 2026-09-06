@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import type { UserRole } from "../types";
@@ -30,8 +30,21 @@ export default function RequireAuth({
   roles,
   showUnverifiedMessage = false,
 }: RequireAuthProps) {
-  const { currentUser, isAuthenticated, isVerified } = useAuth();
+  const { currentUser, isAuthenticated, isVerified, logout } = useAuth();
   const location = useLocation();
+
+  const isActive = currentUser?.isActive ?? true;
+
+  // Phase 9 — a deactivated account must be signed out, not just
+  // redirected away. Session state lives in useAuth/localStorage, so
+  // this is a side effect (can't just render a Navigate and leave the
+  // session intact) — a stale session would keep passing isAuthenticated
+  // on the very next navigation.
+  useEffect(() => {
+    if (currentUser && !isActive) {
+      logout();
+    }
+  }, [currentUser, isActive, logout]);
 
   if (!isAuthenticated || !currentUser) {
     return (
@@ -39,6 +52,22 @@ export default function RequireAuth({
         to="/login"
         replace
         state={{ from: location.pathname + location.search }}
+      />
+    );
+  }
+
+  if (!isActive) {
+    // Deactivation is a hard block, checked before the unverified branch
+    // below — an unverified-and-deactivated account must not be sent
+    // into the OTP "finish onboarding" flow.
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          message:
+            "This account has been deactivated. Contact a Super Admin for access.",
+        }}
       />
     );
   }

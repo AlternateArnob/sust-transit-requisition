@@ -59,10 +59,13 @@ export function requiresProfileFields(
   }
 }
 
-export function isAdminRole(role: UserRole): boolean {
-  return role === "Admin";
-}
-
+/**
+ * Phase 0 (admin module): role checks moved to utils/permissions.ts,
+ * which now encodes the three-way Transport Office split
+ * (TransportInCharge / TransportAdministrator / SuperAdmin) instead of a
+ * single flat "Admin" role. Use isAdminRole / isTransportInCharge /
+ * isTransportAdministrator / isSuperAdmin from there.
+ */
 export function isDepartmentHeadRole(role: UserRole): boolean {
   return role === "DepartmentHead";
 }

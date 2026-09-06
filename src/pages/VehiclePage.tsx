@@ -2,18 +2,25 @@ import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
 import useDriver from "../hooks/useDriver";
+import useAllocations from "../hooks/useAllocations";
+import useVehicleDriverAssignment from "../hooks/useVehicleDriverAssignment";
 
 import StatusBadge from "../components/StatusBadge";
 import Modal from "../components/Modal";
 import VehicleForm from "../components/VehicleForm";
 
 import type { Vehicle } from "../types";
-import { isDuplicateRegistration } from "../utils/vehicleUtils";
+import {
+  isDuplicateRegistration,
+  hasAllocationHistory,
+} from "../utils/vehicleUtils";
 
 export default function VehiclePage() {
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useVehicles();
 
-  const { driver, updateDriver } = useDriver();
+  const { driver } = useDriver();
+  const { allocations } = useAllocations();
+  const { applyDriverAssignment } = useVehicleDriverAssignment();
 
   const [search, setSearch] = useState("");
 
@@ -62,130 +69,42 @@ export default function VehiclePage() {
       );
     }
 
-    const newDriverId = vehicle.permanentDriverId;
+    // Single source of truth for the FRD §13 assignment rules (one
+    // driver per vehicle, no inactive/already-assigned drivers, clean
+    // hand-off on replacement) — shared with any future admin surface
+    // instead of re-implemented per page.
+    const result = applyDriverAssignment(
+      oldVehicle?.permanentDriverId,
+      vehicle.permanentDriverId,
+      vehicle.id,
+    );
 
-    /*
-     * ADD VEHICLE
-     */
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+
     if (!oldVehicle) {
-      if (newDriverId) {
-        const foundDriver = driver.find(
-          (member) => member.id === newDriverId,
-        );
-
-        if (!foundDriver) {
-          throw new Error("Selected driver was not found.");
-        }
-
-        if (foundDriver.status !== "Active") {
-          throw new Error("Inactive drivers cannot be assigned.");
-        }
-
-        /*
-         * Defensive check.
-         *
-         * Normally this cannot happen because
-         * VehicleForm hides assigned drivers.
-         */
-        if (foundDriver.permanentVehicleId) {
-          throw new Error(
-            "This driver is already assigned to another vehicle.",
-          );
-        }
-
-        addVehicle(vehicle);
-
-        updateDriver({
-          ...foundDriver,
-          permanentVehicleId: vehicle.id,
-        });
-      } else {
-        addVehicle(vehicle);
-      }
-
-      // Close the modal on successful add
+      addVehicle(vehicle);
       setIsAddModalOpen(false);
       return;
     }
 
-    /*
-     * EDIT VEHICLE
-     */
-
-    /*
-     * Driver did not change.
-     */
-    if (oldVehicle.permanentDriverId === newDriverId) {
-      updateVehicle(vehicle);
-      setEditingVehicle(null);
-      return;
-    }
-
-    /*
-     * A new driver was selected.
-     */
-    if (newDriverId) {
-      const newDriver = driver.find((member) => member.id === newDriverId);
-
-      if (!newDriver) {
-        throw new Error("Selected driver was not found.");
-      }
-
-      if (newDriver.status !== "Active") {
-        throw new Error("Inactive drivers cannot be assigned.");
-      }
-
-      /*
-       * Defensive check.
-       */
-      if (
-        newDriver.permanentVehicleId &&
-        newDriver.permanentVehicleId !== vehicle.id
-      ) {
-        throw new Error("This driver is already assigned to another vehicle.");
-      }
-    }
-
-    /*
-     * Remove the old driver's
-     * vehicle assignment.
-     */
-    if (oldVehicle.permanentDriverId) {
-      const oldDriver = driver.find(
-        (member) => member.id === oldVehicle.permanentDriverId,
-      );
-
-      if (oldDriver) {
-        updateDriver({
-          ...oldDriver,
-          permanentVehicleId: undefined,
-        });
-      }
-    }
-
-    /*
-     * Assign the new driver
-     * to this vehicle.
-     */
-    if (newDriverId) {
-      const newDriver = driver.find((member) => member.id === newDriverId);
-
-      if (newDriver) {
-        updateDriver({
-          ...newDriver,
-          permanentVehicleId: vehicle.id,
-        });
-      }
-    }
-
-    /*
-     * Finally update vehicle and close modal.
-     */
     updateVehicle(vehicle);
     setEditingVehicle(null);
   }
 
   function handleDelete(vehicle: Vehicle) {
+    // FR-25 historical-integrity guard — see hasAllocationHistory.
+    if (hasAllocationHistory(vehicle.id, allocations)) {
+      window.alert(
+        `${vehicle.registrationNumber} can't be deleted — it has requisition ` +
+          "allocation history, and confirmation/duty slips look this vehicle " +
+          "up live, so removing it would blank those records. Mark it " +
+          '"Out-of-Service" or set "Available for Requisition" to No instead.',
+      );
+      return;
+    }
+
     const confirmed = window.confirm(
       `Are you sure you want to delete ${vehicle.registrationNumber}?`,
     );
@@ -194,23 +113,7 @@ export default function VehiclePage() {
       return;
     }
 
-    /*
-     * Remove driver's vehicle
-     * assignment first.
-     */
-    if (vehicle.permanentDriverId) {
-      const foundDriver = driver.find(
-        (member) => member.id === vehicle.permanentDriverId,
-      );
-
-      if (foundDriver) {
-        updateDriver({
-          ...foundDriver,
-          permanentVehicleId: undefined,
-        });
-      }
-    }
-
+    applyDriverAssignment(vehicle.permanentDriverId, undefined, vehicle.id);
     deleteVehicle(vehicle.id);
   }
 

@@ -1,4 +1,4 @@
-import type { Weekday } from "./route";
+import type { Weekday } from "./schedule";
 
 export type OffDayType = "One-time" | "Recurring";
 

@@ -2,15 +2,20 @@ export { VEHICLE_CATEGORIES, VEHICLE_STATUSES } from "./vehicle";
 
 export type { Vehicle, VehicleCategory, VehicleStatus } from "./vehicle";
 
-export type { DriverDesignation, Driver, DriverStatus } from "./driver";
+export type {
+  DriverDesignation,
+  Driver,
+  DriverStatus,
+  AssignmentResult,
+} from "./driver";
 
-export { WEEKDAYS } from "./route";
+export { WEEKDAYS } from "./schedule";
 
 export type {
   Weekday,
   StudentTransportVehicle,
   StudentTransportSchedule,
-} from "./route";
+} from "./schedule";
 export type { MileageEntry } from "./mileage";
 export type { OffDayType, VehicleOffDay } from "./offday";
 export type { Allocation } from "./allocation";
@@ -45,6 +50,13 @@ export type { ApplicantProfile as UserProfile, UserRole, UserAccount } from "./u
 export { OTP_LENGTH, OTP_EXPIRY_MS, OTP_MAX_ATTEMPTS } from "./otp";
 export type { OtpChallenge } from "./otp";
 
+/**
+ * Phase 2 (admin module) — FRD §11 lists Senior Driver / Driver / Driver
+ * (Grade-1) / Driver (Outsourced) only, with no "Supervisor Driver".
+ * Kept here rather than silently dropped for the same reason as
+ * VehicleCategory's "Eicher Bus" (types/vehicle.ts) — existing driver
+ * records may reference it. Flag to the product owner before removing.
+ */
 export const DRIVER_DESIGNATIONS = [
   "Supervisor Driver",
   "Senior Driver",

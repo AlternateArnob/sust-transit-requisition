@@ -2,27 +2,28 @@ import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
 import useDriver from "../hooks/useDriver";
-import useRoutes from "../hooks/useRoutes";
+import useTransportSchedule from "../hooks/useTransportSchedule";
 import useOffDays from "../hooks/useOffDays";
+import useAllocations from "../hooks/useAllocations";
+import useRequisitions from "../hooks/useRequisitions";
 
 import {
   getWeekdayFromDate,
   getOffDayForVehicleOnDate,
   getStudentTransportTimeForDate,
   formatTimeDisplay,
-} from "../utils/routeUtils";
+  todayString,
+} from "../utils/scheduleUtils";
 
 type LookupMode = "vehicle" | "driver";
-
-function todayString(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export default function SchedulePage() {
   const { vehicles } = useVehicles();
   const { driver } = useDriver();
-  const { routes } = useRoutes();
+  const { routes } = useTransportSchedule();
   const { offDays } = useOffDays();
+  const { allocations } = useAllocations();
+  const { requisitions } = useRequisitions();
 
   const [mode, setMode] = useState<LookupMode>("vehicle");
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
@@ -57,6 +58,24 @@ export default function SchedulePage() {
   const assignedDriver = targetVehicle?.permanentDriverId
     ? driver.find((member) => member.id === targetVehicle.permanentDriverId)
     : undefined;
+
+  const dayAllocations =
+    targetVehicleId && date
+      ? allocations
+          .filter(
+            (allocation) =>
+              allocation.vehicleId === targetVehicleId &&
+              allocation.date === date,
+          )
+          .sort((a, b) => a.startTime.localeCompare(b.startTime))
+      : [];
+
+  function getRequisitionPurpose(requisitionId: string) {
+    return (
+      requisitions.find((item) => item.id === requisitionId)?.purpose ??
+      "Unknown requisition"
+    );
+  }
 
   function formatDate(dateString: string) {
     return new Date(`${dateString}T00:00:00`).toLocaleDateString(undefined, {
@@ -292,10 +311,36 @@ export default function SchedulePage() {
               )}
             </div>
 
-            <p className="text-xs text-[#64748B]">
-              Requisition allocations for this date will also appear here once
-              the Allocation module is built (Lesson 14).
-            </p>
+            {/* Requisition allocations on this date */}
+            <div>
+              <p className="mb-2 text-sm font-medium text-[#1E293B]">
+                Requisition Allocations
+              </p>
+
+              {dayAllocations.length === 0 ? (
+                <p className="rounded-md border border-dashed border-[#E2E8F0] px-4 py-6 text-center text-sm text-[#64748B]">
+                  No requisition trips allocated to this vehicle on{" "}
+                  {formatDate(date)}.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {dayAllocations.map((allocation) => (
+                    <li
+                      key={allocation.id}
+                      className="rounded-md border border-[#E2E8F0] bg-white px-4 py-3"
+                    >
+                      <p className="text-sm font-medium text-[#1E293B]">
+                        {formatTimeDisplay(allocation.startTime)}–
+                        {formatTimeDisplay(allocation.endTime)}
+                      </p>
+                      <p className="mt-0.5 text-sm text-[#64748B]">
+                        {getRequisitionPurpose(allocation.requisitionId)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -6,9 +6,9 @@ import type {
   VehicleOffDay,
   StudentTransportVehicle,
 } from "../types";
-import { isVehicleFreeAtTime } from "./routeUtils";
+import { isVehicleFreeAtTime } from "./scheduleUtils";
 import { timeRangesOverlap } from "./allocationUtils";
-import { getOffDayForVehicleOnDate } from "./routeUtils";
+import { getOffDayForVehicleOnDate } from "./scheduleUtils";
 
 export type ConflictType =
   | "Vehicle Double-Booked"

@@ -3,6 +3,7 @@ import type {
   Requisition,
   RejectionReason,
   Trip,
+  ApplicationStatus,
 } from "../types";
 import { computeApplicationStatus } from "../utils/requisitionUtils";
 
@@ -40,12 +41,6 @@ export default function useRequisitions() {
     setRequisitions((current) => [...current, requisition]);
   }
 
-  function deleteRequisition(requisitionId: string) {
-    setRequisitions((current) =>
-      current.filter((requisition) => requisition.id !== requisitionId),
-    );
-  }
-
   function approveTrip(requisitionId: string, tripId: string) {
     setRequisitions((current) =>
       current.map((requisition) => {
@@ -67,7 +62,7 @@ export default function useRequisitions() {
         return {
           ...requisition,
           trips,
-          status: computeApplicationStatus(trips, requisition.requisitionType),
+          status: computeApplicationStatus(trips, requisition.status),
         };
       }),
     );
@@ -99,26 +94,69 @@ export default function useRequisitions() {
         return {
           ...requisition,
           trips,
-          status: computeApplicationStatus(trips, requisition.requisitionType),
+          status: computeApplicationStatus(trips, requisition.status),
         };
       }),
     );
   }
   /**
-   * Phase 6 — Admin's final sign-off (spec §5 Stage C).
-   *
-   * Per spec, once Admin approves the requisition it becomes
-   * "Final Approved" and no separate Transport Administrator approval
-   * is required. This is the action that unlocks the applicant-facing
-   * confirmation slip download, so it's only allowed once every trip
-   * has actually been approved (and, in the common single-trip case,
-   * allocated a vehicle) — i.e. the requisition is already "Approved".
+   * Phase 1 — Transport In Charge forwards the requisition on once every
+   * trip has a vehicle assigned (FRD §9). Callers should gate this on
+   * `canForwardToAdministrator` from utils/allocationUtils first; this
+   * function itself only guards against forwarding something that isn't
+   * actually with the Transport In Charge right now.
    */
-  function finalApprove(requisitionId: string) {
+  function forwardToAdministrator(requisitionId: string) {
     setRequisitions((current) =>
       current.map((requisition) =>
-        requisition.id === requisitionId && requisition.status === "Approved"
-          ? { ...requisition, status: "Final Approved" as const }
+        requisition.id === requisitionId &&
+        (requisition.status === "Recommended" ||
+          requisition.status === "Pending on Transport Office")
+          ? {
+              ...requisition,
+              status: "Pending Administrator" as const,
+              transportOfficeRemarks: undefined,
+            }
+          : requisition,
+      ),
+    );
+  }
+
+  /**
+   * Phase 1 — Transport Administrator sends the whole application back
+   * to the Transport In Charge for rework (FRD §19), e.g. the assigned
+   * vehicle turned out to be unsuitable. Every trip decision made so far
+   * reverts to Pending and any vehicle assignment is cleared by the
+   * caller (see RequisitionsPage — allocations live in a separate
+   * hook/collection, so this function only owns the requisition side).
+   */
+  function sendBackToTransportInCharge(
+    requisitionId: string,
+    remarks: string,
+  ) {
+    const trimmedRemarks = remarks.trim();
+    if (!trimmedRemarks) {
+      throw new Error(
+        "sendBackToTransportInCharge requires a non-empty remarks string.",
+      );
+    }
+
+    setRequisitions((current) =>
+      current.map((requisition) =>
+        requisition.id === requisitionId
+          ? {
+              ...requisition,
+              status: "Pending on Transport Office" as const,
+              transportOfficeRemarks: trimmedRemarks,
+              trips: requisition.trips.map(
+                (trip): Trip => ({
+                  ...trip,
+                  status: "Pending" as const,
+                  rejectionReason: undefined,
+                  rejectionRemarks: undefined,
+                }),
+              ),
+            }
           : requisition,
       ),
     );
@@ -133,6 +171,47 @@ export default function useRequisitions() {
       ),
     );
   }
+
+  /**
+   * Phase 6 (FRD §22) — Transport Office marks an approved trip
+   * Completed once it's actually happened. Deliberately independent of
+   * mileage (§22: "completion status and mileage shall be stored
+   * separately") — this only ever transitions Approved → Completed, and
+   * doesn't touch or require a MileageEntry.
+   *
+   * Once every trip on the requisition is settled (Completed or
+   * Rejected — nothing left Approved/Pending), the requisition itself
+   * becomes "Completed" too, unless it's already reached the more
+   * specific "Ready for Accounts" state via the mileage flow, which
+   * this must not regress.
+   */
+  function completeTrip(requisitionId: string, tripId: string) {
+    setRequisitions((current) =>
+      current.map((requisition) => {
+        if (requisition.id !== requisitionId) {
+          return requisition;
+        }
+
+        const trips = requisition.trips.map((trip) =>
+          trip.id === tripId && trip.status === "Approved"
+            ? { ...trip, status: "Completed" as const }
+            : trip,
+        );
+
+        const stillOutstanding = trips.some(
+          (trip) => trip.status === "Approved" || trip.status === "Pending",
+        );
+
+        const status: ApplicationStatus =
+          !stillOutstanding && requisition.status !== "Ready for Accounts"
+            ? "Completed"
+            : requisition.status;
+
+        return { ...requisition, trips, status };
+      }),
+    );
+  }
+
   function resetTripDecision(requisitionId: string, tripId: string) {
     setRequisitions((current) =>
       current.map((requisition) => {
@@ -154,7 +233,7 @@ export default function useRequisitions() {
         return {
           ...requisition,
           trips,
-          status: computeApplicationStatus(trips, requisition.requisitionType),
+          status: computeApplicationStatus(trips, requisition.status),
         };
       }),
     );
@@ -269,11 +348,12 @@ export default function useRequisitions() {
   return {
     requisitions,
     addRequisition,
-    deleteRequisition,
     approveTrip,
     rejectTrip,
-    finalApprove,
+    forwardToAdministrator,
+    sendBackToTransportInCharge,
     markReadyForAccounts,
+    completeTrip,
     resetTripDecision,
     recommendRequisition,
     rejectRequisition,
