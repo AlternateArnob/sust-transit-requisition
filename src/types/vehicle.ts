@@ -1,3 +1,11 @@
+/**
+ * Phase 2 (admin module) — FRD §12's category list has no "Eicher Bus".
+ * Kept here rather than silently dropped: existing seed/demo vehicle
+ * records may already reference it, and removing the value would break
+ * their category field and any select bound to it. Flagged for the
+ * product owner to confirm whether it should be retired or the FRD
+ * amended — do not remove without that decision.
+ */
 export type VehicleCategory =
   | "Jeep"
   | "Car"

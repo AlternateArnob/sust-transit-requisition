@@ -144,6 +144,9 @@ export default function RequisitionForm({
       requesterName:
         requester!.fullName?.trim() || transportUser.fullName.trim() || requester!.email,
       applicantType: "Individual",
+      // Phase 6 — needed for mileage eligibility (FRD §23 scopes it to
+      // Teacher/Officer personal-use, not every "Personal" requisition).
+      applicantProfile: requester!.applicantProfile,
       department: departmentOrOffice.trim() || undefined,
       contactNumber: contactNumber?.trim() || undefined,
       requisitionType: journey.requisitionType,
@@ -177,7 +180,7 @@ export default function RequisitionForm({
     try {
       const finalStatus = requiresRecommender
         ? "Pending Recommendation"
-        : "Pending Approval";
+        : "Pending on Transport Office";
 
       const requisition = buildRequisition(finalStatus);
       addRequisition(requisition);

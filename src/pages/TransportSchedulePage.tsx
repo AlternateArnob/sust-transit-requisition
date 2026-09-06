@@ -1,18 +1,18 @@
 import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
-import useRoutes from "../hooks/useRoutes";
+import useTransportSchedule from "../hooks/useTransportSchedule";
 import useOffDays from "../hooks/useOffDays";
 
 import Modal from "../components/Modal";
-import RouteForm from "../components/RouteForm";
+import TransportScheduleForm from "../components/TransportScheduleForm";
 import OffDayForm from "../components/OffDayForm";
 
 import {
   formatTimeDisplay,
   formatScheduledDays,
   getScheduledDays,
-} from "../utils/routeUtils";
+} from "../utils/scheduleUtils";
 import type {
   StudentTransportVehicle,
   StudentTransportSchedule,
@@ -20,9 +20,9 @@ import type {
 
 type Tab = "schedule" | "offdays";
 
-export default function RoutesPage() {
+export default function TransportSchedulePage() {
   const { vehicles } = useVehicles();
-  const { routes, addRoute, updateRoute, deleteRoute } = useRoutes();
+  const { routes, addRoute, updateRoute, deleteRoute } = useTransportSchedule();
   const { offDays, addOffDay, deleteOffDay } = useOffDays();
 
   const [tab, setTab] = useState<Tab>("schedule");
@@ -318,7 +318,7 @@ export default function RoutesPage() {
       {/* Add Vehicle Modal */}
       {isAddRouteOpen && (
         <Modal title="Add Student Transport Vehicle" onClose={() => setIsAddRouteOpen(false)}>
-          <RouteForm
+          <TransportScheduleForm
             onSubmit={handleRouteSubmit}
             onCancel={() => setIsAddRouteOpen(false)}
           />
@@ -328,7 +328,7 @@ export default function RoutesPage() {
       {/* Edit Vehicle Modal */}
       {editingRoute && (
         <Modal title="Edit Student Transport Schedule" onClose={() => setEditingRoute(null)}>
-          <RouteForm
+          <TransportScheduleForm
             route={editingRoute}
             onSubmit={handleRouteSubmit}
             onCancel={() => setEditingRoute(null)}

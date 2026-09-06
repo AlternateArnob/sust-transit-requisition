@@ -4,6 +4,10 @@ import type {
   StudentTransportSchedule,
 } from "../types";
 
+// Storage key intentionally left as the pre-Phase-3 name — renaming it
+// would silently drop any schedule entries already saved in a user's
+// browser under the old key. Only the file/export name changed to shed
+// the "Routes" nomenclature FR-38 retires.
 const STORAGE_KEY = "sust-transit-routes";
 
 /*
@@ -54,7 +58,7 @@ function migrate(
   };
 }
 
-export default function useRoutes() {
+export default function useTransportSchedule() {
   const { items, add, update, remove } =
     useLocalStorageCollection<
       StudentTransportVehicle & {

@@ -1,5 +1,6 @@
 import type { Requisition, Vehicle, Driver, Allocation } from "../types";
 import { formatDateRange } from "../utils/requisitionUtils";
+import { canGenerateSlips } from "../utils/dutySlipUtils";
 
 interface ApplicantRequisitionDetailProps {
   requisition: Requisition;
@@ -10,8 +11,8 @@ interface ApplicantRequisitionDetailProps {
 }
 
 function statusBadgeClass(status: Requisition["status"]) {
-  if (status === "Final Approved") return "bg-[#BBF7D0] text-[#15803D]";
   if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
+  if (status === "Completed") return "bg-[#CBD5E1] text-[#1E293B]";
   if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
   if (status === "Information Requested") return "bg-[#FEF3C7] text-[#B45309]";
   if (status === "Partially Approved") return "bg-[#FEF3C7] text-[#B45309]";
@@ -32,7 +33,15 @@ export default function ApplicantRequisitionDetail({
   allocations,
   onDownloadConfirmationSlip,
 }: ApplicantRequisitionDetailProps) {
-  const isFinalApproved = requisition.status === "Final Approved";
+  // Phase 1 — "Final Approved" is retired; the confirmation slip is
+  // available as soon as the Administrator has approved anything,
+  // including a partially-approved multi-trip application (FRD §20
+  // shows per-trip Approved/Rejected/Pending on the same slip).
+  //
+  // Phase 5, §2.1 — this used to be its own copy of the same condition
+  // as RequisitionDetail.tsx and RequisitionsPage.tsx; now all three
+  // share canGenerateSlips() so they can't drift apart.
+  const canDownloadConfirmationSlip = canGenerateSlips(requisition);
 
   return (
     <div className="space-y-5">
@@ -171,7 +180,7 @@ export default function ApplicantRequisitionDetail({
       <div className="border-t border-[#E2E8F0] pt-4">
         <p className="mb-2 text-sm font-medium text-[#1E293B]">Documents</p>
 
-        {isFinalApproved ? (
+        {canDownloadConfirmationSlip ? (
           <button
             type="button"
             onClick={onDownloadConfirmationSlip}
@@ -181,8 +190,8 @@ export default function ApplicantRequisitionDetail({
           </button>
         ) : (
           <p className="text-sm text-[#64748B]">
-            The confirmation slip becomes available once Admin gives final
-            approval.
+            The confirmation slip becomes available once the Transport
+            Administrator approves at least one trip.
           </p>
         )}
       </div>

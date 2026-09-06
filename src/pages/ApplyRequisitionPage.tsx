@@ -30,13 +30,14 @@ export default function ApplyRequisitionPage() {
   function handleSubmit(requisition: Requisition) {
     addRequisition(requisition);
 
-    // Phase 5 — fan the "new requisition" ping out to every verified
-    // Admin so each admin's bell filters it in correctly. No-op when
-    // there are no admins (e.g. fresh seed before the user logs in).
-    const admins = users.filter(
-      (user) => user.role === "Admin" && user.isVerified,
+    // Phase 5 (extended in Phase 0) — fan the "new requisition" ping out
+    // to every verified Transport In Charge, since they're the role that
+    // receives incoming applications (FRD §9). No-op when there's no TIC
+    // yet (e.g. fresh seed before anyone logs in).
+    const recipients = users.filter(
+      (user) => user.role === "TransportInCharge" && user.isVerified,
     );
-    for (const notification of buildRequisitionNotifications(admins, {
+    for (const notification of buildRequisitionNotifications(recipients, {
       requisition,
       type: "New Requisition",
       message: `${requisition.requesterName} submitted a ${requisition.requisitionType.toLowerCase()} requisition (${requisition.trips.length} trip${requisition.trips.length === 1 ? "" : "s"})`,

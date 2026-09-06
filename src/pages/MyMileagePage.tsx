@@ -9,7 +9,7 @@ import useMileageEntries from "../hooks/useMileageEntries";
 
 import {
   getRecordedMileageTrips,
-  isPersonalUseRequisition,
+  isMileageEligibleRequisition,
 } from "../utils/mileageUtils";
 
 /**
@@ -34,7 +34,11 @@ export default function MyMileagePage() {
     return getRecordedMileageTrips(requisitions, allocations, mileageEntries).filter(
       ({ requisition }) =>
         requisition.requesterId === currentUser.id &&
-        isPersonalUseRequisition(requisition),
+        // Phase 6 (admin module) — narrowed from "any Personal-type
+        // requisition" to Teacher/Officer personal-use only, per FRD
+        // §23's literal wording. A Student's Personal-use trips won't
+        // show up here even though the requisition itself is allowed.
+        isMileageEligibleRequisition(requisition),
     );
   }, [requisitions, allocations, mileageEntries, currentUser]);
 

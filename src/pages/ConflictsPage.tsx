@@ -4,19 +4,20 @@ import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
 import useOffDays from "../hooks/useOffDays";
-import useRoutes from "../hooks/useRoutes";
+import useTransportSchedule from "../hooks/useTransportSchedule";
 
 import Modal from "../components/Modal";
 import AllocationPicker from "../components/AllocationPicker";
 
 import { detectConflicts, type Conflict } from "../utils/conflictUtils";
+import { reassignAllocation } from "../utils/allocationUtils";
 
 export default function ConflictsPage() {
   const { requisitions, rejectTrip } = useRequisitions();
-  const { allocations, updateAllocation, removeAllocation } = useAllocations();
+  const { allocations, addAllocation, removeAllocation } = useAllocations();
   const { vehicles } = useVehicles();
   const { offDays } = useOffDays();
-  const { routes } = useRoutes();
+  const { routes } = useTransportSchedule();
 
   const [reassignConflict, setReassignConflict] = useState<Conflict | null>(
     null,
@@ -60,12 +61,12 @@ export default function ConflictsPage() {
       return;
     }
 
-    updateAllocation({
-      ...reassignConflict.allocation,
-      vehicleId,
-      driverId,
-      allocatedAt: new Date().toISOString(),
-    });
+    // Phase 8, §3 — new record, old one removed, instead of mutating
+    // the same Allocation in place.
+    removeAllocation(reassignConflict.allocation.id);
+    addAllocation(
+      reassignAllocation(reassignConflict.allocation, vehicleId, driverId),
+    );
     setReassignConflict(null);
   }
 

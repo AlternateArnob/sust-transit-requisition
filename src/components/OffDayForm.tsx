@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import useVehicles from "../hooks/useVehicles";
 import useAllocations from "../hooks/useAllocations";
 
-import { getWeekdayFromDate } from "../utils/routeUtils";
+import { getWeekdayFromDate, todayString } from "../utils/scheduleUtils";
 
 import {
   WEEKDAYS,
@@ -46,14 +46,23 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
       return [];
     }
 
+    // FR-44 blocks marking an off-day when it would strand an
+    // already-scheduled trip — that only matters for today/future
+    // allocations. Without this floor, a "Recurring: Monday" off-day
+    // could never be set for a vehicle that ever had so much as one
+    // completed trip fall on a Monday, no matter how long ago.
+    const upcoming = allocations.filter(
+      (allocation) => allocation.date >= todayString(),
+    );
+
     if (type === "One-time") {
-      return allocations.filter(
+      return upcoming.filter(
         (allocation) =>
           allocation.vehicleId === vehicleId && allocation.date === date,
       );
     }
 
-    return allocations.filter(
+    return upcoming.filter(
       (allocation) =>
         allocation.vehicleId === vehicleId &&
         getWeekdayFromDate(allocation.date) === weekday,

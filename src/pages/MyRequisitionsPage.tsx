@@ -16,8 +16,8 @@ import { generateConfirmationSlip } from "../utils/pdf/confirmationSlip";
 import type { ApplicationStatus } from "../types";
 
 function statusBadgeClass(status: ApplicationStatus) {
-  if (status === "Final Approved") return "bg-[#BBF7D0] text-[#15803D]";
   if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
+  if (status === "Completed") return "bg-[#CBD5E1] text-[#1E293B]";
   if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
   if (status === "Information Requested") return "bg-[#FEF3C7] text-[#B45309]";
   if (status === "Partially Approved") return "bg-[#FEF3C7] text-[#B45309]";
@@ -30,9 +30,11 @@ function statusBadgeClass(status: ApplicationStatus) {
  *
  * Lists only the signed-in applicant's own requisitions (matched on
  * `requesterId`) and lets them open each one in a read-only detail view.
- * The Download Confirmation Slip button only appears once a requisition
- * reaches "Final Approved" — everything else (approve/reject/allocate)
- * stays admin/recommender-only and is intentionally not reachable here.
+ * The Download Confirmation Slip button appears once the Transport
+ * Administrator has approved at least one trip (Phase 1 retired the
+ * separate "Final Approved" sign-off step) — everything else
+ * (approve/reject/allocate) stays admin/recommender-only and is
+ * intentionally not reachable here.
  */
 export default function MyRequisitionsPage() {
   const { currentUser, logout } = useAuth();
