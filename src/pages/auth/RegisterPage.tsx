@@ -4,6 +4,12 @@ import useUsers from "../../hooks/useUsers";
 import useOtp from "../../hooks/useOtp";
 import { isSustEmail } from "../../utils/authUtils";
 import type { UserAccount } from "../../types";
+import GovFormMasthead from "../../components/application/GovFormMasthead";
+import {
+  ERROR_TEXT,
+  FIELD_LABEL,
+  FIELD_UNDERLINE,
+} from "../../components/application/formTheme";
 
 const PENDING_EMAIL_KEY = "sust-transit-pending-email";
 
@@ -69,24 +75,19 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <header className="flex h-16 items-center bg-[#0F2747] px-6 text-white">
-        <h1 className="text-lg font-semibold">SUST Transit — Register</h1>
-      </header>
-
+    <div className="min-h-screen bg-form-band">
       <main className="mx-auto max-w-md px-4 py-10">
-        <div className="rounded-lg border border-[#E2E8F0] bg-white p-6">
-          <h2 className="text-xl font-semibold text-[#1E293B]">
-            Create your account
-          </h2>
-          <p className="mt-1 text-sm text-[#64748B]">
+        <div className="border border-form-rule bg-form-paper px-6 py-6 shadow-sm sm:px-8">
+          <GovFormMasthead formTitle="Applicant Registration" />
+
+          <p className="mt-4 text-sm text-form-muted">
             Use your SUST email. We will send a one-time code to verify it.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
             <label className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-[#1E293B]">
-                Email <span className="text-[#B91C1C]">*</span>
+              <span className={FIELD_LABEL}>
+                Email <span className="text-form-seal">*</span>
               </span>
               <input
                 type="email"
@@ -94,19 +95,15 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@sust.edu"
-                className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+                className={FIELD_UNDERLINE}
               />
             </label>
 
-            {error ? (
-              <p className="rounded-md border border-[#FEE2E2] bg-[#FEE2E2] px-3 py-2 text-sm text-[#B91C1C]">
-                {error}
-              </p>
-            ) : null}
+            {error ? <p className={ERROR_TEXT}>{error}</p> : null}
 
             {devCode ? (
-              <p className="rounded-md border border-[#FEF3C7] bg-[#FEF3C7] px-3 py-2 text-sm text-[#B45309]">
-                <span className="mr-1 inline-block rounded bg-[#B45309] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+              <p className="border border-[#B45309]/30 bg-[#FEF3C7]/60 px-3 py-2 text-sm text-[#B45309]">
+                <span className="mr-1 inline-block bg-[#B45309] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                   Dev preview
                 </span>
                 OTP for {email}:{" "}
@@ -117,18 +114,15 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68] disabled:cursor-not-allowed disabled:bg-[#64748B]"
+              className="h-10 rounded-none bg-primary px-4 text-sm font-medium text-white hover:bg-secondary disabled:cursor-not-allowed disabled:bg-form-muted"
             >
               {submitting ? "Sending code…" : "Send verification code"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#64748B]">
+          <p className="mt-6 text-center text-sm text-form-muted">
             Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-[#0F2747] hover:underline"
-            >
+            <Link to="/login" className="font-medium text-primary hover:underline">
               Log in
             </Link>
           </p>

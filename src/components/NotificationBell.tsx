@@ -85,6 +85,22 @@ export default function NotificationBell() {
     markAsRead(notification.id);
     setIsOpen(false);
 
+    // Step 10 — an Applicant has no /admin access at all, so their
+    // notifications must resolve to applicant-facing routes instead of
+    // the admin ones below.
+    if (currentUser?.role === "Applicant") {
+      if (notification.linkType === "requisition") {
+        navigate(`/my-requisitions?open=${notification.linkId}`);
+        return;
+      }
+      if (notification.linkType === "user") {
+        navigate("/profile-setup");
+        return;
+      }
+      navigate("/dashboard");
+      return;
+    }
+
     // Phase 5 — DepartmentHeads go straight to the recommender detail
     // page for requisition pings so they can act on the inbox directly.
     // Admins land on the requisitions queue; everyone else still falls
@@ -184,11 +200,15 @@ export default function NotificationBell() {
               type="button"
               onClick={() => {
                 setIsOpen(false);
-                navigate("/admin/notifications");
+                navigate(
+                  currentUser?.role === "Applicant"
+                    ? "/notifications"
+                    : "/admin/notifications",
+                );
               }}
               className="text-xs font-medium text-[#334E68] hover:underline"
             >
-              View all
+              See More
             </button>
           </div>
         </div>

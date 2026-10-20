@@ -85,7 +85,7 @@ export default function LoginPage() {
       return;
     }
 
-    navigate("/apply");
+    navigate("/dashboard");
   }
 
   return (

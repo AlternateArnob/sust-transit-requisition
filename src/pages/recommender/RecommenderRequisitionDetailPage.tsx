@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useNotifications from "../../hooks/useNotifications";
 import useRequisitions from "../../hooks/useRequisitions";
+import useUsers from "../../hooks/useUsers";
 
 import RecommenderActions from "../../components/recommender/RecommenderActions";
 
@@ -11,6 +12,11 @@ import {
   formatDateRange,
   getTripStatusCounts,
 } from "../../utils/requisitionUtils";
+import {
+  buildApplicantNotification,
+  buildRequisitionNotifications,
+  findTransportInCharge,
+} from "../../utils/notificationUtils";
 
 import type { RejectionReason, UserAccount } from "../../types";
 
@@ -36,6 +42,7 @@ export default function RecommenderRequisitionDetailPage() {
   const { requisitions, recommendRequisition, rejectRequisition, sendBackToApplicant } =
     useRequisitions();
   const { addNotification } = useNotifications();
+  const { users } = useUsers();
   const { requisitionId } = useParams<{ requisitionId: string }>();
   const navigate = useNavigate();
 
@@ -76,15 +83,28 @@ export default function RecommenderRequisitionDetailPage() {
     try {
       recommendRequisition(requisition.id, recommenderName);
 
-      addNotification({
-        id: crypto.randomUUID(),
-        type: "New Requisition",
-        message: `${requisition.requesterName}'s requisition ${requisition.id} recommended by ${recommenderName} is awaiting admin approval.`,
-        timestamp: new Date().toISOString(),
-        linkType: "requisition",
-        linkId: requisition.id,
-        isRead: false,
-      });
+      // Step 8 — a recommendation is the only event that unblocks
+      // Transport In Charge: per the applicant-module clarification,
+      // "Departmental/Official → Department/Office Head → if approved →
+      // Transport Office". Only they need to know a new item just
+      // landed in their queue; nobody else gets a fan-out ping for this.
+      for (const notification of buildRequisitionNotifications(
+        findTransportInCharge(users),
+        {
+          requisition,
+          type: "New Requisition",
+          message: `${requisition.requesterName}'s requisition was recommended by ${recommenderName} and is awaiting Transport Office review.`,
+        },
+      )) {
+        addNotification(notification);
+      }
+
+      addNotification(
+        buildApplicantNotification(requisition, {
+          type: "Recommendation",
+          message: `Your requisition was recommended by ${recommenderName} and forwarded to the Transport Office.`,
+        }),
+      );
 
       navigate("/admin/recommender");
     } catch (err) {
@@ -102,15 +122,17 @@ export default function RecommenderRequisitionDetailPage() {
     setActionError(null);
     try {
       rejectRequisition(requisition.id, reason, remarks);
-      addNotification({
-        id: crypto.randomUUID(),
-        type: "New Requisition",
-        message: `${requisition.requesterName}'s requisition ${requisition.id} was rejected by ${recommenderName}: ${reason}. ${remarks}`,
-        timestamp: new Date().toISOString(),
-        linkType: "requisition",
-        linkId: requisition.id,
-        isRead: false,
-      });
+
+      // Step 8 — per the applicant-module clarification, a rejection at
+      // this stage never reaches the Transport Office at all, not even
+      // as a notification. Only the applicant is told.
+      addNotification(
+        buildApplicantNotification(requisition, {
+          type: "Recommendation",
+          message: `Your requisition was rejected by ${recommenderName}: ${reason}${remarks ? ` — ${remarks}` : ""}.`,
+        }),
+      );
+
       navigate("/admin/recommender");
     } catch (err) {
       setActionError(
@@ -127,15 +149,17 @@ export default function RecommenderRequisitionDetailPage() {
     setActionError(null);
     try {
       sendBackToApplicant(requisition.id, reason, remarks);
-      addNotification({
-        id: crypto.randomUUID(),
-        type: "New Requisition",
-        message: `${requisition.requesterName}'s requisition ${requisition.id} was sent back by ${recommenderName}: ${reason}. ${remarks}`,
-        timestamp: new Date().toISOString(),
-        linkType: "requisition",
-        linkId: requisition.id,
-        isRead: false,
-      });
+
+      // Same reasoning as handleReject — the applicant hasn't even
+      // cleared their Department/Office Head yet, so the Transport
+      // Office has no business hearing about this at all.
+      addNotification(
+        buildApplicantNotification(requisition, {
+          type: "Sent Back to Applicant",
+          message: `Your requisition was sent back by ${recommenderName}: ${reason}${remarks ? ` — ${remarks}` : ""}.`,
+        }),
+      );
+
       navigate("/admin/recommender");
     } catch (err) {
       setActionError(

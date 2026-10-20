@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 function AdminLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-[#F8FAFC]">
-      <Navbar title="SUST Transit Admin" administrator="Dr. Khalidur Rahman" />
+      <Navbar title="SUST Transit Admin" />
 
       <div className="flex flex-1">
         <Sidebar />

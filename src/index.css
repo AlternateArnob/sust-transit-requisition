@@ -13,4 +13,19 @@
   --color-warning-bg: #FEF3C7;
   --color-error: #B91C1C;
   --color-error-bg: #FEE2E2;
+
+  /*
+   * Applicant-facing forms (requisition, register, profile setup) use a
+   * structural "official form" treatment — letterhead, numbered parts,
+   * ruled fields, declaration + signature — but plain white/neutral
+   * colors, not a literal aged-paper look. These tokens intentionally
+   * mirror the app's existing primary/text/border/error colors so the
+   * form reads as part of the same product, not a different skin.
+   */
+  --color-form-paper: #FFFFFF;
+  --color-form-band: #F8FAFC;
+  --color-form-ink: #1E293B;
+  --color-form-muted: #64748B;
+  --color-form-rule: #E2E8F0;
+  --color-form-seal: #B91C1C;
 }

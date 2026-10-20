@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
@@ -9,6 +9,7 @@ import useDriver from "../hooks/useDriver";
 
 import Modal from "../components/Modal";
 import ApplicantRequisitionDetail from "../components/ApplicantRequisitionDetail";
+import ApplicantHeader from "../components/ApplicantHeader";
 
 import { formatDateRange } from "../utils/requisitionUtils";
 import { generateConfirmationSlip } from "../utils/pdf/confirmationSlip";
@@ -37,12 +38,12 @@ function statusBadgeClass(status: ApplicationStatus) {
  * intentionally not reachable here.
  */
 export default function MyRequisitionsPage() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { vehicles } = useVehicles();
   const { driver } = useDriver();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -52,6 +53,20 @@ export default function MyRequisitionsPage() {
       .filter((requisition) => requisition.requesterId === currentUser.id)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [requisitions, currentUser]);
+
+  // Step 10 — a notification's "requisition" link deep-links here as
+  // /my-requisitions?open=<id> instead of an admin route. Once the list
+  // has loaded, open that requisition's detail modal automatically, then
+  // drop the query param so refreshing/closing doesn't reopen it.
+  useEffect(() => {
+    const openId = searchParams.get("open");
+    if (openId && myRequisitions.some((requisition) => requisition.id === openId)) {
+      setSelectedId(openId);
+      const next = new URLSearchParams(searchParams);
+      next.delete("open");
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, myRequisitions, setSearchParams]);
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
@@ -66,31 +81,9 @@ export default function MyRequisitionsPage() {
     generateConfirmationSlip(selected, allocations, vehicles, driver);
   }
 
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
-
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
-        <h1 className="text-lg font-semibold">SUST Transit — My Requisitions</h1>
-        <div className="flex items-center gap-4 text-sm">
-          <Link to="/apply" className="hover:underline">
-            New Requisition
-          </Link>
-          <Link to="/my-mileage" className="hover:underline">
-            My Mileage
-          </Link>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-md border border-white/30 px-3 py-1.5 hover:bg-white/10"
-          >
-            Log out
-          </button>
-        </div>
-      </header>
+      <ApplicantHeader active="my-requisitions" title="My Requisitions" />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <div className="mb-6">
@@ -192,6 +185,7 @@ export default function MyRequisitionsPage() {
             vehicles={vehicles}
             driver={driver}
             allocations={allocations}
+            requester={currentUser}
             onDownloadConfirmationSlip={handleDownloadConfirmationSlip}
           />
         </Modal>

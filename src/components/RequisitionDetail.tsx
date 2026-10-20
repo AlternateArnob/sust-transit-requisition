@@ -23,6 +23,9 @@ import {
 } from "../utils/dutySlipUtils";
 import Modal from "./Modal";
 import AllocationPicker from "./AllocationPicker";
+import GovFormMasthead from "./application/GovFormMasthead";
+import { PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import type { UserAccount } from "../types";
 
 /**
  * Phase 1 (admin module) — this used to be a single admin-only view that
@@ -49,6 +52,11 @@ interface RequisitionDetailProps {
   allocations: Allocation[];
   dutySlips: DutySlip[];
   mode: Mode;
+  /**
+   * Fix 8 — the requester's account, used to show their signature on file.
+   * Optional: older records / deleted accounts simply show "No signature".
+   */
+  requester?: UserAccount;
 
   // Transport In Charge stage (FRD §9) — omit in other modes.
   onAssignVehicle?: (tripId: string, vehicleId: string, driverId?: string) => void;
@@ -91,6 +99,7 @@ export default function RequisitionDetail({
   allocations,
   dutySlips,
   mode,
+  requester,
   onAssignVehicle,
   onRemoveVehicleAssignment,
   onForwardToAdministrator,
@@ -147,13 +156,21 @@ export default function RequisitionDetail({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-7">
+      <GovFormMasthead
+        formTitle="Requisition Review"
+        referenceLabel={`Ref. No.: ${requisition.id}`}
+      />
+
       {/* Requester Info */}
+      <div className={SECTION_WRAP}>
+      <p className={PART_LABEL}>Part One</p>
+      <h2 className={`${SECTION_TITLE} mb-3`}>Requester Details</h2>
       <div className="grid grid-cols-1 gap-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:grid-cols-2">
         <div>
           <p className="text-xs font-medium text-[#64748B]">Requester</p>
           <p className="text-sm text-[#1E293B]">
-            {requisition.requesterName} ({requisition.applicantType})
+            {requisition.requesterName}
           </p>
         </div>
 
@@ -200,6 +217,44 @@ export default function RequisitionDetail({
           <p className="text-xs font-medium text-[#64748B]">Purpose</p>
           <p className="text-sm text-[#1E293B]">{requisition.purpose}</p>
         </div>
+
+        {requisition.supportingDocumentDataUrl && (
+          <div className="sm:col-span-2">
+            <p className="text-xs font-medium text-[#64748B]">
+              Supporting Document
+            </p>
+            <a
+              href={requisition.supportingDocumentDataUrl}
+              target="_blank"
+              rel="noreferrer"
+              download={requisition.supportingDocumentName || undefined}
+              className="text-sm font-medium text-[#0F2747] hover:underline"
+            >
+              {requisition.supportingDocumentName || "View document"}
+            </a>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#E2E8F0] pt-3 sm:col-span-2">
+          <div>
+            <p className="text-xs font-medium text-[#64748B]">Signature</p>
+            {requester?.signatureDataUrl ? (
+              <img
+                src={requester.signatureDataUrl}
+                alt={`Signature of ${requisition.requesterName}`}
+                className="mt-1 h-14 max-w-[220px] object-contain"
+              />
+            ) : (
+              <p className="mt-1 text-sm italic text-[#64748B]">
+                No signature on file
+              </p>
+            )}
+          </div>
+          <p className="text-xs text-[#64748B]">
+            Submitted: {new Date(requisition.createdAt).toLocaleString()}
+          </p>
+        </div>
+      </div>
       </div>
 
       {/* Phase 1 — Administrator's send-back reason, visible to Transport
@@ -212,10 +267,12 @@ export default function RequisitionDetail({
       )}
 
       {/* Trips */}
-      <div>
-        <p className="mb-2 text-sm font-medium text-[#1E293B]">
-          Trip Requests ({requisition.trips.length})
-        </p>
+      <div className={SECTION_WRAP}>
+        <p className={PART_LABEL}>Part Two</p>
+        <h2 className={`${SECTION_TITLE} mb-3`}>
+          Journey ({requisition.trips.length}{" "}
+          {requisition.trips.length === 1 ? "trip" : "trips"})
+        </h2>
 
         <div className="space-y-3">
           {requisition.trips.map((trip, index) => {
@@ -533,8 +590,9 @@ export default function RequisitionDetail({
 
       {/* Documents */}
       {mode !== "transportInCharge" && (
-        <div className="border-t border-[#E2E8F0] pt-4">
-          <p className="mb-2 text-sm font-medium text-[#1E293B]">Documents</p>
+        <div className={SECTION_WRAP}>
+          <p className={PART_LABEL}>Part Three</p>
+          <h2 className={`${SECTION_TITLE} mb-3`}>Documents</h2>
 
           {mode === "transportAdministrator" && (
             <>

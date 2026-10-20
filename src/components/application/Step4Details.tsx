@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 
+import { ERROR_TEXT, FIELD_LABEL, HELPER_TEXT } from "./formTheme";
+
 export interface DetailsDraft {
   reason: string;
   supportingDocumentName: string;
@@ -71,47 +73,37 @@ export default function Step4Details({
   }
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-[#64748B]">
-        Requisition details
-      </h2>
-
+    <section className="space-y-4">
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#1E293B]">
-          Reason for requisition
-        </label>
+        <label className={FIELD_LABEL}>Reason for vehicle requisition</label>
         <textarea
           value={value.reason}
           onChange={(event) => handleField("reason", event.target.value)}
           rows={4}
-          className="w-full rounded-md border border-[#E2E8F0] px-3 py-2 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="w-full rounded-none border border-form-rule bg-white px-3 py-2 text-sm text-form-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
-        {errors.reason ? (
-          <p className="mt-1 text-xs text-[#B91C1C]">{errors.reason}</p>
-        ) : null}
+        {errors.reason ? <p className={ERROR_TEXT}>{errors.reason}</p> : null}
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#1E293B]">
-          Supporting document (optional)
-        </label>
+        <label className={FIELD_LABEL}>Supporting document (optional)</label>
 
         {value.supportingDocumentDataUrl ? (
-          <div className="flex items-center gap-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
-            <span className="flex-1 truncate text-sm text-[#1E293B]">
+          <div className="flex items-center gap-3 border border-form-rule bg-white px-3 py-2">
+            <span className="flex-1 truncate text-sm text-form-ink">
               {value.supportingDocumentName}
             </span>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="text-sm font-medium text-[#0F2747] hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               Replace
             </button>
             <button
               type="button"
               onClick={handleRemove}
-              className="text-sm font-medium text-[#B91C1C] hover:underline"
+              className="text-sm font-medium text-form-seal hover:underline"
             >
               Remove
             </button>
@@ -120,7 +112,7 @@ export default function Step4Details({
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="flex h-16 w-48 items-center justify-center rounded-md border border-dashed border-[#E2E8F0] bg-white text-sm font-medium text-[#0F2747] hover:bg-[#F8FAFC]"
+            className="flex h-16 w-48 items-center justify-center rounded-none border border-dashed border-form-rule bg-white text-sm font-medium text-primary hover:bg-form-band"
           >
             Upload document
           </button>
@@ -134,18 +126,12 @@ export default function Step4Details({
           className="hidden"
         />
 
-        <p className="mt-1 text-xs text-[#64748B]">
-          Accepted formats: PDF, PNG, JPG (max 2 MB).
-        </p>
+        <p className={HELPER_TEXT}>Accepted formats: PDF, PNG, JPG (max 2 MB).</p>
 
-        {readError ? (
-          <p className="mt-1 text-xs text-[#B91C1C]">{readError}</p>
-        ) : null}
+        {readError ? <p className={ERROR_TEXT}>{readError}</p> : null}
 
         {errors.supportingDocumentName ? (
-          <p className="mt-1 text-xs text-[#B91C1C]">
-            {errors.supportingDocumentName}
-          </p>
+          <p className={ERROR_TEXT}>{errors.supportingDocumentName}</p>
         ) : null}
       </div>
     </section>

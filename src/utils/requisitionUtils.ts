@@ -86,7 +86,6 @@ export function formatDateRange(startDate: string, endDate: string): string {
  *  consistent tagging system rather than two different UI patterns. */
 export function requisitionTypeBadgeClass(type: Requisition["requisitionType"]) {
   if (type === "Personal") return "bg-[#CFFAFE] text-[#0E7490]";
-  if (type === "Departmental") return "bg-[#E0E7FF] text-[#4338CA]";
-  if (type === "Official") return "bg-[#FFEDD5] text-[#C2410C]";
+  if (type === "Departmental/Official") return "bg-[#E0E7FF] text-[#4338CA]";
   return "bg-[#FCE7F3] text-[#BE185D]"; // Club
 }

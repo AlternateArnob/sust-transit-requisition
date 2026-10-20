@@ -83,38 +83,6 @@ export function canForwardToAdministrator(
   );
 }
 
-/**
- * Phase 4 — every allocation currently on record, joined back to its
- * requisition/trip. Used by RequisitionsPage's Super Admin "Allocated"
- * oversight tab (the one genuinely useful piece of the retired
- * AllocationPage — a cross-requisition "what's on the road" view that
- * RequisitionsPage's per-requisition detail panel doesn't otherwise
- * offer). Read-only by design: reassignment/removal now only happens
- * through a requisition's own detail view, in the stage that's actually
- * allowed to touch it.
- */
-export function getAllocatedTrips(
-  requisitions: Requisition[],
-  allocations: Allocation[],
-): (TripContext & { allocation: Allocation })[] {
-  const result: (TripContext & { allocation: Allocation })[] = [];
-
-  allocations.forEach((allocation) => {
-    const requisition = requisitions.find(
-      (item) => item.id === allocation.requisitionId,
-    );
-    const trip = requisition?.trips.find(
-      (item) => item.id === allocation.tripId,
-    );
-
-    if (requisition && trip) {
-      result.push({ requisition, trip, allocation });
-    }
-  });
-
-  return result.sort((a, b) => a.trip.date.localeCompare(b.trip.date));
-}
-
 function toMinutes(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
@@ -194,7 +162,7 @@ export function getVehicleEligibility(
     blockers.push("Already allocated to another trip at an overlapping time");
   }
 
-  if (vehicle.category !== trip.vehicleCategory) {
+  if (trip.vehicleCategory !== "Any" && vehicle.category !== trip.vehicleCategory) {
     warnings.push(
       `Category mismatch — requisition asked for ${trip.vehicleCategory}`,
     );

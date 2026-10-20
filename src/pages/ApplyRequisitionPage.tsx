@@ -6,9 +6,11 @@ import useNotifications from "../hooks/useNotifications";
 import useUsers from "../hooks/useUsers";
 import {
   buildRequisitionNotifications,
+  findTransportInCharge,
 } from "../utils/notificationUtils";
 
 import RequisitionForm from "../components/RequisitionForm";
+import ApplicantHeader from "../components/ApplicantHeader";
 
 import type { Requisition } from "../types";
 
@@ -30,34 +32,34 @@ export default function ApplyRequisitionPage() {
   function handleSubmit(requisition: Requisition) {
     addRequisition(requisition);
 
-    // Phase 5 (extended in Phase 0) — fan the "new requisition" ping out
-    // to every verified Transport In Charge, since they're the role that
-    // receives incoming applications (FRD §9). No-op when there's no TIC
-    // yet (e.g. fresh seed before anyone logs in).
-    const recipients = users.filter(
-      (user) => user.role === "TransportInCharge" && user.isVerified,
-    );
-    for (const notification of buildRequisitionNotifications(recipients, {
-      requisition,
-      type: "New Requisition",
-      message: `${requisition.requesterName} submitted a ${requisition.requisitionType.toLowerCase()} requisition (${requisition.trips.length} trip${requisition.trips.length === 1 ? "" : "s"})`,
-    })) {
-      addNotification(notification);
+    // Step 8 (applicant module) — per FRD §6, a Departmental/Official
+    // requisition from a Student/Teacher/Officer must clear the
+    // applicant's Department/Office Head before the Transport Office
+    // ever sees it (RequisitionForm.tsx already sets the requisition's
+    // initial status to "Pending Recommendation" for that case, and
+    // notifies the matching DepartmentHead separately). Only ping
+    // Transport In Charge here when the requisition actually lands
+    // directly in their queue — i.e. no recommendation was required.
+    // Once a DepartmentHead recommends it, RecommenderRequisitionDetailPage
+    // is what notifies Transport In Charge, not this page.
+    if (requisition.status === "Pending on Transport Office") {
+      const recipients = findTransportInCharge(users);
+      for (const notification of buildRequisitionNotifications(recipients, {
+        requisition,
+        type: "New Requisition",
+        message: `${requisition.requesterName} submitted a ${requisition.requisitionType.toLowerCase()} requisition (${requisition.trips.length} trip${requisition.trips.length === 1 ? "" : "s"})`,
+      })) {
+        addNotification(notification);
+      }
     }
 
     setSubmitted(requisition);
   }
 
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
-        <h1 className="text-lg font-semibold">
-          SUST Transit — Request a Vehicle
-        </h1>
-        <Link to="/my-requisitions" className="text-sm hover:underline">
-          My Requisitions
-        </Link>
-      </header>
+    <div className="min-h-screen bg-form-band">
+      <ApplicantHeader active="apply" />
 
       <main className="mx-auto max-w-3xl px-4 py-10">
         {submitted ? (
@@ -99,17 +101,7 @@ export default function ApplyRequisitionPage() {
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-[#E2E8F0] bg-white p-6 sm:p-8">
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold text-[#1E293B]">
-                Vehicle Requisition Form
-              </h2>
-              <p className="mt-1 text-sm text-[#64748B]">
-                Complete every section below, then submit or save as a
-                draft to finish later.
-              </p>
-            </div>
-
+          <div className="border border-form-rule shadow-sm">
             <RequisitionForm
               onSubmit={handleSubmit}
               onCancel={() => window.history.back()}

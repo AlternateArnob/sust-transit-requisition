@@ -1,7 +1,11 @@
 import { NavLink } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
-import { isAdminRole, isSuperAdmin } from "../utils/permissions";
+import {
+  isTransportInCharge,
+  isTransportAdministrator,
+  isSuperAdmin,
+} from "../utils/permissions";
 
 interface NavItem {
   label: string;
@@ -10,41 +14,54 @@ interface NavItem {
 
 const DASHBOARD_ITEM: NavItem = { label: "Dashboard", path: "/admin" };
 
-// Phase 0 — all three Transport Office roles currently share the same
-// vehicle/driver/schedule/requisitions capabilities (see
-// utils/permissions.ts).
-// Phase 4 — the standalone Allocation page was retired (see
-// RequisitionsPage's Super Admin "Allocated" tab for the read-only
-// cross-requisition view it used to provide).
-const ADMIN_ROLE_ITEMS: NavItem[] = [
-  { label: "Vehicle", path: "/admin/vehicle" },
-  { label: "Driver", path: "/admin/driver" },
-  { label: "Transport Schedule", path: "/admin/transport-schedule" },
-  { label: "Schedule Lookup", path: "/admin/schedule" },
-  { label: "Requisitions", path: "/admin/requisitions" },
-  { label: "Notifications", path: "/admin/notifications" },
-];
-
 const RECOMMENDER_ITEM: NavItem = {
   label: "Recommender",
   path: "/admin/recommender",
 };
 
+/**
+ * Corrections Step 3 — the three admin roles no longer share one nav
+ * list. Each role's surface is now genuinely different (not just a
+ * couple of items hidden), so three explicit lists read more clearly
+ * than one shared list with conditional filtering:
+ *   - Transport In Charge keeps everything it always had.
+ *   - Transport Administrator's only surface is Requisitions.
+ *   - Super Admin's only surface is Accounts.
+ * These match the route guards in router.tsx exactly — a role never
+ * sees a nav link for a route it would immediately get redirected away
+ * from.
+ */
+const TRANSPORT_IN_CHARGE_ITEMS: NavItem[] = [
+  DASHBOARD_ITEM,
+  { label: "Vehicle", path: "/admin/vehicle" },
+  { label: "Driver", path: "/admin/driver" },
+  { label: "Transport Schedule", path: "/admin/transport-schedule" },
+  { label: "Schedule Lookup", path: "/admin/schedule" },
+  { label: "Requisitions", path: "/admin/requisitions" },
+];
+
+const TRANSPORT_ADMINISTRATOR_ITEMS: NavItem[] = [
+  DASHBOARD_ITEM,
+  { label: "Requisitions", path: "/admin/requisitions" },
+];
+
+const SUPER_ADMIN_ITEMS: NavItem[] = [
+  DASHBOARD_ITEM,
+  { label: "Accounts", path: "/admin/users" },
+];
+
 export default function Sidebar() {
   const { currentUser } = useAuth();
 
-  const navigationItems: NavItem[] = isAdminRole(currentUser?.role)
-    ? [
-        DASHBOARD_ITEM,
-        ...ADMIN_ROLE_ITEMS,
-        // Phase 9 — Super Admin console, not shared with TIC/Administrator.
-        ...(isSuperAdmin(currentUser?.role)
-          ? [{ label: "Accounts", path: "/admin/users" }]
-          : []),
-      ]
-    : currentUser?.role === "DepartmentHead"
-      ? [DASHBOARD_ITEM, RECOMMENDER_ITEM, { label: "Notifications", path: "/admin/notifications" }]
-      : [DASHBOARD_ITEM];
+  const navigationItems: NavItem[] = isTransportInCharge(currentUser?.role)
+    ? TRANSPORT_IN_CHARGE_ITEMS
+    : isTransportAdministrator(currentUser?.role)
+      ? TRANSPORT_ADMINISTRATOR_ITEMS
+      : isSuperAdmin(currentUser?.role)
+        ? SUPER_ADMIN_ITEMS
+        : currentUser?.role === "DepartmentHead"
+          ? [DASHBOARD_ITEM, RECOMMENDER_ITEM]
+          : [DASHBOARD_ITEM];
 
   return (
     <aside className="flex min-h-screen w-56 flex-col border-r border-border bg-card">

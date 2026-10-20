@@ -34,7 +34,7 @@ export function requiresRecommendation(
   profile: ApplicantProfile | undefined,
   requisitionType: RequisitionType,
 ): boolean {
-  if (requisitionType !== "Official") {
+  if (requisitionType !== "Departmental/Official") {
     return false;
   }
   return profile === "Student" || profile === "Teacher" || profile === "Officer";

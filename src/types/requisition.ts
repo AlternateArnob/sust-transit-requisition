@@ -1,18 +1,13 @@
 import type { Trip } from "./trip";
 import type { ApplicantProfile } from "./user";
 
-export type RequisitionType = "Club" | "Official" | "Personal" | "Departmental";
+export type RequisitionType = "Personal" | "Departmental/Official" | "Club";
 
 export const REQUISITION_TYPES: RequisitionType[] = [
-  "Club",
-  "Official",
   "Personal",
-  "Departmental",
+  "Departmental/Official",
+  "Club",
 ];
-
-export type ApplicantType = "Individual" | "Organization";
-
-export const APPLICANT_TYPES: ApplicantType[] = ["Individual", "Organization"];
 
 /**
  * Phase 1 (admin module) — the flat "Pending Approval" stage is now two
@@ -72,7 +67,6 @@ export interface Requisition {
   id: string;
   requesterId: string;
   requesterName: string;
-  applicantType: ApplicantType;
   department?: string;
   contactNumber?: string;
   requisitionType: RequisitionType;
@@ -101,6 +95,17 @@ export interface Requisition {
    * been addressed.
    */
   transportOfficeRemarks?: string;
+  /**
+   * Step 6 (applicant module) — the optional file uploaded in Step 4 of
+   * the application form (FRD §5.1 "Supporting document, where
+   * applicable"). Stored as a data URL alongside the requisition, same
+   * pattern as `signatureDataUrl` on UserAccount, so it can persist in
+   * localStorage without a separate file-storage layer. Only visible to
+   * Transport Office staff reviewing the application — it is not part
+   * of the confirmation slip (FRD §20's field list doesn't include it).
+   */
+  supportingDocumentName?: string;
+  supportingDocumentDataUrl?: string;
   createdAt: string;
   trips: Trip[];
 }

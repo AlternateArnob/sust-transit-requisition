@@ -18,10 +18,7 @@ export function generateConfirmationSlip(
 
   const infoLines: [string, string][] = [
     ["Application Ref.", requisition.id],
-    [
-      "Requester",
-      `${requisition.requesterName} (${requisition.applicantType})`,
-    ],
+    ["Requester", requisition.requesterName],
     ["Department / Organization", requisition.department ?? "—"],
     ["Requisition Type", requisition.requisitionType],
     ["Purpose", requisition.purpose],

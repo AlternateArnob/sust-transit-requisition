@@ -16,10 +16,6 @@ export default function Step1Requester({ requester }: Step1RequesterProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-[#64748B]">
-        Requester details
-      </h2>
-
       <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
         <Field label="Full name" value={requester.fullName ?? "—"} />
         <Field label="Email" value={requester.email} />
@@ -47,7 +43,7 @@ export default function Step1Requester({ requester }: Step1RequesterProps) {
 
       <Link
         to="/profile-setup"
-        className="inline-block text-sm font-medium text-[#334E68] hover:underline"
+        className="inline-block text-sm font-medium text-primary hover:underline"
       >
         Edit profile →
       </Link>
@@ -57,9 +53,9 @@ export default function Step1Requester({ requester }: Step1RequesterProps) {
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-b border-[#E2E8F0] pb-1.5">
-      <p className="text-xs font-medium text-[#64748B]">{label}</p>
-      <p className="text-sm text-[#1E293B]">{value}</p>
+    <div className="border-b border-form-rule pb-1.5">
+      <p className="text-xs font-medium text-form-muted">{label}</p>
+      <p className="text-sm text-form-ink">{value}</p>
     </div>
   );
 }

@@ -27,7 +27,10 @@ export default function AllocationPicker({
   const { offDays } = useOffDays();
 
   const evaluated = vehicles
-    .filter((vehicle) => vehicle.category === trip.vehicleCategory)
+    .filter(
+      (vehicle) =>
+        trip.vehicleCategory === "Any" || vehicle.category === trip.vehicleCategory,
+    )
     .map((vehicle) =>
       getVehicleEligibility(vehicle, trip, {
         allocations,

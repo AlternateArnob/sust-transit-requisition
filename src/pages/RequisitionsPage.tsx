@@ -23,7 +23,7 @@ import {
   requisitionTypeBadgeClass,
 } from "../utils/requisitionUtils";
 import { getEligibleDutySlipGroups, canGenerateSlips } from "../utils/dutySlipUtils";
-import { getAllocatedTrips, reassignAllocation } from "../utils/allocationUtils";
+import { reassignAllocation } from "../utils/allocationUtils";
 import { generateConfirmationSlip } from "../utils/pdf/confirmationSlip";
 import { generateDutySlipPdf } from "../utils/pdf/dutySlip";
 import {
@@ -33,7 +33,6 @@ import {
 import {
   isTransportInCharge,
   isTransportAdministrator,
-  isSuperAdmin,
   canRecordMileage,
 } from "../utils/permissions";
 import {
@@ -51,7 +50,7 @@ import type {
 } from "../types";
 import { REQUISITION_TYPES } from "../types";
 
-type Tab = "queue" | "approved" | "rejected" | "all" | "allocated";
+type Tab = "queue" | "approved" | "rejected" | "all";
 type Mode = "transportInCharge" | "transportAdministrator" | "viewOnly";
 type TypeFilter = RequisitionType | "All";
 
@@ -86,7 +85,7 @@ export default function RequisitionsPage() {
   const { driver } = useDriver();
   const { dutySlips, addDutySlip } = useDutySlips();
   const { mileageEntries, addMileageEntry } = useMileageEntries();
-  const { users } = useUsers();
+  const { users, findById: findUserById } = useUsers();
   const { addNotification } = useNotifications();
 
   const [tab, setTab] = useState<Tab>("queue");
@@ -151,16 +150,8 @@ export default function RequisitionsPage() {
         requisition.status === "Ready for Accounts"
       );
     if (tab === "rejected") return requisition.status === "Rejected";
-    if (tab === "allocated") return false; // handled by its own table below
     return true;
   });
-
-  // Phase 4, decision C — the retired AllocationPage's one genuinely
-  // useful piece (a cross-requisition "what's allocated right now"
-  // view) lives here now, as a Super-Admin-only oversight tab. Read-only
-  // by design: reassignment/removal happens through a requisition's own
-  // detail view in whichever stage is actually allowed to touch it.
-  const allocatedRows = getAllocatedTrips(requisitions, allocations);
 
   const selected = requisitions.find(
     (requisition) => requisition.id === selectedId,
@@ -381,34 +372,12 @@ export default function RequisitionsPage() {
 
   const allowMileageEntry = canRecordMileage(currentUser?.role);
 
-  function getVehicleLabel(vehicleId: string) {
-    const vehicle = vehicles.find((item) => item.id === vehicleId);
-    return vehicle
-      ? `${vehicle.registrationNumber} (${vehicle.category})`
-      : "Unknown Vehicle";
-  }
-
-  function getDriverName(driverId?: string) {
-    if (!driverId) {
-      return "No driver";
-    }
-
-    return (
-      driver.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
-    );
-  }
-
   const tabs: [Tab, string][] = [
     ["queue", "Queue"],
     ["approved", "Approved"],
     ["rejected", "Rejected"],
     ["all", "All"],
   ];
-
-  // Phase 4, decision C — oversight-only, so only Super Admin gets it.
-  if (isSuperAdmin(currentUser?.role)) {
-    tabs.push(["allocated", `Allocated (${allocatedRows.length})`]);
-  }
 
   return (
     <div className="space-y-6">
@@ -464,67 +433,6 @@ export default function RequisitionsPage() {
         )}
       </div>
 
-      {tab === "allocated" ? (
-        <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#0F2747] text-white">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Requester</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Time</th>
-                  <th className="px-4 py-3 font-medium">Vehicle</th>
-                  <th className="px-4 py-3 font-medium">Driver</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allocatedRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center">
-                      <p className="font-medium text-[#1E293B]">
-                        No allocations yet
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  allocatedRows.map(({ requisition, allocation }, index) => (
-                    <tr
-                      key={allocation.id}
-                      className={`border-t border-[#E2E8F0] ${
-                        index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
-                      }`}
-                    >
-                      <td className="px-4 py-3 font-medium text-[#1E293B]">
-                        {requisition.requesterName}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${requisitionTypeBadgeClass(requisition.requisitionType)}`}
-                        >
-                          {requisition.requisitionType}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {allocation.date}
-                      </td>
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {allocation.startTime}–{allocation.endTime}
-                      </td>
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {getVehicleLabel(allocation.vehicleId)}
-                      </td>
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {getDriverName(allocation.driverId)}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
       <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -653,7 +561,6 @@ export default function RequisitionsPage() {
           </table>
         </div>
       </div>
-      )}
 
       {selected && (
         <Modal
@@ -667,6 +574,7 @@ export default function RequisitionsPage() {
             driver={driver}
             allocations={allocations}
             dutySlips={dutySlips}
+            requester={findUserById(selected.requesterId)}
             mode={selectedMode}
             onAssignVehicle={handleAssignVehicle}
             onRemoveVehicleAssignment={handleRemoveVehicleAssignment}

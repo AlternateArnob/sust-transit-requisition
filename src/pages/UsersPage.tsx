@@ -8,42 +8,62 @@ import Modal from "../components/Modal";
 import { ADMIN_ROLES, type AdminRole } from "../utils/permissions";
 import { buildAccountStatusNotification } from "../utils/notificationUtils";
 import { hashPassword, MIN_PASSWORD_LENGTH } from "../utils/passwordUtils";
-import type { UserAccount } from "../types";
+import { DEPARTMENTS, OFFICES } from "../data/sustDirectory";
+import type { UserAccount, UserRole } from "../types";
 
 /**
- * Phase 9 (admin module) — Super Admin console (FRD §2, §24).
+ * Corrections Step 4+5 (answered together — Step 5's scoping question
+ * was "manage every registered user, not just Transport Office
+ * accounts", which reshapes Step 4's Edit/Delete rules, so building
+ * them as one page instead of two passes).
  *
- * Decision A (§3 of the Phase 9 plan): this console can create new
- * Transport Office accounts, not just manage the 3 seed ones — without
- * that, there would be no way to ever onboard a 4th person into any of
- * these roles, which falls short of what "appointed internally" (§2)
- * implies someone has to actually do.
+ * Step 5: the account list is no longer filtered to the 3 Transport
+ * Office roles — every UserAccount shows up, Applicant and
+ * DepartmentHead included.
  *
- * Decision A (§4): self-lockout and last-Super-Admin guardrails are
- * hard blocks, not confirmations — see rowLockFor() below. A
- * lost-the-only-Super-Admin-account mistake has no undo path in this
- * local-storage-only app, unlike most other destructive actions here.
+ * Step 4: standalone Deactivate/Reactivate button and inline role
+ * <select> are gone, replaced by one "Edit" flow per row (name, email,
+ * mobile, role, active status, submitted together). Delete is new and
+ * deliberately narrow — see canDelete() below.
+ *
+ * Scoping choice made here, not explicitly asked for either way: "Add
+ * Account" (creation) stays scoped to the 3 Transport Office roles, as
+ * it was in Phase 9. Broadening *management* to every account doesn't
+ * imply this console should also fabricate brand-new Applicant/
+ * DepartmentHead accounts — those still come from their own
+ * registration/appointment flows elsewhere in the app. Flagging this
+ * as an inference, not a re-confirmed instruction.
  */
+
+const ALL_ROLES: UserRole[] = [
+  "Applicant",
+  "DepartmentHead",
+  "TransportInCharge",
+  "TransportAdministrator",
+  "SuperAdmin",
+];
+
 export default function UsersPage() {
   const { currentUser } = useAuth();
-  const { users, add, update } = useUsers();
+  const { users, add, update, remove } = useUsers();
   const { addNotification } = useNotifications();
 
   const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState<UserAccount | null>(null);
 
-  const transportOfficeUsers = [...users]
-    .filter((user) => ADMIN_ROLES.includes(user.role as AdminRole))
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const allUsers = [...users].sort((a, b) =>
+    a.createdAt.localeCompare(b.createdAt),
+  );
 
-  const activeSuperAdminCount = transportOfficeUsers.filter(
+  const activeSuperAdminCount = allUsers.filter(
     (user) => user.role === "SuperAdmin" && user.isActive !== false,
   ).length;
 
   /**
-   * §4 decision A — block, don't just confirm. A row's own controls are
-   * fully disabled when acting on it would either lock the acting
-   * Super Admin out of their own account, or leave the system with zero
-   * active Super Admins (checked against ANY account, not just self).
+   * §4 decision A — block, don't just confirm. Applies to any account,
+   * not just the 3 Transport Office roles, since the underlying risks
+   * (self-lockout, zero active Super Admins) don't care what role the
+   * *other* accounts in the list happen to be.
    */
   function rowLockFor(user: UserAccount): {
     locked: boolean;
@@ -52,7 +72,7 @@ export default function UsersPage() {
     if (user.id === currentUser?.id) {
       return {
         locked: true,
-        reason: "You can't deactivate or reassign your own account here.",
+        reason: "You can't change your own role or active status here.",
       };
     }
 
@@ -72,29 +92,66 @@ export default function UsersPage() {
     return { locked: false };
   }
 
-  function handleSetActive(user: UserAccount, isActive: boolean) {
-    update(user.id, { isActive });
-
-    addNotification(
-      buildAccountStatusNotification(
-        user.id,
-        isActive
-          ? "Your account has been reactivated by a Super Admin."
-          : "Your account has been deactivated by a Super Admin.",
-      ),
-    );
+  /**
+   * Delete is restricted to Super Admin-role rows, and only extended
+   * (never introduced) to every role by the same reasoning the original
+   * plan gave for Transport In Charge/Administrator: Applicant and
+   * DepartmentHead accounts are just as entangled in historical output
+   * (every requisition references its requester; recommendations
+   * reference their DepartmentHead) as TIC/TA are in duty slips and
+   * confirmation slips. Only Super Admin accounts don't produce that
+   * kind of downstream reference, so only they're ever deletable — and
+   * never your own.
+   */
+  function canDelete(user: UserAccount): boolean {
+    return user.role === "SuperAdmin" && user.id !== currentUser?.id;
   }
 
-  function handleRoleChange(user: UserAccount, role: AdminRole) {
-    if (role === user.role) return;
-    update(user.id, { role });
-
-    addNotification(
-      buildAccountStatusNotification(
-        user.id,
-        `Your role was changed to ${role} by a Super Admin.`,
-      ),
+  function handleDelete(user: UserAccount) {
+    const confirmed = window.confirm(
+      `Delete ${user.fullName ?? user.email}'s account? This cannot be undone.`,
     );
+    if (!confirmed) return;
+    remove(user.id);
+  }
+
+  function handleSaveEdit(
+    user: UserAccount,
+    patch: {
+      fullName: string;
+      email: string;
+      mobile?: string;
+      role: UserRole;
+      isActive: boolean;
+      headOfDepartment?: string;
+      headOfOffice?: string;
+    },
+  ) {
+    const roleChanged = patch.role !== user.role;
+    const activeChanged = patch.isActive !== (user.isActive !== false);
+
+    update(user.id, patch);
+
+    if (roleChanged || activeChanged) {
+      const parts: string[] = [];
+      if (activeChanged) {
+        parts.push(
+          patch.isActive ? "reactivated" : "deactivated",
+        );
+      }
+      if (roleChanged) {
+        parts.push(`role changed to ${patch.role}`);
+      }
+
+      addNotification(
+        buildAccountStatusNotification(
+          user.id,
+          `Your account was ${parts.join(" and ")} by a Super Admin.`,
+        ),
+      );
+    }
+
+    setEditing(null);
   }
 
   return (
@@ -102,11 +159,12 @@ export default function UsersPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Transport Office Accounts
+            Registered Accounts
           </h1>
           <p className="mt-1 text-sm text-[#64748B]">
-            Activate, deactivate, or reassign the role of any Transport In
-            Charge, Transport Administrator, or Super Admin account.
+            Every registered account — edit name, email, mobile, role, or
+            active status. Delete is only available for other Super Admin
+            accounts.
           </p>
         </div>
 
@@ -115,7 +173,7 @@ export default function UsersPage() {
           onClick={() => setShowCreate(true)}
           className="h-9 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
         >
-          Add Account
+          Add Transport Office Account
         </button>
       </div>
 
@@ -128,12 +186,11 @@ export default function UsersPage() {
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 text-right font-medium">Action</th>
+                <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {transportOfficeUsers.map((user, index) => {
-                const { locked, reason } = rowLockFor(user);
+              {allUsers.map((user, index) => {
                 const isActive = user.isActive !== false;
 
                 return (
@@ -150,26 +207,7 @@ export default function UsersPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-[#64748B]">{user.email}</td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={user.role}
-                        disabled={locked}
-                        title={locked ? reason : undefined}
-                        onChange={(event) =>
-                          handleRoleChange(
-                            user,
-                            event.target.value as AdminRole,
-                          )
-                        }
-                        className="h-9 rounded-md border border-[#E2E8F0] bg-white px-2 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68] disabled:cursor-not-allowed disabled:bg-[#F1F5F9] disabled:text-[#94A3B8]"
-                      >
-                        {ADMIN_ROLES.map((role) => (
-                          <option key={role} value={role}>
-                            {role}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
+                    <td className="px-4 py-3 text-[#64748B]">{user.role}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -182,19 +220,25 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        disabled={locked}
-                        title={locked ? reason : undefined}
-                        onClick={() => handleSetActive(user, !isActive)}
-                        className={`h-8 rounded-md border px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
-                          isActive
-                            ? "border-[#E2E8F0] text-[#B91C1C] hover:bg-[#FEF2F2]"
-                            : "border-[#E2E8F0] text-[#15803D] hover:bg-[#F0FDF4]"
-                        }`}
-                      >
-                        {isActive ? "Deactivate" : "Reactivate"}
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditing(user)}
+                          className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+                        >
+                          Edit
+                        </button>
+
+                        {canDelete(user) && (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(user)}
+                            className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -204,8 +248,28 @@ export default function UsersPage() {
         </div>
       </div>
 
+      {editing && (
+        <Modal
+          title={`Edit ${editing.fullName ?? editing.email}`}
+          onClose={() => setEditing(null)}
+        >
+          <EditAccountForm
+            user={editing}
+            lock={rowLockFor(editing)}
+            existingEmails={users
+              .filter((user) => user.id !== editing.id)
+              .map((user) => user.email.toLowerCase())}
+            onSubmit={(patch) => handleSaveEdit(editing, patch)}
+            onCancel={() => setEditing(null)}
+          />
+        </Modal>
+      )}
+
       {showCreate && (
-        <Modal title="Add Transport Office Account" onClose={() => setShowCreate(false)}>
+        <Modal
+          title="Add Transport Office Account"
+          onClose={() => setShowCreate(false)}
+        >
           <CreateAccountForm
             existingEmails={users.map((user) => user.email.toLowerCase())}
             onSubmit={(user) => {
@@ -217,6 +281,219 @@ export default function UsersPage() {
         </Modal>
       )}
     </div>
+  );
+}
+
+function EditAccountForm({
+  user,
+  lock,
+  existingEmails,
+  onSubmit,
+  onCancel,
+}: {
+  user: UserAccount;
+  lock: { locked: boolean; reason?: string };
+  existingEmails: string[];
+  onSubmit: (patch: {
+    fullName: string;
+    email: string;
+    mobile?: string;
+    role: UserRole;
+    isActive: boolean;
+    headOfDepartment?: string;
+    headOfOffice?: string;
+  }) => void;
+  onCancel: () => void;
+}) {
+  const [fullName, setFullName] = useState(user.fullName ?? "");
+  const [email, setEmail] = useState(user.email);
+  const [mobile, setMobile] = useState(user.mobile ?? "");
+  const [role, setRole] = useState<UserRole>(user.role);
+  const [isActive, setIsActive] = useState(user.isActive !== false);
+  const [headOfDepartment, setHeadOfDepartment] = useState(
+    user.headOfDepartment ?? "",
+  );
+  const [headOfOffice, setHeadOfOffice] = useState(user.headOfOffice ?? "");
+  const [error, setError] = useState<string | null>(null);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    const trimmedName = fullName.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedMobile = mobile.trim();
+
+    if (!trimmedName || !trimmedEmail) {
+      setError("Name and email are required.");
+      return;
+    }
+
+    if (existingEmails.includes(trimmedEmail)) {
+      setError("Another account is already using this email.");
+      return;
+    }
+
+    onSubmit({
+      fullName: trimmedName,
+      email: trimmedEmail,
+      mobile: trimmedMobile || undefined,
+      role,
+      isActive,
+      // Fix 7 — the fields that actually determine recommendation
+      // routing (findDepartmentHeadsForRequisition matches a
+      // requisition's department/office against these). Only meaningful
+      // for DepartmentHead accounts, but harmless to carry through
+      // otherwise — nothing reads them for any other role.
+      headOfDepartment: headOfDepartment || undefined,
+      headOfOffice: headOfOffice || undefined,
+    });
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium text-[#1E293B]">Full Name</span>
+        <input
+          type="text"
+          value={fullName}
+          onChange={(event) => setFullName(event.target.value)}
+          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium text-[#1E293B]">Email</span>
+        <input
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium text-[#1E293B]">
+          Mobile Number
+        </span>
+        <input
+          type="tel"
+          value={mobile}
+          onChange={(event) => setMobile(event.target.value)}
+          placeholder="01XXXXXXXXX"
+          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium text-[#1E293B]">Role</span>
+        <select
+          value={role}
+          disabled={lock.locked}
+          title={lock.locked ? lock.reason : undefined}
+          onChange={(event) => setRole(event.target.value as UserRole)}
+          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747] disabled:cursor-not-allowed disabled:bg-[#F1F5F9] disabled:text-[#94A3B8]"
+        >
+          {ALL_ROLES.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {role === "DepartmentHead" ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-[#1E293B]">
+              Head of Department
+            </span>
+            <select
+              value={headOfDepartment}
+              onChange={(event) => setHeadOfDepartment(event.target.value)}
+              className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+            >
+              <option value="">— none —</option>
+              {DEPARTMENTS.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-[#1E293B]">
+              Head of Office
+            </span>
+            <select
+              value={headOfOffice}
+              onChange={(event) => setHeadOfOffice(event.target.value)}
+              className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+            >
+              <option value="">— none —</option>
+              {OFFICES.map((off) => (
+                <option key={off} value={off}>
+                  {off}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <p className="text-xs text-[#64748B] sm:col-span-2">
+            Set one of these to determine which requisitions route to this
+            person for recommendation — a requisition's Department or
+            Office must match exactly for it to reach them.
+          </p>
+        </div>
+      ) : null}
+
+      <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] px-3 py-2">
+        <span className="text-sm font-medium text-[#1E293B]">
+          Account Active
+        </span>
+        <button
+          type="button"
+          disabled={lock.locked}
+          title={lock.locked ? lock.reason : undefined}
+          onClick={() => setIsActive((current) => !current)}
+          className={`h-8 rounded-md border px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
+            isActive
+              ? "border-[#E2E8F0] text-[#15803D] hover:bg-[#F0FDF4]"
+              : "border-[#E2E8F0] text-[#B91C1C] hover:bg-[#FEF2F2]"
+          }`}
+        >
+          {isActive ? "Active" : "Deactivated"}
+        </button>
+      </div>
+
+      {lock.locked && (
+        <p className="text-xs text-[#94A3B8]">{lock.reason}</p>
+      )}
+
+      {error && (
+        <p className="rounded-md border border-[#FEE2E2] bg-[#FEE2E2] px-3 py-2 text-sm text-[#B91C1C]">
+          {error}
+        </p>
+      )}
+
+      <div className="flex justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="h-9 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          className="h-9 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+        >
+          Save Changes
+        </button>
+      </div>
+    </form>
   );
 }
 
