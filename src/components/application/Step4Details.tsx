@@ -89,7 +89,7 @@ export default function Step4Details({
         <label className={FIELD_LABEL}>Supporting document (optional)</label>
 
         {value.supportingDocumentDataUrl ? (
-          <div className="flex items-center gap-3 border border-form-rule bg-form-band px-3 py-2">
+          <div className="flex items-center gap-3 border border-form-rule bg-white px-3 py-2">
             <span className="flex-1 truncate text-sm text-form-ink">
               {value.supportingDocumentName}
             </span>

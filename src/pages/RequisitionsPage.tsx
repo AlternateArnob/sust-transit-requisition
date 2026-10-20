@@ -85,7 +85,7 @@ export default function RequisitionsPage() {
   const { driver } = useDriver();
   const { dutySlips, addDutySlip } = useDutySlips();
   const { mileageEntries, addMileageEntry } = useMileageEntries();
-  const { users } = useUsers();
+  const { users, findById: findUserById } = useUsers();
   const { addNotification } = useNotifications();
 
   const [tab, setTab] = useState<Tab>("queue");
@@ -574,6 +574,7 @@ export default function RequisitionsPage() {
             driver={driver}
             allocations={allocations}
             dutySlips={dutySlips}
+            requester={findUserById(selected.requesterId)}
             mode={selectedMode}
             onAssignVehicle={handleAssignVehicle}
             onRemoveVehicleAssignment={handleRemoveVehicleAssignment}

@@ -8,6 +8,7 @@ import Modal from "../components/Modal";
 import { ADMIN_ROLES, type AdminRole } from "../utils/permissions";
 import { buildAccountStatusNotification } from "../utils/notificationUtils";
 import { hashPassword, MIN_PASSWORD_LENGTH } from "../utils/passwordUtils";
+import { DEPARTMENTS, OFFICES } from "../data/sustDirectory";
 import type { UserAccount, UserRole } from "../types";
 
 /**
@@ -116,7 +117,15 @@ export default function UsersPage() {
 
   function handleSaveEdit(
     user: UserAccount,
-    patch: { fullName: string; email: string; mobile?: string; role: UserRole; isActive: boolean },
+    patch: {
+      fullName: string;
+      email: string;
+      mobile?: string;
+      role: UserRole;
+      isActive: boolean;
+      headOfDepartment?: string;
+      headOfOffice?: string;
+    },
   ) {
     const roleChanged = patch.role !== user.role;
     const activeChanged = patch.isActive !== (user.isActive !== false);
@@ -291,6 +300,8 @@ function EditAccountForm({
     mobile?: string;
     role: UserRole;
     isActive: boolean;
+    headOfDepartment?: string;
+    headOfOffice?: string;
   }) => void;
   onCancel: () => void;
 }) {
@@ -299,6 +310,10 @@ function EditAccountForm({
   const [mobile, setMobile] = useState(user.mobile ?? "");
   const [role, setRole] = useState<UserRole>(user.role);
   const [isActive, setIsActive] = useState(user.isActive !== false);
+  const [headOfDepartment, setHeadOfDepartment] = useState(
+    user.headOfDepartment ?? "",
+  );
+  const [headOfOffice, setHeadOfOffice] = useState(user.headOfOffice ?? "");
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -325,6 +340,13 @@ function EditAccountForm({
       mobile: trimmedMobile || undefined,
       role,
       isActive,
+      // Fix 7 — the fields that actually determine recommendation
+      // routing (findDepartmentHeadsForRequisition matches a
+      // requisition's department/office against these). Only meaningful
+      // for DepartmentHead accounts, but harmless to carry through
+      // otherwise — nothing reads them for any other role.
+      headOfDepartment: headOfDepartment || undefined,
+      headOfOffice: headOfOffice || undefined,
     });
   }
 
@@ -379,6 +401,52 @@ function EditAccountForm({
           ))}
         </select>
       </label>
+
+      {role === "DepartmentHead" ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-[#1E293B]">
+              Head of Department
+            </span>
+            <select
+              value={headOfDepartment}
+              onChange={(event) => setHeadOfDepartment(event.target.value)}
+              className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+            >
+              <option value="">— none —</option>
+              {DEPARTMENTS.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-[#1E293B]">
+              Head of Office
+            </span>
+            <select
+              value={headOfOffice}
+              onChange={(event) => setHeadOfOffice(event.target.value)}
+              className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+            >
+              <option value="">— none —</option>
+              {OFFICES.map((off) => (
+                <option key={off} value={off}>
+                  {off}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <p className="text-xs text-[#64748B] sm:col-span-2">
+            Set one of these to determine which requisitions route to this
+            person for recommendation — a requisition's Department or
+            Office must match exactly for it to reach them.
+          </p>
+        </div>
+      ) : null}
 
       <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] px-3 py-2">
         <span className="text-sm font-medium text-[#1E293B]">

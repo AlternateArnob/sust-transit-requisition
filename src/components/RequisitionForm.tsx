@@ -7,11 +7,10 @@ import Step2TransportUser, {
 } from "./application/Step2TransportUser";
 import Step3Journey from "./application/Step3Journey";
 import Step4Details, { type DetailsDraft } from "./application/Step4Details";
-import { PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import { ERROR_TEXT, PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
-import useRequisitions from "../hooks/useRequisitions";
 import useUsers from "../hooks/useUsers";
 import { requiresRecommendation } from "../utils/authUtils";
 import {
@@ -46,7 +45,6 @@ export default function RequisitionForm({
   onCancel,
 }: RequisitionFormProps) {
   const { currentUser } = useAuth();
-  const { addRequisition } = useRequisitions();
   const { addNotification } = useNotifications();
   const { users } = useUsers();
 
@@ -89,6 +87,10 @@ export default function RequisitionForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Fix 6 — replaces the old "reproduce a paper signature" block. The
+  // applicant already provided a signature once, in Profile Setup; this
+  // is a plain digital confirmation, not a re-enactment of it.
+  const [declarationConfirmed, setDeclarationConfirmed] = useState(false);
 
   const requester = currentUser;
   const requiresRecommender = useMemo(
@@ -151,6 +153,13 @@ export default function RequisitionForm({
 
     if (!details.reason.trim()) {
       next.reason = "Reason for requisition is required.";
+    }
+
+    // Fix 6 — required before submit (checked here, in validateAll(),
+    // which handleSaveDraft() never calls — so saving a draft still
+    // doesn't require it, only a full submit does).
+    if (!declarationConfirmed) {
+      next.declaration = "You must confirm the declaration before submitting.";
     }
 
     return next;
@@ -218,7 +227,11 @@ export default function RequisitionForm({
     setIsSubmitting(true);
     try {
       const draft = buildRequisition("Draft");
-      addRequisition(draft);
+      // Fix 2 — ApplyRequisitionPage.onSubmit already calls
+      // addRequisition(...) once persistence is handed to it below; this
+      // component only builds the object now. Calling addRequisition
+      // here too was writing every save (draft or full submit) into
+      // storage twice.
       onSubmit(draft);
     } finally {
       setIsSubmitting(false);
@@ -237,7 +250,8 @@ export default function RequisitionForm({
         : "Pending on Transport Office";
 
       const requisition = buildRequisition(finalStatus);
-      addRequisition(requisition);
+      // Fix 2 — see the comment in handleSaveDraft above; persistence
+      // happens once, in ApplyRequisitionPage's onSubmit.
       onSubmit(requisition);
 
       // When the recommender workflow applies, notify every DepartmentHead
@@ -265,11 +279,6 @@ export default function RequisitionForm({
   const submitLabel = requiresRecommender
     ? "Proceed to Recommendation"
     : "Submit Application";
-  const today = new Date().toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 
   return (
     <div className="bg-form-paper px-5 py-6 sm:px-10 sm:py-8">
@@ -332,37 +341,19 @@ export default function RequisitionForm({
         ) : null}
 
         <div className={SECTION_WRAP}>
-          <p className="text-sm leading-relaxed text-form-ink">
-            I hereby declare that the information given above is true to the
-            best of my knowledge, and I accept responsibility for the vehicle
-            requested.
-          </p>
-
-          <div className="mt-5 flex flex-wrap items-end justify-between gap-8">
-            <div>
-              <p className="text-[13px] font-medium text-form-muted">
-                Applicant's signature
-              </p>
-              {requester.signatureDataUrl ? (
-                <img
-                  src={requester.signatureDataUrl}
-                  alt="Applicant signature"
-                  className="mt-1 h-16 w-44 border-b border-form-rule object-contain object-left-bottom"
-                />
-              ) : (
-                <p className="mt-1 h-16 w-44 border-b border-form-rule text-xs text-form-muted">
-                  No signature on file
-                </p>
-              )}
-            </div>
-
-            <div className="text-right">
-              <p className="text-[13px] font-medium text-form-muted">Date</p>
-              <p className="mt-1 min-w-[10rem] border-b border-form-rule pb-1 text-sm text-form-ink">
-                {today}
-              </p>
-            </div>
-          </div>
+          <label className="flex items-start gap-2.5 text-sm leading-relaxed text-form-ink">
+            <input
+              type="checkbox"
+              checked={declarationConfirmed}
+              onChange={(event) => setDeclarationConfirmed(event.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded-none border-form-rule text-primary focus:ring-primary"
+            />
+            I confirm the information above is accurate, and I accept
+            responsibility for the vehicle requested.
+          </label>
+          {errors.declaration ? (
+            <p className={`${ERROR_TEXT} ml-6`}>{errors.declaration}</p>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-form-rule pt-5">

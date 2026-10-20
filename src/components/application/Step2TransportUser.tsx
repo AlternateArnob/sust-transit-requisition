@@ -50,6 +50,13 @@ export default function Step2TransportUser({
         designation: requester.designation ?? "",
         mobile: requester.mobile ?? "",
       });
+    } else {
+      // Fix 4 — unchecking reveals a blank set of fields to fill in,
+      // rather than leaving the requester's copied-over values sitting
+      // there under an editable label (which read as "pre-filled, then
+      // silently left as the requester" rather than a deliberate entry
+      // for a different person).
+      onChange({ fullName: "", designation: "", mobile: "" });
     }
   }
 
@@ -72,45 +79,56 @@ export default function Step2TransportUser({
         Transport user is the same as the requester
       </label>
 
-      <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-        <div>
-          <label className={FIELD_LABEL}>Full name</label>
-          <input
-            value={value.fullName}
-            onChange={(event) => handleField("fullName", event.target.value)}
-            disabled={sameAsRequester}
-            className={`${FIELD_UNDERLINE} disabled:text-form-muted`}
-          />
-          {errors.fullName ? <p className={ERROR_TEXT}>{errors.fullName}</p> : null}
-        </div>
+      {sameAsRequester ? (
+        // Fix 4 — nothing to fill in while this is checked; a one-line
+        // confirmation replaces the (previously always-rendered, just
+        // greyed-out) field group entirely.
+        <p className="text-sm text-form-muted">
+          Using requester's details —{" "}
+          <span className="text-form-ink">
+            {requester.fullName ?? requester.email}
+            {requester.mobile ? `, ${requester.mobile}` : ""}
+          </span>
+          .
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+          <div>
+            <label className={FIELD_LABEL}>Full name</label>
+            <input
+              value={value.fullName}
+              onChange={(event) => handleField("fullName", event.target.value)}
+              className={FIELD_UNDERLINE}
+            />
+            {errors.fullName ? <p className={ERROR_TEXT}>{errors.fullName}</p> : null}
+          </div>
 
-        <div>
-          <label className={FIELD_LABEL}>Mobile number</label>
-          <input
-            type="tel"
-            value={value.mobile}
-            onChange={(event) => handleField("mobile", event.target.value)}
-            disabled={sameAsRequester}
-            className={`${FIELD_UNDERLINE} disabled:text-form-muted`}
-          />
-          {errors.mobile ? <p className={ERROR_TEXT}>{errors.mobile}</p> : null}
-        </div>
+          <div>
+            <label className={FIELD_LABEL}>Mobile number</label>
+            <input
+              type="tel"
+              value={value.mobile}
+              onChange={(event) => handleField("mobile", event.target.value)}
+              className={FIELD_UNDERLINE}
+            />
+            {errors.mobile ? <p className={ERROR_TEXT}>{errors.mobile}</p> : null}
+          </div>
 
-        <div className="sm:col-span-2">
-          <label className={FIELD_LABEL}>Designation (optional)</label>
-          <input
-            value={value.designation}
-            onChange={(event) =>
-              handleField("designation", event.target.value)
-            }
-            disabled={sameAsRequester}
-            className={`${FIELD_UNDERLINE} disabled:text-form-muted sm:w-1/2`}
-          />
-          {errors.designation ? (
-            <p className={ERROR_TEXT}>{errors.designation}</p>
-          ) : null}
+          <div className="sm:col-span-2">
+            <label className={FIELD_LABEL}>Designation (optional)</label>
+            <input
+              value={value.designation}
+              onChange={(event) =>
+                handleField("designation", event.target.value)
+              }
+              className={`${FIELD_UNDERLINE} sm:w-1/2`}
+            />
+            {errors.designation ? (
+              <p className={ERROR_TEXT}>{errors.designation}</p>
+            ) : null}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }

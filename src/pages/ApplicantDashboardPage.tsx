@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
 
 import StatCard from "../components/StatCard";
-import NotificationBell from "../components/NotificationBell";
+import ApplicantHeader from "../components/ApplicantHeader";
 import { formatDateRange, getTripStatusCounts } from "../utils/requisitionUtils";
 
 import type { ApplicationStatus } from "../types";
@@ -30,9 +30,8 @@ function statusBadgeClass(status: ApplicationStatus) {
  * drivers, conflicts) that page also covers.
  */
 export default function ApplicantDashboardPage() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const { requisitions } = useRequisitions();
-  const navigate = useNavigate();
 
   const myRequisitions = useMemo(() => {
     if (!currentUser) return [];
@@ -54,35 +53,9 @@ export default function ApplicantDashboardPage() {
 
   const recent = myRequisitions.slice(0, 5);
 
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
-
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
-        <h1 className="text-lg font-semibold">SUST Transit</h1>
-        <div className="flex items-center gap-4 text-sm">
-          <Link to="/apply" className="hover:underline">
-            New Requisition
-          </Link>
-          <Link to="/my-requisitions" className="hover:underline">
-            My Requisitions
-          </Link>
-          <Link to="/my-mileage" className="hover:underline">
-            My Mileage
-          </Link>
-          <NotificationBell />
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-md border border-white/30 px-3 py-1.5 hover:bg-white/10"
-          >
-            Log out
-          </button>
-        </div>
-      </header>
+      <ApplicantHeader active="dashboard" />
 
       <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">
         <div>

@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
 import useMileageEntries from "../hooks/useMileageEntries";
-import NotificationBell from "../components/NotificationBell";
+import ApplicantHeader from "../components/ApplicantHeader";
 
 import {
   getRecordedMileageTrips,
@@ -22,12 +22,11 @@ import {
  * own Personal-use trips only, plus a running total across their history.
  */
 export default function MyMileagePage() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { vehicles } = useVehicles();
   const { mileageEntries } = useMileageEntries();
-  const navigate = useNavigate();
 
   const myPersonalTrips = useMemo(() => {
     if (!currentUser) return [];
@@ -52,32 +51,9 @@ export default function MyMileagePage() {
     0,
   );
 
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
-
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
-        <h1 className="text-lg font-semibold">SUST Transit — My Mileage</h1>
-        <div className="flex items-center gap-4 text-sm">
-          <Link to="/my-requisitions" className="hover:underline">
-            My Requisitions
-          </Link>
-          <Link to="/apply" className="hover:underline">
-            New Requisition
-          </Link>
-          <NotificationBell />
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-md border border-white/30 px-3 py-1.5 hover:bg-white/10"
-          >
-            Log out
-          </button>
-        </div>
-      </header>
+      <ApplicantHeader active="my-mileage" title="My Mileage" />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <div className="mb-6">

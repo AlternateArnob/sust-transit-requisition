@@ -10,7 +10,7 @@ import {
 } from "../utils/notificationUtils";
 
 import RequisitionForm from "../components/RequisitionForm";
-import NotificationBell from "../components/NotificationBell";
+import ApplicantHeader from "../components/ApplicantHeader";
 
 import type { Requisition } from "../types";
 
@@ -59,15 +59,7 @@ export default function ApplyRequisitionPage() {
 
   return (
     <div className="min-h-screen bg-form-band">
-      <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
-        <h1 className="text-lg font-semibold">SUST Transit</h1>
-        <div className="flex items-center gap-4 text-sm">
-          <Link to="/my-requisitions" className="hover:underline">
-            My Requisitions
-          </Link>
-          <NotificationBell />
-        </div>
-      </header>
+      <ApplicantHeader active="apply" />
 
       <main className="mx-auto max-w-3xl px-4 py-10">
         {submitted ? (

@@ -1,4 +1,6 @@
-import type { Requisition, Vehicle, Driver, Allocation } from "../types";
+import type { Requisition, Vehicle, Driver, Allocation, UserAccount } from "../types";
+import GovFormMasthead from "./application/GovFormMasthead";
+import { PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 import { formatDateRange } from "../utils/requisitionUtils";
 import { canGenerateSlips } from "../utils/dutySlipUtils";
 
@@ -7,6 +9,8 @@ interface ApplicantRequisitionDetailProps {
   vehicles: Vehicle[];
   driver: Driver[];
   allocations: Allocation[];
+  /** Fix 8 — the applicant's own account, for the signature on file. */
+  requester?: UserAccount;
   onDownloadConfirmationSlip: () => void;
 }
 
@@ -31,6 +35,7 @@ export default function ApplicantRequisitionDetail({
   vehicles,
   driver,
   allocations,
+  requester,
   onDownloadConfirmationSlip,
 }: ApplicantRequisitionDetailProps) {
   // Phase 1 — "Final Approved" is retired; the confirmation slip is
@@ -44,11 +49,13 @@ export default function ApplicantRequisitionDetail({
   const canDownloadConfirmationSlip = canGenerateSlips(requisition);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-medium text-[#64748B]">
-          Reference: <span className="text-[#1E293B]">{requisition.id}</span>
-        </p>
+    <div className="space-y-7">
+      <GovFormMasthead
+        formTitle="Vehicle Requisition"
+        referenceLabel={`Ref. No.: ${requisition.id}`}
+      />
+
+      <div className="flex justify-end">
         <span
           className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(
             requisition.status,
@@ -58,7 +65,15 @@ export default function ApplicantRequisitionDetail({
         </span>
       </div>
 
+      <div className={SECTION_WRAP}>
+      <p className={PART_LABEL}>Part One</p>
+      <h2 className={`${SECTION_TITLE} mb-3`}>Requester Details</h2>
       <div className="grid grid-cols-1 gap-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:grid-cols-2">
+        <div>
+          <p className="text-xs font-medium text-[#64748B]">Requester</p>
+          <p className="text-sm text-[#1E293B]">{requisition.requesterName}</p>
+        </div>
+
         <div>
           <p className="text-xs font-medium text-[#64748B]">Type</p>
           <p className="text-sm text-[#1E293B]">
@@ -97,13 +112,52 @@ export default function ApplicantRequisitionDetail({
           <p className="text-xs font-medium text-[#64748B]">Purpose</p>
           <p className="text-sm text-[#1E293B]">{requisition.purpose}</p>
         </div>
+
+        {requisition.supportingDocumentDataUrl && (
+          <div className="sm:col-span-2">
+            <p className="text-xs font-medium text-[#64748B]">
+              Supporting Document
+            </p>
+            <a
+              href={requisition.supportingDocumentDataUrl}
+              target="_blank"
+              rel="noreferrer"
+              download={requisition.supportingDocumentName || undefined}
+              className="text-sm font-medium text-[#0F2747] hover:underline"
+            >
+              {requisition.supportingDocumentName || "View document"}
+            </a>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#E2E8F0] pt-3 sm:col-span-2">
+          <div>
+            <p className="text-xs font-medium text-[#64748B]">Signature</p>
+            {requester?.signatureDataUrl ? (
+              <img
+                src={requester.signatureDataUrl}
+                alt={`Signature of ${requisition.requesterName}`}
+                className="mt-1 h-14 max-w-[220px] object-contain"
+              />
+            ) : (
+              <p className="mt-1 text-sm italic text-[#64748B]">
+                No signature on file
+              </p>
+            )}
+          </div>
+          <p className="text-xs text-[#64748B]">
+            Submitted: {new Date(requisition.createdAt).toLocaleString()}
+          </p>
+        </div>
+      </div>
       </div>
 
-      <div>
-        <p className="mb-2 text-sm font-medium text-[#1E293B]">
-          Trip{requisition.trips.length === 1 ? "" : "s"} (
-          {requisition.trips.length})
-        </p>
+      <div className={SECTION_WRAP}>
+        <p className={PART_LABEL}>Part Two</p>
+        <h2 className={`${SECTION_TITLE} mb-3`}>
+          Journey ({requisition.trips.length}{" "}
+          {requisition.trips.length === 1 ? "trip" : "trips"})
+        </h2>
 
         <div className="space-y-3">
           {requisition.trips.length === 0 ? (
@@ -177,8 +231,9 @@ export default function ApplicantRequisitionDetail({
         </div>
       </div>
 
-      <div className="border-t border-[#E2E8F0] pt-4">
-        <p className="mb-2 text-sm font-medium text-[#1E293B]">Documents</p>
+      <div className={SECTION_WRAP}>
+        <p className={PART_LABEL}>Part Three</p>
+        <h2 className={`${SECTION_TITLE} mb-3`}>Documents</h2>
 
         {canDownloadConfirmationSlip ? (
           <button

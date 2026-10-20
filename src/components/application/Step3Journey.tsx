@@ -150,7 +150,7 @@ function TripCard({
   const holdLimitError = errors[`holdLimit-${trip.id}`];
 
   return (
-    <div className="rounded-none border border-form-rule bg-form-band p-4">
+    <div className="rounded-none border border-form-rule bg-white p-4">
       {!isPersonal ? (
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[13px] font-medium text-primary">

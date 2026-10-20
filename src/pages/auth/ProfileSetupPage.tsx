@@ -9,6 +9,7 @@ import { APPLICANT_PROFILES } from "../../types";
 import type { ApplicantProfile, UserAccount } from "../../types";
 import { requiresProfileFields } from "../../utils/authUtils";
 import { MIN_PASSWORD_LENGTH } from "../../utils/passwordUtils";
+import { DEPARTMENTS, OFFICES } from "../../data/sustDirectory";
 
 interface ProfileFormErrors {
   fullName?: string;
@@ -139,7 +140,14 @@ export default function ProfileSetupPage() {
       studentRegNumber: studentRegNumber.trim() || undefined,
     };
 
-    update(updated);
+    // Fix 1 — useUsers().update is update(id, patch); calling it with
+    // just `updated` silently made `id` the whole object and `patch`
+    // undefined, so `user.id === id` never matched and this save was a
+    // no-op at runtime (it also failed `tsc --noEmit`, which is how the
+    // bug was first spotted). Passing the id explicitly is the whole
+    // fix — `updated` is already a complete UserAccount, valid as the
+    // patch too.
+    update(currentUser.id, updated);
     if (password) {
       savePassword(currentUser.id, password);
     }
@@ -224,12 +232,19 @@ export default function ProfileSetupPage() {
                   locked={isLocked("department")}
                   error={errors.department}
                 >
-                  <input
+                  <select
                     value={department}
                     onChange={(event) => setDepartment(event.target.value)}
                     disabled={lockActive && isLocked("department")}
                     className={inputClass(!!errors.department)}
-                  />
+                  >
+                    <option value="">Select department…</option>
+                    {DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
                 </ProfileField>
                 <ProfileField
                   label="Student registration number"
@@ -257,12 +272,19 @@ export default function ProfileSetupPage() {
                   locked={isLocked("department")}
                   error={errors.department}
                 >
-                  <input
+                  <select
                     value={department}
                     onChange={(event) => setDepartment(event.target.value)}
                     disabled={lockActive && isLocked("department")}
                     className={inputClass(!!errors.department)}
-                  />
+                  >
+                    <option value="">Select department…</option>
+                    {DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
                 </ProfileField>
                 <ProfileField
                   label="Designation"
@@ -288,12 +310,19 @@ export default function ProfileSetupPage() {
                   locked={isLocked("office")}
                   error={errors.office}
                 >
-                  <input
+                  <select
                     value={office}
                     onChange={(event) => setOffice(event.target.value)}
                     disabled={lockActive && isLocked("office")}
                     className={inputClass(!!errors.office)}
-                  />
+                  >
+                    <option value="">Select office…</option>
+                    {OFFICES.map((off) => (
+                      <option key={off} value={off}>
+                        {off}
+                      </option>
+                    ))}
+                  </select>
                 </ProfileField>
                 <ProfileField
                   label="Designation"
