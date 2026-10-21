@@ -50,14 +50,14 @@ export default function SignatureUpload({
           <img
             src={value}
             alt="Signature preview"
-            className="h-16 w-32 rounded border border-[#E2E8F0] bg-white object-contain"
+            className="h-16 w-32 rounded border border-border bg-white object-contain"
           />
           <div className="flex flex-col gap-1">
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={disabled}
-              className="text-sm font-medium text-[#0F2747] hover:underline disabled:cursor-not-allowed disabled:text-[#64748B]"
+              className="text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:text-text-muted"
             >
               Replace
             </button>
@@ -65,7 +65,7 @@ export default function SignatureUpload({
               type="button"
               onClick={handleRemove}
               disabled={disabled}
-              className="text-sm font-medium text-[#B91C1C] hover:underline disabled:cursor-not-allowed disabled:text-[#64748B]"
+              className="text-sm font-medium text-error hover:underline disabled:cursor-not-allowed disabled:text-text-muted"
             >
               Remove
             </button>
@@ -76,7 +76,7 @@ export default function SignatureUpload({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={disabled}
-          className="flex h-16 w-44 items-center justify-center rounded-md border border-dashed border-[#E2E8F0] bg-white text-sm font-medium text-[#0F2747] hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:text-[#64748B]"
+          className="flex h-16 w-44 items-center justify-center rounded-md border border-dashed border-border bg-white text-sm font-medium text-primary hover:bg-surface disabled:cursor-not-allowed disabled:text-text-muted"
         >
           {label}
         </button>
@@ -92,7 +92,7 @@ export default function SignatureUpload({
       />
 
       {helperText ? (
-        <p className="text-xs text-[#64748B]">{helperText}</p>
+        <p className="text-xs text-text-muted">{helperText}</p>
       ) : null}
     </div>
   );

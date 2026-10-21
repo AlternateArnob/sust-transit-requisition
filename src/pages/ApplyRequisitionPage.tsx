@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { buttonClass } from "../components/ui/buttonStyles";
 import { Link } from "react-router-dom";
 
 import useRequisitions from "../hooks/useRequisitions";
@@ -58,26 +59,26 @@ export default function ApplyRequisitionPage() {
 
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface">
       <ApplicantHeader active="apply" />
 
       <main className="mx-auto max-w-3xl px-4 py-10">
         {submitted ? (
-          <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#DCFCE7]">
-              <span className="text-2xl text-[#15803D]">✓</span>
+          <div className="rounded-lg border border-border bg-white p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-bg">
+              <span className="text-2xl text-success">✓</span>
             </div>
 
-            <h2 className="mt-4 text-xl font-semibold text-[#1E293B]">
+            <h2 className="mt-4 text-xl font-semibold text-text">
               Requisition submitted
             </h2>
 
-            <p className="mt-2 text-sm text-[#64748B]">
+            <p className="mt-2 text-sm text-text-muted">
               Reference ID:{" "}
-              <span className="font-medium text-[#1E293B]">{submitted.id}</span>
+              <span className="font-medium text-text">{submitted.id}</span>
             </p>
 
-            <p className="mt-1 text-sm text-[#64748B]">
+            <p className="mt-1 text-sm text-text-muted">
               The transport office has been notified and will review your
               request. You'll be contacted using the phone number you provided
               once a decision is made.
@@ -87,14 +88,14 @@ export default function ApplyRequisitionPage() {
               <button
                 type="button"
                 onClick={() => setSubmitted(null)}
-                className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+                className={buttonClass("primary")}
               >
                 Submit another requisition
               </button>
 
               <Link
                 to="/my-requisitions"
-                className="h-10 rounded-md border border-[#E2E8F0] px-4 text-sm font-medium leading-10 text-[#334E68] hover:bg-[#F8FAFC]"
+                className="h-10 rounded-md border border-border px-4 text-sm font-medium leading-10 text-secondary hover:bg-surface"
               >
                 View My Requisitions
               </Link>

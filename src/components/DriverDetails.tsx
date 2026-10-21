@@ -13,32 +13,32 @@ export default function DriverDetails({
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+        <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
           Driver Name
         </p>
 
-        <p className="mt-1 font-semibold text-[#1E293B]">{driver.name}</p>
+        <p className="mt-1 font-semibold text-text">{driver.name}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
             Designation
           </p>
 
-          <p className="mt-1 text-sm text-[#1E293B]">{driver.designation}</p>
+          <p className="mt-1 text-sm text-text">{driver.designation}</p>
         </div>
 
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
             Phone
           </p>
 
-          <p className="mt-1 text-sm text-[#1E293B]">{driver.phone ?? "—"}</p>
+          <p className="mt-1 text-sm text-text">{driver.phone ?? "—"}</p>
         </div>
 
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
             Status
           </p>
 
@@ -48,11 +48,11 @@ export default function DriverDetails({
         </div>
 
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
             Permanent Vehicle
           </p>
 
-          <p className="mt-1 text-sm text-[#1E293B]">
+          <p className="mt-1 text-sm text-text">
             {vehicleRegistration ?? "No vehicle assigned"}
           </p>
         </div>

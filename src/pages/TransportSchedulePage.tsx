@@ -17,6 +17,8 @@ import type {
   StudentTransportVehicle,
   StudentTransportSchedule,
 } from "../types";
+import { buttonClass } from "../components/ui/buttonStyles";
+import PageTitle from "../components/ui/PageTitle";
 
 type Tab = "schedule" | "offdays";
 
@@ -72,8 +74,8 @@ export default function TransportSchedulePage() {
 
     return days.map((day) => (
       <div key={day} className="text-xs leading-5">
-        <span className="font-medium text-[#1E293B]">{day}:</span>{" "}
-        <span className="text-[#334E68]">
+        <span className="font-medium text-text">{day}:</span>{" "}
+        <span className="text-secondary">
           {formatTimeDisplay(schedule[day] ?? "")}
         </span>
       </div>
@@ -102,22 +104,13 @@ export default function TransportSchedulePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Transport Schedule
-          </h1>
-
-          <p className="mt-1 text-sm text-[#64748B]">
-            Vehicles used for regular student transportation, and when each
-            becomes free for requisition
-          </p>
-        </div>
+        <PageTitle title="Transport Schedule" subtitle="Vehicles used for regular student transportation, and when each becomes free for requisition" />
 
         {tab === "schedule" ? (
           <button
             type="button"
             onClick={() => setIsAddRouteOpen(true)}
-            className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+            className={buttonClass("primary")}
           >
             + Add Vehicle
           </button>
@@ -125,7 +118,7 @@ export default function TransportSchedulePage() {
           <button
             type="button"
             onClick={() => setIsAddOffDayOpen(true)}
-            className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+            className={buttonClass("primary")}
           >
             + Mark Off-Day
           </button>
@@ -133,14 +126,14 @@ export default function TransportSchedulePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-[#E2E8F0]">
+      <div className="flex gap-2 border-b border-border">
         <button
           type="button"
           onClick={() => setTab("schedule")}
           className={`px-4 py-2 text-sm font-medium ${
             tab === "schedule"
-              ? "border-b-2 border-[#0F2747] text-[#0F2747]"
-              : "text-[#64748B] hover:text-[#1E293B]"
+              ? "border-b-2 border-primary text-primary"
+              : "text-text-muted hover:text-text"
           }`}
         >
           Student Transport Vehicles ({routes.length})
@@ -151,8 +144,8 @@ export default function TransportSchedulePage() {
           onClick={() => setTab("offdays")}
           className={`px-4 py-2 text-sm font-medium ${
             tab === "offdays"
-              ? "border-b-2 border-[#0F2747] text-[#0F2747]"
-              : "text-[#64748B] hover:text-[#1E293B]"
+              ? "border-b-2 border-primary text-primary"
+              : "text-text-muted hover:text-text"
           }`}
         >
           Vehicle Off-Days ({offDays.length})
@@ -161,16 +154,16 @@ export default function TransportSchedulePage() {
 
       {/* Schedule Tab */}
       {tab === "schedule" && (
-        <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
+        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-[#0F2747] text-white">
+              <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Vehicle Number</th>
-                  <th className="px-4 py-3 font-medium">Vehicle Category</th>
-                  <th className="px-4 py-3 font-medium">Scheduled Days</th>
-                  <th className="px-4 py-3 font-medium">Free After</th>
-                  <th className="px-4 py-3 text-right font-medium">Actions</th>
+                  <th className="px-4 py-3 font-semibold">Vehicle Number</th>
+                  <th className="px-4 py-3 font-semibold">Vehicle Category</th>
+                  <th className="px-4 py-3 font-semibold">Scheduled Days</th>
+                  <th className="px-4 py-3 font-semibold">Free After</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
 
@@ -178,11 +171,11 @@ export default function TransportSchedulePage() {
                 {routes.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
-                      <p className="font-medium text-[#1E293B]">
+                      <p className="font-medium text-text">
                         No student transport vehicles found
                       </p>
 
-                      <p className="mt-1 text-sm text-[#64748B]">
+                      <p className="mt-1 text-sm text-text-muted">
                         Add a vehicle used for regular student transportation.
                       </p>
                     </td>
@@ -194,19 +187,19 @@ export default function TransportSchedulePage() {
                     return (
                       <tr
                         key={entry.id}
-                        className={`border-t border-[#E2E8F0] ${
-                          index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
+                        className={`border-t border-border ${
+                          index % 2 === 1 ? "bg-surface" : "bg-white"
                         }`}
                       >
-                        <td className="px-4 py-3 font-medium text-[#1E293B]">
+                        <td className="px-4 py-3 font-medium text-text">
                           {vehicle?.registrationNumber ?? "Unknown Vehicle"}
                         </td>
 
-                        <td className="px-4 py-3 text-[#64748B]">
+                        <td className="px-4 py-3 text-text-muted">
                           {vehicle?.category ?? "—"}
                         </td>
 
-                        <td className="px-4 py-3 font-medium text-[#334E68]">
+                        <td className="px-4 py-3 font-medium text-secondary">
                           {formatScheduledDays(entry.schedule)}
                         </td>
 
@@ -219,7 +212,7 @@ export default function TransportSchedulePage() {
                             <button
                               type="button"
                               onClick={() => setEditingRoute(entry)}
-                              className="text-sm font-medium text-[#334E68] hover:underline"
+                              className="text-sm font-medium text-secondary hover:underline"
                             >
                               Edit
                             </button>
@@ -227,7 +220,7 @@ export default function TransportSchedulePage() {
                             <button
                               type="button"
                               onClick={() => handleDeleteRoute(entry)}
-                              className="text-sm font-medium text-[#B91C1C] hover:underline"
+                              className="text-sm font-medium text-error hover:underline"
                             >
                               Delete
                             </button>
@@ -245,16 +238,16 @@ export default function TransportSchedulePage() {
 
       {/* Off-Days Tab — unchanged */}
       {tab === "offdays" && (
-        <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
+        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-[#0F2747] text-white">
+              <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Vehicle</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Date / Weekday</th>
-                  <th className="px-4 py-3 font-medium">Reason</th>
-                  <th className="px-4 py-3 text-right font-medium">Actions</th>
+                  <th className="px-4 py-3 font-semibold">Vehicle</th>
+                  <th className="px-4 py-3 font-semibold">Type</th>
+                  <th className="px-4 py-3 font-semibold">Date / Weekday</th>
+                  <th className="px-4 py-3 font-semibold">Reason</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
 
@@ -262,11 +255,11 @@ export default function TransportSchedulePage() {
                 {offDays.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
-                      <p className="font-medium text-[#1E293B]">
+                      <p className="font-medium text-text">
                         No off-days found
                       </p>
 
-                      <p className="mt-1 text-sm text-[#64748B]">
+                      <p className="mt-1 text-sm text-text-muted">
                         Mark a vehicle unavailable for a date or weekday.
                       </p>
                     </td>
@@ -275,25 +268,25 @@ export default function TransportSchedulePage() {
                   offDays.map((offDay, index) => (
                     <tr
                       key={offDay.id}
-                      className={`border-t border-[#E2E8F0] ${
-                        index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
+                      className={`border-t border-border ${
+                        index % 2 === 1 ? "bg-surface" : "bg-white"
                       }`}
                     >
-                      <td className="px-4 py-3 font-medium text-[#1E293B]">
+                      <td className="px-4 py-3 font-medium text-text">
                         {getVehicleLabel(offDay.vehicleId)}
                       </td>
 
-                      <td className="px-4 py-3 text-[#64748B]">
+                      <td className="px-4 py-3 text-text-muted">
                         {offDay.type}
                       </td>
 
-                      <td className="px-4 py-3 text-[#64748B]">
+                      <td className="px-4 py-3 text-text-muted">
                         {offDay.type === "One-time"
                           ? offDay.date
                           : offDay.weekday}
                       </td>
 
-                      <td className="px-4 py-3 text-[#64748B]">
+                      <td className="px-4 py-3 text-text-muted">
                         {offDay.reason ?? "—"}
                       </td>
 
@@ -301,7 +294,7 @@ export default function TransportSchedulePage() {
                         <button
                           type="button"
                           onClick={() => handleDeleteOffDay(offDay.id)}
-                          className="text-sm font-medium text-[#B91C1C] hover:underline"
+                          className="text-sm font-medium text-error hover:underline"
                         >
                           Delete
                         </button>

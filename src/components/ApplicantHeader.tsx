@@ -78,7 +78,7 @@ export default function ApplicantHeader({ active, title }: ApplicantHeaderProps)
       : "hover:underline";
 
   return (
-    <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-6 gap-y-2 bg-[#0F2747] px-6 py-3 text-white">
+    <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-6 gap-y-2 bg-primary px-6 py-3 text-white">
       <div className="flex items-center gap-3">
         <SustLogo badge heightClass="h-8" />
         <h1 className="text-lg font-semibold">
@@ -91,7 +91,7 @@ export default function ApplicantHeader({ active, title }: ApplicantHeaderProps)
           <Link key={link.key} to={link.to} className={linkClass(link.key)}>
             {link.label}
             {link.key === "request" && recommendationsCount > 0 ? (
-              <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#F59E0B] px-1.5 text-[11px] font-semibold text-[#0F2747]">
+              <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-primary">
                 {recommendationsCount}
               </span>
             ) : null}

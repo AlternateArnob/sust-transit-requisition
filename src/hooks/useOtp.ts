@@ -75,7 +75,6 @@ export default function useOtp() {
       ]);
 
       // Surface the code in dev so the OTP flow is testable end-to-end.
-      // eslint-disable-next-line no-console
       console.info(`[OTP] code for ${normalised}: ${code}`);
 
       return { ok: true, code, challenge };

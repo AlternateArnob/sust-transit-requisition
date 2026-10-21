@@ -6,6 +6,8 @@ import useRequisitions from "../../hooks/useRequisitions";
 
 import { formatDateRange } from "../../utils/requisitionUtils";
 import DataTable from "../../components/DataTable";
+import PageTitle from "../../components/ui/PageTitle";
+import { ApplicationStatusBadge } from "../../components/ui/StatusBadge";
 
 import type { Requisition } from "../../types";
 
@@ -48,16 +50,16 @@ export default function RecommendedByMePage() {
       <div>
         <Link
           to="/admin/recommender"
-          className="text-xs font-medium text-[#334E68] hover:underline"
+          className="text-xs font-medium text-secondary hover:underline"
         >
           ← Back to requests
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-[#1E293B]">
-          Recommended by me
-        </h1>
-        <p className="mt-1 text-sm text-[#64748B]">
-          Requisitions you have recommended to the Transport Office.
-        </p>
+        <div className="mt-2">
+          <PageTitle
+            title="Recommended by me"
+            subtitle="Requisitions you have recommended to the Transport Office."
+          />
+        </div>
       </div>
 
       <DataTable<Requisition>
@@ -88,9 +90,7 @@ export default function RecommendedByMePage() {
           {
             header: "Status",
             render: (row) => (
-              <span className="inline-flex rounded-full bg-[#DBEAFE] px-2.5 py-1 text-xs font-medium text-[#0F2747]">
-                {row.status}
-              </span>
+              <ApplicationStatusBadge status={row.status} />
             ),
           },
           {
@@ -99,7 +99,7 @@ export default function RecommendedByMePage() {
             render: (row) => (
               <Link
                 to={`/admin/recommender/${row.id}`}
-                className="text-sm font-medium text-[#334E68] hover:underline"
+                className="text-sm font-medium text-secondary hover:underline"
               >
                 View →
               </Link>

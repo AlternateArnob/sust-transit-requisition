@@ -115,7 +115,7 @@ export default function RequisitionForm({
 
   if (!requester) {
     return (
-      <div className="border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">
+      <div className="border border-error-bg bg-error-bg/50 px-4 py-3 text-sm text-error">
         You must be signed in to apply for a vehicle. Please register or log in
         first.
       </div>

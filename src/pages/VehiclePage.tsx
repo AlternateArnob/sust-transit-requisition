@@ -14,6 +14,8 @@ import {
   isDuplicateRegistration,
   hasAllocationHistory,
 } from "../utils/vehicleUtils";
+import { buttonClass } from "../components/ui/buttonStyles";
+import PageTitle from "../components/ui/PageTitle";
 
 export default function VehiclePage() {
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useVehicles();
@@ -126,31 +128,12 @@ export default function VehiclePage() {
         justify-between
       "
       >
-        <div>
-          <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Vehicle Management
-          </h1>
-
-          <p
-            className="
-            mt-1 text-sm
-            text-[#64748B]
-          "
-          >
-            Manage university transport vehicles ({vehicles.length} vehicles)
-          </p>
-        </div>
+        <PageTitle title="Vehicle Management" subtitle={<>Manage university transport vehicles ({vehicles.length} vehicles)</>} />
 
         <button
           type="button"
           onClick={() => setIsAddModalOpen(true)}
-          className="
-            h-10 rounded-md
-            bg-[#0F2747] px-4
-            text-sm font-medium
-            text-white
-            hover:bg-[#334E68]
-          "
+          className={buttonClass("primary")}
         >
           + Add Vehicle
         </button>
@@ -161,7 +144,7 @@ export default function VehiclePage() {
         className="
         flex flex-col gap-3
         rounded-lg
-        border border-[#E2E8F0]
+        border border-border
         bg-white p-4
         md:flex-row
       "
@@ -173,14 +156,14 @@ export default function VehiclePage() {
           onChange={(event) => setSearch(event.target.value)}
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
+            border border-border
             bg-white px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            placeholder:text-[#64748B]
-            focus:border-[#334E68]
+            placeholder:text-text-muted
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
             md:flex-1
           "
         />
@@ -190,13 +173,13 @@ export default function VehiclePage() {
           onChange={(event) => setCategory(event.target.value)}
           className="
             h-10 rounded-md
-            border border-[#E2E8F0]
+            border border-border
             bg-white px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            focus:border-[#334E68]
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         >
           <option value="">All Categories</option>
@@ -225,13 +208,13 @@ export default function VehiclePage() {
           onChange={(event) => setStatus(event.target.value)}
           className="
             h-10 rounded-md
-            border border-[#E2E8F0]
+            border border-border
             bg-white px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            focus:border-[#334E68]
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         >
           <option value="">All Statuses</option>
@@ -249,7 +232,7 @@ export default function VehiclePage() {
         className="
         overflow-hidden
         rounded-lg
-        border border-[#E2E8F0]
+        border border-border
         bg-white
       "
       >
@@ -260,32 +243,27 @@ export default function VehiclePage() {
             text-left text-sm
           "
           >
-            <thead
-              className="
-              bg-[#0F2747]
-              text-white
-            "
-            >
+            <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
               <tr>
-                <th className="px-4 py-3 font-medium">Registration</th>
+                <th className="px-4 py-3 font-semibold">Registration</th>
 
-                <th className="px-4 py-3 font-medium">Category</th>
+                <th className="px-4 py-3 font-semibold">Category</th>
 
-                <th className="px-4 py-3 font-medium">Fuel</th>
+                <th className="px-4 py-3 font-semibold">Fuel</th>
 
-                <th className="px-4 py-3 font-medium">Driver</th>
+                <th className="px-4 py-3 font-semibold">Driver</th>
 
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
 
-                <th className="px-4 py-3 font-medium">Reserved For</th>
+                <th className="px-4 py-3 font-semibold">Reserved For</th>
 
-                <th className="px-4 py-3 font-medium">Requisition</th>
+                <th className="px-4 py-3 font-semibold">Requisition</th>
 
                 <th
                   className="
                   px-4 py-3
                   text-right
-                  font-medium
+                  font-semibold
                 "
                 >
                   Actions
@@ -306,7 +284,7 @@ export default function VehiclePage() {
                     <p
                       className="
                       font-medium
-                      text-[#1E293B]
+                      text-text
                     "
                     >
                       No vehicles found
@@ -315,7 +293,7 @@ export default function VehiclePage() {
                     <p
                       className="
                       mt-1 text-sm
-                      text-[#64748B]
+                      text-text-muted
                     "
                     >
                       Try changing your search or filters.
@@ -328,15 +306,15 @@ export default function VehiclePage() {
                     key={vehicle.id}
                     className={`
                         border-t
-                        border-[#E2E8F0]
-                        ${index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"}
+                        border-border
+                        ${index % 2 === 1 ? "bg-surface" : "bg-white"}
                       `}
                   >
                     <td
                       className="
                         px-4 py-3
                         font-medium
-                        text-[#1E293B]
+                        text-text
                       "
                     >
                       {vehicle.registrationNumber}
@@ -345,7 +323,7 @@ export default function VehiclePage() {
                     <td
                       className="
                         px-4 py-3
-                        text-[#64748B]
+                        text-text-muted
                       "
                     >
                       {vehicle.category}
@@ -354,7 +332,7 @@ export default function VehiclePage() {
                     <td
                       className="
                         px-4 py-3
-                        text-[#64748B]
+                        text-text-muted
                       "
                     >
                       {vehicle.fuelType ?? "—"}
@@ -364,7 +342,7 @@ export default function VehiclePage() {
                       className="
                         px-4 py-3
                         font-medium
-                        text-[#334E68]
+                        text-secondary
                       "
                     >
                       {getDriverName(vehicle.permanentDriverId)}
@@ -374,7 +352,7 @@ export default function VehiclePage() {
                       <StatusBadge status={vehicle.operationalStatus} />
                     </td>
 
-                    <td className="px-4 py-3 text-[#64748B]">
+                    <td className="px-4 py-3 text-text-muted">
                       {vehicle.reservedFor ?? "—"}
                     </td>
 
@@ -382,8 +360,8 @@ export default function VehiclePage() {
                       <span
                         className={
                           vehicle.availableForRequisition
-                            ? "text-[#15803D]"
-                            : "text-[#64748B]"
+                            ? "text-success"
+                            : "text-text-muted"
                         }
                       >
                         {vehicle.availableForRequisition ? "Yes" : "No"}
@@ -408,7 +386,7 @@ export default function VehiclePage() {
                           className="
                               text-sm
                               font-medium
-                              text-[#334E68]
+                              text-secondary
                               hover:underline
                             "
                         >
@@ -421,7 +399,7 @@ export default function VehiclePage() {
                           className="
                               text-sm
                               font-medium
-                              text-[#B91C1C]
+                              text-error
                               hover:underline
                             "
                         >
@@ -451,6 +429,7 @@ export default function VehiclePage() {
       {editingVehicle && (
         <Modal title="Edit Vehicle" onClose={() => setEditingVehicle(null)}>
           <VehicleForm
+            key={editingVehicle.id}
             vehicle={editingVehicle}
             onSubmit={handleVehicleSubmit}
             onCancel={() => setEditingVehicle(null)}

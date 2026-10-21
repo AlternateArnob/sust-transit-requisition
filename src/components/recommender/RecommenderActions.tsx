@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import Modal from "../Modal";
+import Button from "../ui/Button";
 import {
   REJECTION_REASONS,
   type RejectionReason,
@@ -95,7 +96,7 @@ export default function RecommenderActions({
 
   if (status !== "Pending Recommendation") {
     return (
-      <div className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-sm text-[#64748B]">
+      <div className="rounded-md border border-border bg-surface p-4 text-sm text-text-muted">
         {statusNotice(status)}
       </div>
     );
@@ -103,7 +104,7 @@ export default function RecommenderActions({
 
   if (!isAssigned) {
     return (
-      <div className="rounded-md border border-[#FEF3C7] bg-[#FFFBEB] p-4 text-sm text-[#B45309]">
+      <div className="rounded-md border border-form-warn-border bg-form-warn-bg p-4 text-sm text-form-warn-text">
         You are signed in as a recommender but you are not assigned to the
         applicant&apos;s department. Contact the administrator if this looks
         wrong.
@@ -112,65 +113,62 @@ export default function RecommenderActions({
   }
 
   return (
-    <div className="space-y-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+    <div className="space-y-3 rounded-md border border-border bg-surface p-4">
       <div>
-        <p className="text-sm font-semibold text-[#1E293B]">
-          Recommender actions
+        <p className="text-sm font-semibold text-text">
+          Your decision
         </p>
-        <p className="text-xs text-[#64748B]">
+        <p className="text-xs text-text-muted">
           Acting as {recommenderName || "Recommender"}. A reason is required
           for reject and send-back.
         </p>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#1E293B]">
+        <label className="mb-1.5 block text-sm font-medium text-text">
           Message to Transport Office{" "}
-          <span className="font-normal text-[#64748B]">(optional)</span>
+          <span className="font-normal text-text-muted">(optional)</span>
         </label>
         <textarea
           value={recommendMessage}
           onChange={(event) => setRecommendMessage(event.target.value)}
           rows={2}
           placeholder="Only used if you recommend — e.g. why this trip is needed."
-          className="w-full rounded-md border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-[#1E293B] outline-none placeholder:text-[#94A3B8] focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-text outline-none placeholder:text-form-placeholder focus:border-secondary focus:ring-1 focus:ring-secondary"
         />
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
+        <Button
+          variant="success"
           onClick={() => onRecommend(recommendMessage)}
           disabled={isSubmitting}
-          className="h-10 rounded-md bg-[#15803D] px-4 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
         >
           Recommend
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
           onClick={() => openDialog("send-back")}
           disabled={isSubmitting}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-white disabled:cursor-not-allowed disabled:text-[#64748B]"
         >
           Send back to applicant
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="danger"
           onClick={() => openDialog("reject")}
           disabled={isSubmitting}
-          className="h-10 rounded-md border border-[#FEE2E2] bg-white px-4 text-sm font-medium text-[#B91C1C] hover:bg-[#FEF2F2] disabled:cursor-not-allowed disabled:text-[#64748B]"
         >
           Reject
-        </button>
+        </Button>
       </div>
 
       {dialog ? (
         <Modal title={dialogTitle} onClose={closeDialog}>
           <div className="space-y-3">
-            <p className="text-sm text-[#64748B]">{dialogIntro}</p>
+            <p className="text-sm text-text-muted">{dialogIntro}</p>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-[#1E293B]">
+              <label className="mb-1.5 block text-sm font-medium text-text">
                 Reason
               </label>
               <select
@@ -178,7 +176,7 @@ export default function RecommenderActions({
                 onChange={(event) =>
                   setReason(event.target.value as RejectionReason)
                 }
-                className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
               >
                 {REJECTION_REASONS.map((option) => (
                   <option key={option} value={option}>
@@ -189,7 +187,7 @@ export default function RecommenderActions({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-[#1E293B]">
+              <label className="mb-1.5 block text-sm font-medium text-text">
                 Remarks
               </label>
               <textarea
@@ -197,30 +195,21 @@ export default function RecommenderActions({
                 onChange={(event) => setRemarks(event.target.value)}
                 rows={3}
                 placeholder="Add context for the applicant or the audit trail."
-                className="w-full rounded-md border border-[#E2E8F0] px-3 py-2 text-sm text-[#1E293B] outline-none placeholder:text-[#64748B] focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm text-text outline-none placeholder:text-text-muted focus:border-secondary focus:ring-1 focus:ring-secondary"
               />
             </div>
 
             {validation ? (
-              <p className="text-xs text-[#B91C1C]">{validation}</p>
+              <p className="text-xs text-error">{validation}</p>
             ) : null}
 
             <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={closeDialog}
-                className="h-10 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
-              >
+              <Button variant="secondary" onClick={closeDialog}>
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirm}
-                disabled={isSubmitting}
-                className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68] disabled:cursor-not-allowed disabled:opacity-70"
-              >
+              </Button>
+              <Button onClick={confirm} disabled={isSubmitting}>
                 {dialog === "reject" ? "Reject requisition" : "Send back"}
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>

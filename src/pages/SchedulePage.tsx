@@ -14,6 +14,7 @@ import {
   formatTimeDisplay,
   todayString,
 } from "../utils/scheduleUtils";
+import PageTitle from "../components/ui/PageTitle";
 
 type LookupMode = "vehicle" | "driver";
 
@@ -89,18 +90,10 @@ export default function SchedulePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-[#1E293B]">
-          Schedule Lookup
-        </h1>
-
-        <p className="mt-1 text-sm text-[#64748B]">
-          Check a vehicle's or driver's commitments on a specific date
-        </p>
-      </div>
+      <PageTitle title="Schedule Lookup" subtitle="Check a vehicle's or driver's commitments on a specific date" />
 
       {/* Controls */}
-      <div className="rounded-lg border border-[#E2E8F0] bg-white p-5">
+      <div className="rounded-lg border border-border bg-white shadow-sm p-5">
         {/* Mode Toggle */}
         <div className="mb-4 flex gap-2">
           <button
@@ -108,8 +101,8 @@ export default function SchedulePage() {
             onClick={() => setMode("vehicle")}
             className={`h-9 rounded-md px-4 text-sm font-medium ${
               mode === "vehicle"
-                ? "bg-[#0F2747] text-white"
-                : "border border-[#E2E8F0] text-[#334E68] hover:bg-[#F8FAFC]"
+                ? "bg-primary text-white"
+                : "border border-border text-secondary hover:bg-surface"
             }`}
           >
             By Vehicle
@@ -120,8 +113,8 @@ export default function SchedulePage() {
             onClick={() => setMode("driver")}
             className={`h-9 rounded-md px-4 text-sm font-medium ${
               mode === "driver"
-                ? "bg-[#0F2747] text-white"
-                : "border border-[#E2E8F0] text-[#334E68] hover:bg-[#F8FAFC]"
+                ? "bg-primary text-white"
+                : "border border-border text-secondary hover:bg-surface"
             }`}
           >
             By Driver
@@ -133,7 +126,7 @@ export default function SchedulePage() {
             <div>
               <label
                 htmlFor="vehicleSelect"
-                className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+                className="mb-1.5 block text-sm font-medium text-text"
               >
                 Vehicle
               </label>
@@ -142,7 +135,7 @@ export default function SchedulePage() {
                 id="vehicleSelect"
                 value={selectedVehicleId}
                 onChange={(event) => setSelectedVehicleId(event.target.value)}
-                className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
               >
                 <option value="">Select a vehicle</option>
 
@@ -157,7 +150,7 @@ export default function SchedulePage() {
             <div>
               <label
                 htmlFor="driverSelect"
-                className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+                className="mb-1.5 block text-sm font-medium text-text"
               >
                 Driver
               </label>
@@ -166,7 +159,7 @@ export default function SchedulePage() {
                 id="driverSelect"
                 value={selectedDriverId}
                 onChange={(event) => setSelectedDriverId(event.target.value)}
-                className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
               >
                 <option value="">Select a driver</option>
 
@@ -182,7 +175,7 @@ export default function SchedulePage() {
           <div>
             <label
               htmlFor="dateSelect"
-              className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+              className="mb-1.5 block text-sm font-medium text-text"
             >
               Date
             </label>
@@ -192,7 +185,7 @@ export default function SchedulePage() {
               type="date"
               value={date}
               onChange={(event) => setDate(event.target.value)}
-              className="h-10 w-full rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+              className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
             />
           </div>
         </div>
@@ -202,12 +195,12 @@ export default function SchedulePage() {
       {mode === "driver" &&
         selectedDriver &&
         !selectedDriver.permanentVehicleId && (
-          <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-center">
-            <p className="font-medium text-[#1E293B]">
+          <div className="rounded-lg border border-border bg-white shadow-sm p-8 text-center">
+            <p className="font-medium text-text">
               {selectedDriver.name} has no permanently assigned vehicle
             </p>
 
-            <p className="mt-1 text-sm text-[#64748B]">
+            <p className="mt-1 text-sm text-text-muted">
               Assign a vehicle to this driver from Vehicle Management to see their
               schedule.
             </p>
@@ -216,10 +209,10 @@ export default function SchedulePage() {
 
       {/* Empty state: nothing selected yet */}
       {!targetVehicleId && !(mode === "driver" && selectedDriver) && (
-        <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-center">
-          <p className="font-medium text-[#1E293B]">Nothing selected yet</p>
+        <div className="rounded-lg border border-border bg-white shadow-sm p-8 text-center">
+          <p className="font-medium text-text">Nothing selected yet</p>
 
-          <p className="mt-1 text-sm text-[#64748B]">
+          <p className="mt-1 text-sm text-text-muted">
             Choose a {mode === "vehicle" ? "vehicle" : "driver"} and a date to
             view their schedule.
           </p>
@@ -228,15 +221,15 @@ export default function SchedulePage() {
 
       {/* Results */}
       {targetVehicle && date && (
-        <div className="rounded-lg border border-[#E2E8F0] bg-white">
+        <div className="rounded-lg border border-border bg-white shadow-sm">
           {/* Summary bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
             <div>
-              <p className="font-medium text-[#1E293B]">
+              <p className="font-medium text-text">
                 {targetVehicle.registrationNumber} — {targetVehicle.category}
               </p>
 
-              <p className="mt-0.5 text-sm text-[#64748B]">
+              <p className="mt-0.5 text-sm text-text-muted">
                 {formatDate(date)} ({weekday})
                 {assignedDriver
                   ? ` · Driver: ${assignedDriver.name}`
@@ -247,8 +240,8 @@ export default function SchedulePage() {
             <span
               className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
                 targetVehicle.operationalStatus === "Active"
-                  ? "bg-[#DCFCE7] text-[#15803D]"
-                  : "bg-[#FEF3C7] text-[#B45309]"
+                  ? "bg-success-bg text-success"
+                  : "bg-warning-bg text-warning"
               }`}
             >
               {targetVehicle.operationalStatus}
@@ -258,8 +251,8 @@ export default function SchedulePage() {
           <div className="space-y-4 p-5">
             {/* Under Maintenance / Out-of-Service warning */}
             {targetVehicle.operationalStatus !== "Active" && (
-              <div className="rounded-md border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3">
-                <p className="text-sm font-medium text-[#B45309]">
+              <div className="rounded-md border border-form-warn-border bg-form-warn-bg px-4 py-3">
+                <p className="text-sm font-medium text-warning">
                   This vehicle is {targetVehicle.operationalStatus} and is not
                   eligible for requisition allocation.
                 </p>
@@ -268,8 +261,8 @@ export default function SchedulePage() {
 
             {/* Off-day warning */}
             {offDay && (
-              <div className="rounded-md border border-[#FECACA] bg-[#FEF2F2] px-4 py-3">
-                <p className="text-sm font-medium text-[#B91C1C]">
+              <div className="rounded-md border border-error/30 bg-error-bg/50 px-4 py-3">
+                <p className="text-sm font-medium text-error">
                   Marked unavailable on this date —{" "}
                   {offDay.type === "One-time"
                     ? "one-time off-day"
@@ -281,7 +274,7 @@ export default function SchedulePage() {
 
             {/* Student transport commitment */}
             <div>
-              <p className="mb-2 text-sm font-medium text-[#1E293B]">
+              <p className="mb-2 text-sm font-medium text-text">
                 Student Transport
               </p>
 
@@ -289,22 +282,22 @@ export default function SchedulePage() {
                 <div
                   className={`rounded-md border px-4 py-3 ${
                     offDay
-                      ? "border-[#E2E8F0] bg-[#F8FAFC] opacity-70"
-                      : "border-[#E2E8F0] bg-white"
+                      ? "border-border bg-surface opacity-70"
+                      : "border-border bg-white"
                   }`}
                 >
-                  <p className="text-sm font-medium text-[#1E293B]">
+                  <p className="text-sm font-medium text-text">
                     Used for student transport on this day until{" "}
                     {formatTimeDisplay(studentTransportTime)}
                   </p>
 
-                  <p className="mt-1 text-sm text-[#64748B]">
+                  <p className="mt-1 text-sm text-text-muted">
                     Requisition allocations cannot start before this time on{" "}
                     {weekday}.
                   </p>
                 </div>
               ) : (
-                <p className="rounded-md border border-dashed border-[#E2E8F0] px-4 py-6 text-center text-sm text-[#64748B]">
+                <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
                   This vehicle is free all day on {weekday ?? "this date"} —
                   no student transport schedule applies.
                 </p>
@@ -313,12 +306,12 @@ export default function SchedulePage() {
 
             {/* Requisition allocations on this date */}
             <div>
-              <p className="mb-2 text-sm font-medium text-[#1E293B]">
+              <p className="mb-2 text-sm font-medium text-text">
                 Requisition Allocations
               </p>
 
               {dayAllocations.length === 0 ? (
-                <p className="rounded-md border border-dashed border-[#E2E8F0] px-4 py-6 text-center text-sm text-[#64748B]">
+                <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
                   No requisition trips allocated to this vehicle on{" "}
                   {formatDate(date)}.
                 </p>
@@ -327,13 +320,13 @@ export default function SchedulePage() {
                   {dayAllocations.map((allocation) => (
                     <li
                       key={allocation.id}
-                      className="rounded-md border border-[#E2E8F0] bg-white px-4 py-3"
+                      className="rounded-md border border-border bg-white px-4 py-3"
                     >
-                      <p className="text-sm font-medium text-[#1E293B]">
+                      <p className="text-sm font-medium text-text">
                         {formatTimeDisplay(allocation.startTime)}–
                         {formatTimeDisplay(allocation.endTime)}
                       </p>
-                      <p className="mt-0.5 text-sm text-[#64748B]">
+                      <p className="mt-0.5 text-sm text-text-muted">
                         {getRequisitionPurpose(allocation.requisitionId)}
                       </p>
                     </li>

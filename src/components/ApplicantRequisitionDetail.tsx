@@ -1,5 +1,6 @@
 import type { Requisition, Vehicle, Driver, Allocation, UserAccount } from "../types";
 import GovFormMasthead from "./application/GovFormMasthead";
+import { ApplicationStatusBadge, TripStatusBadge } from "./ui/StatusBadge";
 import { SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 import { formatDateRange } from "../utils/requisitionUtils";
 import { canGenerateSlips } from "../utils/dutySlipUtils";
@@ -12,16 +13,6 @@ interface ApplicantRequisitionDetailProps {
   /** Fix 8 — the applicant's own account, for the signature on file. */
   requester?: UserAccount;
   onDownloadConfirmationSlip: () => void;
-}
-
-function statusBadgeClass(status: Requisition["status"]) {
-  if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
-  if (status === "Completed") return "bg-[#CBD5E1] text-form-ink";
-  if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
-  if (status === "Information Requested") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Partially Approved") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Draft") return "bg-[#F1F5F9] text-form-muted";
-  return "bg-[#DBEAFE] text-[#0F2747]";
 }
 
 /**
@@ -53,13 +44,7 @@ export default function ApplicantRequisitionDetail({
       <GovFormMasthead formTitle="Vehicle Requisition" applicationNo={requisition.id} />
 
       <div className="flex justify-end">
-        <span
-          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(
-            requisition.status,
-          )}`}
-        >
-          {requisition.status}
-        </span>
+        <ApplicationStatusBadge status={requisition.status} />
       </div>
 
       <div className={SECTION_WRAP}>
@@ -119,7 +104,7 @@ export default function ApplicantRequisitionDetail({
               target="_blank"
               rel="noreferrer"
               download={requisition.supportingDocumentName || undefined}
-              className="text-sm font-medium text-[#0F2747] hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               {requisition.supportingDocumentName || "View document"}
             </a>
@@ -187,7 +172,7 @@ export default function ApplicantRequisitionDetail({
                       </p>
 
                       {trip.status === "Rejected" && (
-                        <p className="mt-2 text-xs font-medium text-[#B91C1C]">
+                        <p className="mt-2 text-xs font-medium text-error">
                           Rejected — {trip.rejectionReason}
                           {trip.rejectionRemarks
                             ? `: ${trip.rejectionRemarks}`
@@ -196,7 +181,7 @@ export default function ApplicantRequisitionDetail({
                       )}
 
                       {trip.status === "Approved" && (
-                        <p className="mt-2 text-xs font-medium text-[#15803D]">
+                        <p className="mt-2 text-xs font-medium text-success">
                           {vehicle
                             ? `Vehicle: ${vehicle.registrationNumber} (${vehicle.category})`
                             : "Approved — awaiting vehicle allocation"}
@@ -207,17 +192,7 @@ export default function ApplicantRequisitionDetail({
                       )}
                     </div>
 
-                    <span
-                      className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
-                        trip.status === "Approved"
-                          ? "bg-[#DCFCE7] text-[#15803D]"
-                          : trip.status === "Rejected"
-                            ? "bg-[#FEE2E2] text-[#B91C1C]"
-                            : "bg-[#F1F5F9] text-form-muted"
-                      }`}
-                    >
-                      {trip.status}
-                    </span>
+                    <TripStatusBadge status={trip.status} />
                   </div>
                 </div>
               );

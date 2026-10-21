@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useUsers from "../hooks/useUsers";
+import { buttonClass } from "../components/ui/buttonStyles";
+import PageTitle from "../components/ui/PageTitle";
 
 /**
  * Corrections Step 2 — self-service profile editing for Transport
@@ -56,43 +58,36 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-[#1E293B]">
-          Edit Profile
-        </h1>
-        <p className="mt-1 text-sm text-[#64748B]">
-          {currentUser.role} — update your own account details.
-        </p>
-      </div>
+      <PageTitle title="Edit Profile" subtitle={<>{currentUser.role} — update your own account details.</>} />
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 rounded-lg border border-[#E2E8F0] bg-white p-6"
+        className="space-y-4 rounded-lg border border-border bg-white shadow-sm p-6"
       >
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-[#1E293B]">
+          <span className="text-sm font-medium text-text">
             Full Name
           </span>
           <input
             type="text"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
-            className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+            className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-[#1E293B]">Email</span>
+          <span className="text-sm font-medium text-text">Email</span>
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+            className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-[#1E293B]">
+          <span className="text-sm font-medium text-text">
             Mobile Number
           </span>
           <input
@@ -100,18 +95,18 @@ export default function ProfilePage() {
             value={mobile}
             onChange={(event) => setMobile(event.target.value)}
             placeholder="01XXXXXXXXX"
-            className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+            className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
           />
         </label>
 
         {error && (
-          <p className="rounded-md border border-[#FEE2E2] bg-[#FEE2E2] px-3 py-2 text-sm text-[#B91C1C]">
+          <p className="rounded-md border border-error-bg bg-error-bg px-3 py-2 text-sm text-error">
             {error}
           </p>
         )}
 
         {saved && !error && (
-          <p className="rounded-md border border-[#DCFCE7] bg-[#DCFCE7] px-3 py-2 text-sm text-[#15803D]">
+          <p className="rounded-md border border-success-bg bg-success-bg px-3 py-2 text-sm text-success">
             Profile updated.
           </p>
         )}
@@ -119,14 +114,14 @@ export default function ProfilePage() {
         <div className="flex justify-end gap-2 pt-2">
           <Link
             to="/admin"
-            className="flex h-9 items-center rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+            className={`${buttonClass("secondary")} flex`}
           >
             Back to Dashboard
           </Link>
 
           <button
             type="submit"
-            className="h-9 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+            className={buttonClass("primary")}
           >
             Save Changes
           </button>

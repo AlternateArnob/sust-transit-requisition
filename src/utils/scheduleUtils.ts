@@ -165,7 +165,6 @@ export function formatScheduledDays(
    * compact range like "Sun–Thu".
    */
   let runStart = 0;
-  let runEnd = 0;
   let bestStart = 0;
   let bestEnd = -1;
 
@@ -175,11 +174,7 @@ export function formatScheduledDays(
       i + 1 < days.length ? WEEKDAY_INDEX.indexOf(days[i + 1]) : -1;
     const isContiguous = nextIndex === prevIndex + 1;
 
-    if (isContiguous) {
-      runEnd = i + 1;
-    } else {
-      runEnd = i;
-    }
+    const runEnd = isContiguous ? i + 1 : i;
 
     if (runEnd - runStart >= 2) {
       if (bestEnd - bestStart < runEnd - runStart) {

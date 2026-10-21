@@ -10,7 +10,8 @@ import {
   type Allocation,
   type DutySlip,
 } from "../types";
-import { formatDateRange, requisitionTypeBadgeClass } from "../utils/requisitionUtils";
+import { TripStatusBadge, RequisitionTypeBadge } from "./ui/StatusBadge";
+import { formatDateRange } from "../utils/requisitionUtils";
 import {
   getTripsMissingVehicleAssignment,
   canForwardToAdministrator,
@@ -26,6 +27,7 @@ import AllocationPicker from "./AllocationPicker";
 import GovFormMasthead from "./application/GovFormMasthead";
 import { SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 import type { UserAccount } from "../types";
+import { buttonClass } from "./ui/buttonStyles";
 
 /**
  * Phase 1 (admin module) — this used to be a single admin-only view that
@@ -74,22 +76,6 @@ interface RequisitionDetailProps {
   /** Phase 6 (FRD §22) — Transport Office marks a trip Completed once it
    *  actually happened. Independent of approve/reject and of mileage. */
   onCompleteTrip?: (tripId: string) => void;
-}
-
-function statusBadgeClass(status: Trip["status"]) {
-  if (status === "Approved") {
-    return "bg-[#DCFCE7] text-[#15803D]";
-  }
-
-  if (status === "Completed") {
-    return "bg-[#CBD5E1] text-form-ink";
-  }
-
-  if (status === "Rejected") {
-    return "bg-[#FEE2E2] text-[#B91C1C]";
-  }
-
-  return "bg-[#F1F5F9] text-form-muted";
 }
 
 export default function RequisitionDetail({
@@ -172,11 +158,7 @@ export default function RequisitionDetail({
 
         <div className="border-b border-form-rule pb-1.5">
           <p className="text-xs font-medium text-form-muted">Type</p>
-          <span
-            className={`mt-0.5 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${requisitionTypeBadgeClass(requisition.requisitionType)}`}
-          >
-            {requisition.requisitionType}
-          </span>
+          <RequisitionTypeBadge type={requisition.requisitionType} />
         </div>
 
         {requisition.department && (
@@ -224,7 +206,7 @@ export default function RequisitionDetail({
               target="_blank"
               rel="noreferrer"
               download={requisition.supportingDocumentName || undefined}
-              className="text-sm font-medium text-[#0F2747] hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               {requisition.supportingDocumentName || "View document"}
             </a>
@@ -254,7 +236,7 @@ export default function RequisitionDetail({
       </div>
 
       {requisition.recommenderName ? (
-        <div className="rounded-md border border-[#BBF7D0] bg-[#F0FDF4] p-4 text-sm text-[#166534]">
+        <div className="rounded-md border border-success/30 bg-success-bg/40 p-4 text-sm text-success">
           <p className="font-medium">
             Recommended by {requisition.recommenderName}
             {requisition.recommendedAt
@@ -272,7 +254,7 @@ export default function RequisitionDetail({
       {/* Phase 1 — Administrator's send-back reason, visible to Transport
           In Charge until they forward it again. */}
       {requisition.transportOfficeRemarks && mode === "transportInCharge" && (
-        <div className="rounded-md border border-[#FED7AA] bg-[#FFF7ED] p-4 text-sm text-[#9A3412]">
+        <div className="rounded-md border border-form-warn-border bg-form-warn-bg p-4 text-sm text-form-warn-text">
           <p className="font-medium">Sent back by Transport Administrator</p>
           <p className="mt-1">{requisition.transportOfficeRemarks}</p>
         </div>
@@ -324,7 +306,7 @@ export default function RequisitionDetail({
                     )}
 
                     {trip.status === "Rejected" && (
-                      <p className="mt-2 text-xs font-medium text-[#B91C1C]">
+                      <p className="mt-2 text-xs font-medium text-error">
                         Rejected — {trip.rejectionReason}
                         {trip.rejectionRemarks
                           ? `: ${trip.rejectionRemarks}`
@@ -337,7 +319,7 @@ export default function RequisitionDetail({
                         className={`mt-2 text-xs font-medium ${
                           trip.status === "Rejected"
                             ? "text-form-muted line-through"
-                            : "text-[#15803D]"
+                            : "text-success"
                         }`}
                       >
                         Vehicle assigned —{" "}
@@ -353,7 +335,7 @@ export default function RequisitionDetail({
                     {!allocation &&
                       trip.status === "Pending" &&
                       mode === "transportAdministrator" && (
-                        <p className="mt-2 text-xs font-medium text-[#B45309]">
+                        <p className="mt-2 text-xs font-medium text-warning">
                           No vehicle on file — this trip shouldn't have
                           reached this queue without one. Send the
                           application back to Transport In-Charge.
@@ -361,13 +343,7 @@ export default function RequisitionDetail({
                       )}
                   </div>
 
-                  <span
-                    className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(
-                      trip.status,
-                    )}`}
-                  >
-                    {trip.status}
-                  </span>
+                  <TripStatusBadge status={trip.status} />
                 </div>
 
                 {/* Transport In Charge — assign / change / remove vehicle */}
@@ -385,7 +361,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => onRemoveVehicleAssignment?.(trip.id)}
-                        className="h-8 rounded-md border border-form-rule px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#F8FAFC]"
+                        className={buttonClass("danger","sm")}
                       >
                         Remove
                       </button>
@@ -403,7 +379,7 @@ export default function RequisitionDetail({
                         type="button"
                         onClick={() => onApproveTrip?.(trip.id)}
                         disabled={!allocation}
-                        className="h-8 rounded-md bg-[#15803D] px-3 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        className={buttonClass("success","sm")}
                       >
                         Approve
                       </button>
@@ -411,7 +387,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => startReject(trip.id)}
-                        className="h-8 rounded-md border border-form-rule px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#F8FAFC]"
+                        className={buttonClass("danger","sm")}
                       >
                         Reject
                       </button>
@@ -435,7 +411,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => onResetTripDecision?.(trip.id)}
-                        className="text-xs font-medium text-[#334E68] hover:underline"
+                        className="text-xs font-medium text-secondary hover:underline"
                       >
                         Undo decision
                       </button>
@@ -448,7 +424,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => onResetTripDecision?.(trip.id)}
-                        className="text-xs font-medium text-[#334E68] hover:underline"
+                        className="text-xs font-medium text-secondary hover:underline"
                       >
                         Undo decision
                       </button>
@@ -456,7 +432,7 @@ export default function RequisitionDetail({
                   )}
 
                 {rejectingTripId === trip.id && (
-                  <div className="mt-3 space-y-2 rounded-md border border-form-rule bg-[#F8FAFC] p-3">
+                  <div className="mt-3 space-y-2 rounded-md border border-form-rule bg-surface p-3">
                     <div>
                       <label className="mb-1 block text-xs font-medium text-form-muted">
                         Rejection Reason
@@ -467,7 +443,7 @@ export default function RequisitionDetail({
                         onChange={(event) =>
                           setReason(event.target.value as RejectionReason)
                         }
-                        className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                        className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
                       >
                         {REJECTION_REASONS.map((item) => (
                           <option key={item} value={item}>
@@ -486,7 +462,7 @@ export default function RequisitionDetail({
                         type="text"
                         value={remarks}
                         onChange={(event) => setRemarks(event.target.value)}
-                        className="h-9 w-full rounded-md border border-form-rule px-3 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                        className="h-9 w-full rounded-md border border-form-rule px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
                       />
                     </div>
 
@@ -494,7 +470,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => setRejectingTripId(null)}
-                        className="h-8 rounded-md border border-form-rule bg-white px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+                        className={buttonClass("secondary","sm")}
                       >
                         Cancel
                       </button>
@@ -502,7 +478,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => confirmReject(trip.id)}
-                        className="h-8 rounded-md bg-[#B91C1C] px-3 text-xs font-medium text-white hover:opacity-90"
+                        className="h-8 rounded-md bg-error px-3 text-xs font-medium text-white hover:opacity-90"
                       >
                         Confirm Reject
                       </button>
@@ -517,9 +493,9 @@ export default function RequisitionDetail({
 
       {/* Transport In Charge — forward / send back */}
       {mode === "transportInCharge" && (
-        <div className="space-y-3 rounded-md border border-form-rule bg-[#F8FAFC] p-4">
+        <div className="space-y-3 rounded-md border border-form-rule bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-[#334E68]">
+            <p className="text-sm text-secondary">
               {canForward
                 ? "Every trip has a vehicle assigned — ready to forward."
                 : `${missingVehicle.length} trip(s) still need a vehicle before this can be forwarded.`}
@@ -529,7 +505,7 @@ export default function RequisitionDetail({
               <button
                 type="button"
                 onClick={() => setShowSendBackToApplicant(true)}
-                className="h-9 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
+                className={buttonClass("danger")}
               >
                 Send Back to Applicant
               </button>
@@ -566,9 +542,9 @@ export default function RequisitionDetail({
 
       {/* Transport Administrator — send back to Transport In Charge */}
       {mode === "transportAdministrator" && (
-        <div className="space-y-3 rounded-md border border-form-rule bg-[#F8FAFC] p-4">
+        <div className="space-y-3 rounded-md border border-form-rule bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-[#334E68]">
+            <p className="text-sm text-secondary">
               Not right? Send the whole application back to Transport In
               Charge instead of deciding trip-by-trip.
             </p>
@@ -576,7 +552,7 @@ export default function RequisitionDetail({
             <button
               type="button"
               onClick={() => setShowSendBackToTIC(true)}
-              className="h-9 shrink-0 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
+              className={`${buttonClass("danger")} shrink-0`}
             >
               Send Back to Transport In-Charge
             </button>
@@ -610,7 +586,7 @@ export default function RequisitionDetail({
                 <button
                   type="button"
                   onClick={onGenerateConfirmationSlip}
-                  className="mb-3 h-9 rounded-md border border-form-rule px-3 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+                  className="mb-3 h-9 rounded-md border border-form-rule px-3 text-sm font-medium text-secondary hover:bg-surface"
                 >
                   Download Confirmation Slip
                 </button>
@@ -682,8 +658,8 @@ export default function RequisitionDetail({
                           <span
                             className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                               stale
-                                ? "bg-[#FEF3C7] text-[#92400E]"
-                                : "bg-[#DCFCE7] text-[#15803D]"
+                                ? "bg-warning-bg text-form-warn-text"
+                                : "bg-success-bg text-success"
                             }`}
                           >
                             {stale ? "Vehicle changed — regenerate" : "Active"}
@@ -714,7 +690,7 @@ export default function RequisitionDetail({
                               [group.driverId]: !current[group.driverId],
                             }))
                           }
-                          className="text-xs font-medium text-[#334E68] hover:underline"
+                          className="text-xs font-medium text-secondary hover:underline"
                         >
                           {historyOpen ? "Hide" : "Show"} slip history (
                           {olderSlips.length} superseded)
@@ -731,7 +707,7 @@ export default function RequisitionDetail({
                                   Generated{" "}
                                   {new Date(slip.generatedAt).toLocaleString()}
                                 </span>
-                                <span className="inline-flex rounded-full bg-[#FEE2E2] px-2 py-0.5 font-medium text-[#B91C1C]">
+                                <span className="inline-flex rounded-full bg-error-bg px-2 py-0.5 font-medium text-error">
                                   Superseded — see new slip
                                 </span>
                               </li>
@@ -805,7 +781,7 @@ function SendBackForm({
             onChange={(event) =>
               onReasonChange(event.target.value as RejectionReason)
             }
-            className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+            className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
           >
             {REJECTION_REASONS.map((item) => (
               <option key={item} value={item}>
@@ -825,7 +801,7 @@ function SendBackForm({
           value={remarks}
           onChange={(event) => onRemarksChange(event.target.value)}
           rows={2}
-          className="w-full rounded-md border border-form-rule px-3 py-2 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="w-full rounded-md border border-form-rule px-3 py-2 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
         />
       </div>
 
@@ -833,7 +809,7 @@ function SendBackForm({
         <button
           type="button"
           onClick={onCancel}
-          className="h-8 rounded-md border border-form-rule bg-white px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className={buttonClass("secondary","sm")}
         >
           Cancel
         </button>
@@ -842,7 +818,7 @@ function SendBackForm({
           type="button"
           disabled={!remarks.trim()}
           onClick={onConfirm}
-          className="h-8 rounded-md bg-[#B91C1C] px-3 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-8 rounded-md bg-error px-3 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Confirm Send Back
         </button>

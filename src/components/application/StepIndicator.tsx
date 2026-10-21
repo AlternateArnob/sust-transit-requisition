@@ -12,16 +12,16 @@ const STEPS: Array<{ id: 1 | 2 | 3 | 4 | 5; label: string }> = [
 
 function pillClass(state: "done" | "current" | "pending") {
   if (state === "current") {
-    return "bg-[#0F2747] text-white border-[#0F2747]";
+    return "bg-primary text-white border-primary";
   }
   if (state === "done") {
-    return "bg-[#DCFCE7] text-[#15803D] border-[#DCFCE7]";
+    return "bg-success-bg text-success border-success-bg";
   }
-  return "bg-white text-[#64748B] border-[#E2E8F0]";
+  return "bg-white text-text-muted border-border";
 }
 
 function connectorClass(state: "done" | "pending") {
-  return state === "done" ? "bg-[#15803D]" : "bg-[#E2E8F0]";
+  return state === "done" ? "bg-success" : "bg-border";
 }
 
 export default function StepIndicator({ current }: StepIndicatorProps) {
@@ -50,10 +50,10 @@ export default function StepIndicator({ current }: StepIndicatorProps) {
             <span
               className={`text-xs font-medium ${
                 state === "current"
-                  ? "text-[#0F2747]"
+                  ? "text-primary"
                   : state === "done"
-                    ? "text-[#15803D]"
-                    : "text-[#64748B]"
+                    ? "text-success"
+                    : "text-text-muted"
               }`}
             >
               {step.label}

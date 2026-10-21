@@ -9,6 +9,7 @@ import type {
   StudentTransportSchedule,
   Weekday,
 } from "../types";
+import { buttonClass } from "./ui/buttonStyles";
 
 interface TransportScheduleFormProps {
   route?: StudentTransportVehicle;
@@ -134,7 +135,7 @@ export default function TransportScheduleForm({
       <div>
         <label
           htmlFor="vehicleId"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Vehicle
         </label>
@@ -143,7 +144,7 @@ export default function TransportScheduleForm({
           id="vehicleId"
           value={vehicleId}
           onChange={(event) => setVehicleId(event.target.value)}
-          className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
         >
           <option value="">Select a vehicle</option>
 
@@ -155,16 +156,16 @@ export default function TransportScheduleForm({
         </select>
 
         {errors.vehicleId && (
-          <p className="mt-1 text-xs text-[#B91C1C]">{errors.vehicleId}</p>
+          <p className="mt-1 text-xs text-error">{errors.vehicleId}</p>
         )}
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-[#1E293B]">
+        <label className="mb-1.5 block text-sm font-medium text-text">
           Scheduled Days
         </label>
 
-        <p className="mb-2 text-xs text-[#64748B]">
+        <p className="mb-2 text-xs text-text-muted">
           Select the weekdays the vehicle follows the student transport
           schedule. The same Free After time will apply to every selected day.
         </p>
@@ -178,8 +179,8 @@ export default function TransportScheduleForm({
                 key={day}
                 className={`flex cursor-pointer items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition ${
                   checked
-                    ? "border-[#0F2747] bg-[#0F2747] text-white"
-                    : "border-[#E2E8F0] bg-white text-[#334E68] hover:bg-[#F8FAFC]"
+                    ? "border-primary bg-primary text-white"
+                    : "border-border bg-white text-secondary hover:bg-surface"
                 }`}
               >
                 <input
@@ -195,14 +196,14 @@ export default function TransportScheduleForm({
         </div>
 
         {errors.days && (
-          <p className="mt-1 text-xs text-[#B91C1C]">{errors.days}</p>
+          <p className="mt-1 text-xs text-error">{errors.days}</p>
         )}
       </div>
 
       <div>
         <label
           htmlFor="freeAfterTime"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Free After
         </label>
@@ -212,39 +213,39 @@ export default function TransportScheduleForm({
           type="time"
           value={freeAfterTime}
           onChange={(event) => setFreeAfterTime(event.target.value)}
-          className="h-10 w-full max-w-[200px] rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="h-10 w-full max-w-[200px] rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
         />
 
-        <p className="mt-1 text-xs text-[#64748B]">
+        <p className="mt-1 text-xs text-text-muted">
           Vehicle is unavailable for requisition before this time on every
           selected weekday.
         </p>
 
         {errors.freeAfterTime && (
-          <p className="mt-1 text-xs text-[#B91C1C]">
+          <p className="mt-1 text-xs text-error">
             {errors.freeAfterTime}
           </p>
         )}
       </div>
 
       {submitError && (
-        <div className="rounded-md border border-[#FECACA] bg-[#FEF2F2] px-3 py-2">
-          <p className="text-sm text-[#B91C1C]">{submitError}</p>
+        <div className="rounded-md border border-error/30 bg-error-bg/50 px-3 py-2">
+          <p className="text-sm text-error">{submitError}</p>
         </div>
       )}
 
-      <div className="flex justify-end gap-3 border-t border-[#E2E8F0] pt-4">
+      <div className="flex justify-end gap-3 border-t border-border pt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className={buttonClass("secondary")}
         >
           Cancel
         </button>
 
         <button
           type="submit"
-          className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+          className={buttonClass("primary")}
         >
           {isEditing ? "Save Changes" : "Add Vehicle"}
         </button>

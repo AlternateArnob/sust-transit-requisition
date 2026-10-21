@@ -171,7 +171,7 @@ export default function ProfileSetupPage() {
   const isHead = currentUser.role === "DepartmentHead";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface">
       {/* Same top bar as every other applicant page (Fix 3). */}
       <ApplicantHeader active="profile" />
 

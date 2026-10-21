@@ -1,15 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useUsers from "../../hooks/useUsers";
 import useOtp from "../../hooks/useOtp";
 import { isSustEmail } from "../../utils/authUtils";
 import type { UserAccount } from "../../types";
-import GovFormMasthead from "../../components/application/GovFormMasthead";
-import {
-  ERROR_TEXT,
-  FIELD_LABEL,
-  FIELD_UNDERLINE,
-} from "../../components/application/formTheme";
+import AuthShell, { AuthError, DevCodeNote } from "../../components/AuthShell";
+import Button from "../../components/ui/Button";
+import { FIELD_BOXED, FIELD_LABEL } from "../../components/application/formTheme";
 
 const PENDING_EMAIL_KEY = "sust-transit-pending-email";
 
@@ -18,15 +15,12 @@ export default function RegisterPage() {
   const { findByEmail, add } = useUsers();
   const { requestOtp } = useOtp();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(
+    () => localStorage.getItem(PENDING_EMAIL_KEY) ?? "",
+  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [devCode, setDevCode] = useState<string | null>(null);
-
-  useEffect(() => {
-    const pending = localStorage.getItem(PENDING_EMAIL_KEY);
-    if (pending) setEmail(pending);
-  }, []);
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -75,59 +69,43 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-form-band">
-      <main className="mx-auto max-w-md px-4 py-10">
-        <div className="border border-form-rule bg-form-paper px-6 py-6 shadow-sm sm:px-8">
-          <GovFormMasthead formTitle="Applicant Registration" />
+    <AuthShell
+      title="Create account"
+      subtitle="Use your SUST email. We will send a one-time code to verify it."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-primary hover:underline">
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <label className="flex flex-col">
+          <span className={FIELD_LABEL}>
+            Email <span className="text-form-seal">*</span>
+          </span>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@sust.edu"
+            className={FIELD_BOXED}
+          />
+        </label>
 
-          <p className="mt-4 text-sm text-form-muted">
-            Use your SUST email. We will send a one-time code to verify it.
-          </p>
+        {error ? <AuthError>{error}</AuthError> : null}
 
-          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-            <label className="flex flex-col gap-1">
-              <span className={FIELD_LABEL}>
-                Email <span className="text-form-seal">*</span>
-              </span>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@sust.edu"
-                className={FIELD_UNDERLINE}
-              />
-            </label>
+        {devCode ? (
+          <DevCodeNote label={`OTP for ${email}:`} code={devCode} />
+        ) : null}
 
-            {error ? <p className={ERROR_TEXT}>{error}</p> : null}
-
-            {devCode ? (
-              <p className="border border-[#B45309]/30 bg-[#FEF3C7]/60 px-3 py-2 text-sm text-[#B45309]">
-                <span className="mr-1 inline-block bg-[#B45309] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                  Dev preview
-                </span>
-                OTP for {email}:{" "}
-                <span className="font-mono font-semibold">{devCode}</span>
-              </p>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="h-10 rounded-none bg-primary px-4 text-sm font-medium text-white hover:bg-secondary disabled:cursor-not-allowed disabled:bg-form-muted"
-            >
-              {submitting ? "Sending code…" : "Send verification code"}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-form-muted">
-            Already have an account?{" "}
-            <Link to="/login" className="font-medium text-primary hover:underline">
-              Log in
-            </Link>
-          </p>
-        </div>
-      </main>
-    </div>
+        <Button type="submit" disabled={submitting} className="w-full">
+          {submitting ? "Sending code…" : "Send verification code →"}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }

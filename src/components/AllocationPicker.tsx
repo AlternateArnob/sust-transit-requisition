@@ -5,6 +5,7 @@ import useOffDays from "../hooks/useOffDays";
 
 import { getVehicleEligibility } from "../utils/allocationUtils";
 import type { Trip, Allocation } from "../types";
+import { buttonClass } from "./ui/buttonStyles";
 
 interface AllocationPickerProps {
   trip: Trip;
@@ -51,17 +52,17 @@ export default function AllocationPicker({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-sm text-[#1E293B]">
+      <div className="rounded-md border border-border bg-surface p-3 text-sm text-text">
         <p className="font-medium">
           {trip.date} · {trip.startTime}–{trip.endTime} · {trip.vehicleCategory}
         </p>
 
-        <p className="mt-1 text-[#64748B]">{trip.route}</p>
+        <p className="mt-1 text-text-muted">{trip.route}</p>
       </div>
 
       <div className="max-h-96 space-y-2 overflow-y-auto">
         {evaluated.length === 0 && (
-          <p className="rounded-md border border-dashed border-[#E2E8F0] px-4 py-6 text-center text-sm text-[#64748B]">
+          <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
             No vehicles found.
           </p>
         )}
@@ -71,17 +72,17 @@ export default function AllocationPicker({
             key={vehicle.id}
             className={`rounded-md border px-4 py-3 ${
               eligible
-                ? "border-[#E2E8F0] bg-white"
-                : "border-[#E2E8F0] bg-[#F8FAFC] opacity-60"
+                ? "border-border bg-white"
+                : "border-border bg-surface opacity-60"
             }`}
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-[#1E293B]">
+                <p className="text-sm font-medium text-text">
                   {vehicle.registrationNumber} — {vehicle.category}
                 </p>
 
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-text-muted">
                   Driver: {getDriverName(vehicle.permanentDriverId) ?? "None"}
                 </p>
               </div>
@@ -92,8 +93,8 @@ export default function AllocationPicker({
                 onClick={() => onSelect(vehicle.id, vehicle.permanentDriverId)}
                 className={`h-8 shrink-0 rounded-md px-3 text-xs font-medium ${
                   eligible
-                    ? "bg-[#0F2747] text-white hover:bg-[#334E68]"
-                    : "cursor-not-allowed bg-[#E2E8F0] text-[#64748B]"
+                    ? "bg-primary text-white hover:bg-secondary"
+                    : "cursor-not-allowed bg-border text-text-muted"
                 }`}
               >
                 Select
@@ -103,7 +104,7 @@ export default function AllocationPicker({
             {blockers.length > 0 && (
               <ul className="mt-2 space-y-0.5">
                 {blockers.map((blocker) => (
-                  <li key={blocker} className="text-xs text-[#B91C1C]">
+                  <li key={blocker} className="text-xs text-error">
                     ✕ {blocker}
                   </li>
                 ))}
@@ -113,7 +114,7 @@ export default function AllocationPicker({
             {warnings.length > 0 && (
               <ul className="mt-2 space-y-0.5">
                 {warnings.map((warning) => (
-                  <li key={warning} className="text-xs text-[#B45309]">
+                  <li key={warning} className="text-xs text-warning">
                     ⚠ {warning}
                   </li>
                 ))}
@@ -123,11 +124,11 @@ export default function AllocationPicker({
         ))}
       </div>
 
-      <div className="flex justify-end border-t border-[#E2E8F0] pt-4">
+      <div className="flex justify-end border-t border-border pt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className={buttonClass("secondary")}
         >
           Cancel
         </button>

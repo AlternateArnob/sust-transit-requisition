@@ -9,6 +9,9 @@ import {
   getTripStatusCounts,
 } from "../../utils/requisitionUtils";
 import DataTable from "../../components/DataTable";
+import Card from "../../components/ui/Card";
+import PageTitle from "../../components/ui/PageTitle";
+import StatusBadge from "../../components/ui/StatusBadge";
 
 import type { Requisition, UserAccount } from "../../types";
 
@@ -36,12 +39,8 @@ export default function RecommenderInboxPage() {
   const { currentUser } = useAuth();
   const { requisitions } = useRequisitions();
 
-  // Only DepartmentHeads are routed here; double-check.
-  if (!currentUser || currentUser.role !== "DepartmentHead") {
-    return <Navigate to="/login" replace />;
-  }
-
   const rows: Row[] = useMemo(() => {
+    if (!currentUser) return [];
     const pending = requisitions.filter(
       (requisition) => requisition.status === "Pending Recommendation",
     );
@@ -56,6 +55,11 @@ export default function RecommenderInboxPage() {
     }));
   }, [requisitions, currentUser]);
 
+  // Only DepartmentHeads are routed here; double-check.
+  if (!currentUser || currentUser.role !== "DepartmentHead") {
+    return <Navigate to="/login" replace />;
+  }
+
   const counts = {
     total: rows.length,
     assigned: rows.filter((row) => row.isAssigned).length,
@@ -63,40 +67,34 @@ export default function RecommenderInboxPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Requests
-          </h1>
-          <p className="mt-1 text-sm text-[#64748B]">
-            Review official requisitions awaiting your recommendation.
-          </p>
-        </div>
-        <div className="rounded-md border border-[#E2E8F0] bg-white px-4 py-2 text-xs text-[#64748B]">
-          <Link
-            to="/admin/recommender/history"
-            className="mb-1 block font-medium text-[#334E68] hover:underline"
-          >
-            View requisitions I recommended →
-          </Link>
-          <p>
-            <span className="font-semibold text-[#1E293B]">{counts.total}</span>{" "}
-            pending ·{" "}
-            <span className="font-semibold text-[#1E293B]">
-              {counts.assigned}
-            </span>{" "}
-            assigned to you
-          </p>
-          <p className="mt-1">
-            Scoped to department:{" "}
-            <span className="font-medium text-[#1E293B]">
-              {currentUser.headOfDepartment ||
-                currentUser.headOfOffice ||
-                "—"}
-            </span>
-          </p>
-        </div>
-      </div>
+      <PageTitle
+        title="Requests"
+        subtitle="Review official requisitions awaiting your recommendation."
+        actions={
+          <Card className="px-4 py-2.5 text-xs text-text-muted">
+            <Link
+              to="/admin/recommender/history"
+              className="mb-1 block font-medium text-primary hover:underline"
+            >
+              View requisitions I recommended →
+            </Link>
+            <p>
+              <span className="font-semibold text-text">{counts.total}</span>{" "}
+              pending ·{" "}
+              <span className="font-semibold text-text">{counts.assigned}</span>{" "}
+              assigned to you
+            </p>
+            <p className="mt-1">
+              Scoped to department:{" "}
+              <span className="font-medium text-text">
+                {currentUser.headOfDepartment ||
+                  currentUser.headOfOffice ||
+                  "—"}
+              </span>
+            </p>
+          </Card>
+        }
+      />
 
       <DataTable<Row>
         rowKey={(row) => row.requisition.id}
@@ -134,13 +132,9 @@ export default function RecommenderInboxPage() {
             header: "Scope",
             render: (row) =>
               row.isAssigned ? (
-                <span className="inline-flex rounded-full bg-[#DCFCE7] px-2.5 py-1 text-xs font-medium text-[#15803D]">
-                  Assigned
-                </span>
+                <StatusBadge tone="success">Assigned</StatusBadge>
               ) : (
-                <span className="inline-flex rounded-full bg-[#FEF3C7] px-2.5 py-1 text-xs font-medium text-[#B45309]">
-                  Other department
-                </span>
+                <StatusBadge tone="warning">Other department</StatusBadge>
               ),
           },
           {
@@ -149,7 +143,7 @@ export default function RecommenderInboxPage() {
             render: (row) => (
               <Link
                 to={`/admin/recommender/${row.requisition.id}`}
-                className="text-sm font-medium text-[#334E68] hover:underline"
+                className="text-sm font-medium text-secondary hover:underline"
               >
                 Review →
               </Link>

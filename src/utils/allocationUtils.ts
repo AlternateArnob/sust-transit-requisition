@@ -39,7 +39,6 @@ export function reassignAllocation(
 import { isVehicleEligibleForRequisition } from "./vehicleUtils";
 import {
   getOffDayForVehicleOnDate,
-  getStudentTransportEntry,
   getStudentTransportTimeForDate,
   isVehicleFreeAtTime,
   formatTimeDisplay,

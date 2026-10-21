@@ -2,13 +2,18 @@ import { useNavigate } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 
+interface LogoutButtonProps {
+  /** "dark" for the navy top bars (default); "light" on white/off-white pages. */
+  tone?: "dark" | "light";
+}
+
 /**
  * The one Log out button, used in every top bar (applicant pages,
  * Department/Office Head pages and the Transport Office / Super Admin
  * shell) so it is always in the same place and looks the same for every
  * role. Clears the session, then returns to the login page.
  */
-export default function LogoutButton() {
+export default function LogoutButton({ tone = "dark" }: LogoutButtonProps) {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -21,7 +26,11 @@ export default function LogoutButton() {
     <button
       type="button"
       onClick={handleLogout}
-      className="inline-flex h-9 items-center gap-2 rounded-md border border-white/40 px-3 text-sm font-medium text-white hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium focus:outline-none focus-visible:ring-2 ${
+        tone === "dark"
+          ? "border-white/40 text-white hover:bg-white/15 focus-visible:ring-white/70"
+          : "border-border bg-white text-text hover:bg-surface focus-visible:ring-primary/40"
+      }`}
     >
       <svg
         width="16"
