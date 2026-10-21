@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 
-import sustLogo from "../assets/sust-logo.png";
+import GovFormMasthead from "./application/GovFormMasthead";
 import Step1Requester from "./application/Step1Requester";
 import Step2TransportUser, {
   type TransportUserDraft,
 } from "./application/Step2TransportUser";
 import Step3Journey from "./application/Step3Journey";
 import Step4Details, { type DetailsDraft } from "./application/Step4Details";
-import { ERROR_TEXT, PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import { ERROR_TEXT, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
@@ -298,30 +298,10 @@ export default function RequisitionForm({
 
   return (
     <div className="mx-auto rounded-lg border border-form-rule bg-white px-5 py-6 shadow-sm sm:px-10 sm:py-9">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <img
-            src={sustLogo}
-            alt="SUST logo"
-            className="h-14 w-auto shrink-0"
-          />
-          <div>
-            <p className="text-xs text-form-muted">
-              Shahjalal University of Science and Technology · Transport Wing
-            </p>
-            <h1 className="mt-1 inline-block border-b-2 border-form-action pb-1 text-lg font-bold uppercase tracking-wide text-form-action sm:text-xl">
-              Vehicle Requisition Form
-            </h1>
-          </div>
-        </div>
-
-        <div className="text-right">
-          <p className="text-xs text-form-muted">Application No.</p>
-          <p className="text-base font-bold text-form-action">
-            {applicationNumber}
-          </p>
-        </div>
-      </header>
+      <GovFormMasthead
+        formTitle="Vehicle Requisition Form"
+        applicationNo={applicationNumber}
+      />
 
       <div className="mt-8 space-y-8">
         {errorCount > 0 ? (
@@ -331,11 +311,11 @@ export default function RequisitionForm({
           </div>
         ) : null}
 
-        <FormSection part="Part One" title="Requester Details">
+        <FormSection title="Requester Information">
           <Step1Requester requester={requester} />
         </FormSection>
 
-        <FormSection part="Part Two" title="Transport User">
+        <FormSection title="Transport User Information">
           <Step2TransportUser
             requester={requester}
             value={transportUser}
@@ -350,7 +330,7 @@ export default function RequisitionForm({
           />
         </FormSection>
 
-        <FormSection part="Part Three" title="Journey">
+        <FormSection title="Journey Details">
           <Step3Journey
             requisitionType={requisitionType}
             onRequisitionTypeChange={handleRequisitionTypeChange}
@@ -361,7 +341,7 @@ export default function RequisitionForm({
           />
         </FormSection>
 
-        <FormSection part="Part Four" title="Requisition Details">
+        <FormSection title="Purpose and Supporting Document">
           <Step4Details
             value={details}
             onChange={setDetails}
@@ -388,6 +368,7 @@ export default function RequisitionForm({
         ) : null}
 
         <div className={SECTION_WRAP}>
+          <h2 className={`${SECTION_TITLE} mb-3`}>Declaration</h2>
           <label className="flex items-start gap-2.5 text-sm leading-relaxed text-form-ink">
             <input
               type="checkbox"
@@ -437,19 +418,16 @@ export default function RequisitionForm({
   );
 }
 
-/** One numbered part of the form ("Part One — Requester Details"), echoing how the printed form divides its sections. */
+/** One titled section of the form, with a divider under its heading. */
 function FormSection({
-  part,
   title,
   children,
 }: {
-  part: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
     <div className={SECTION_WRAP}>
-      <p className={PART_LABEL}>{part}</p>
       <h2 className={`${SECTION_TITLE} mb-3`}>{title}</h2>
       {children}
     </div>

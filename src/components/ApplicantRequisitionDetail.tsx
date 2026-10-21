@@ -1,6 +1,6 @@
 import type { Requisition, Vehicle, Driver, Allocation, UserAccount } from "../types";
 import GovFormMasthead from "./application/GovFormMasthead";
-import { PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import { SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 import { formatDateRange } from "../utils/requisitionUtils";
 import { canGenerateSlips } from "../utils/dutySlipUtils";
 
@@ -16,11 +16,11 @@ interface ApplicantRequisitionDetailProps {
 
 function statusBadgeClass(status: Requisition["status"]) {
   if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
-  if (status === "Completed") return "bg-[#CBD5E1] text-[#1E293B]";
+  if (status === "Completed") return "bg-[#CBD5E1] text-form-ink";
   if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
   if (status === "Information Requested") return "bg-[#FEF3C7] text-[#B45309]";
   if (status === "Partially Approved") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Draft") return "bg-[#F1F5F9] text-[#64748B]";
+  if (status === "Draft") return "bg-[#F1F5F9] text-form-muted";
   return "bg-[#DBEAFE] text-[#0F2747]";
 }
 
@@ -50,10 +50,7 @@ export default function ApplicantRequisitionDetail({
 
   return (
     <div className="space-y-7">
-      <GovFormMasthead
-        formTitle="Vehicle Requisition"
-        referenceLabel={`Ref. No.: ${requisition.id}`}
-      />
+      <GovFormMasthead formTitle="Vehicle Requisition" applicationNo={requisition.id} />
 
       <div className="flex justify-end">
         <span
@@ -66,56 +63,55 @@ export default function ApplicantRequisitionDetail({
       </div>
 
       <div className={SECTION_WRAP}>
-      <p className={PART_LABEL}>Part One</p>
-      <h2 className={`${SECTION_TITLE} mb-3`}>Requester Details</h2>
-      <div className="grid grid-cols-1 gap-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:grid-cols-2">
-        <div>
-          <p className="text-xs font-medium text-[#64748B]">Requester</p>
-          <p className="text-sm text-[#1E293B]">{requisition.requesterName}</p>
+      <h2 className={`${SECTION_TITLE} mb-3`}>Requester Information</h2>
+      <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+        <div className="border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Requester</p>
+          <p className="text-sm text-form-ink">{requisition.requesterName}</p>
         </div>
 
-        <div>
-          <p className="text-xs font-medium text-[#64748B]">Type</p>
-          <p className="text-sm text-[#1E293B]">
+        <div className="border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Type</p>
+          <p className="text-sm text-form-ink">
             {requisition.requisitionType}
           </p>
         </div>
 
         {requisition.department && (
-          <div>
-            <p className="text-xs font-medium text-[#64748B]">
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">
               Department / Office
             </p>
-            <p className="text-sm text-[#1E293B]">{requisition.department}</p>
+            <p className="text-sm text-form-ink">{requisition.department}</p>
           </div>
         )}
 
-        <div>
-          <p className="text-xs font-medium text-[#64748B]">Date</p>
-          <p className="text-sm text-[#1E293B]">
+        <div className="border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Date</p>
+          <p className="text-sm text-form-ink">
             {formatDateRange(requisition.startDate, requisition.endDate)}
           </p>
         </div>
 
         {requisition.recommenderName && (
-          <div>
-            <p className="text-xs font-medium text-[#64748B]">
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">
               Recommended by
             </p>
-            <p className="text-sm text-[#1E293B]">
+            <p className="text-sm text-form-ink">
               {requisition.recommenderName}
             </p>
           </div>
         )}
 
-        <div className="sm:col-span-2">
-          <p className="text-xs font-medium text-[#64748B]">Purpose</p>
-          <p className="text-sm text-[#1E293B]">{requisition.purpose}</p>
+        <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Purpose</p>
+          <p className="text-sm text-form-ink">{requisition.purpose}</p>
         </div>
 
         {requisition.supportingDocumentDataUrl && (
-          <div className="sm:col-span-2">
-            <p className="text-xs font-medium text-[#64748B]">
+          <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">
               Supporting Document
             </p>
             <a
@@ -130,9 +126,9 @@ export default function ApplicantRequisitionDetail({
           </div>
         )}
 
-        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#E2E8F0] pt-3 sm:col-span-2">
-          <div>
-            <p className="text-xs font-medium text-[#64748B]">Signature</p>
+        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-form-rule pt-3 sm:col-span-2">
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Signature</p>
             {requester?.signatureDataUrl ? (
               <img
                 src={requester.signatureDataUrl}
@@ -140,12 +136,12 @@ export default function ApplicantRequisitionDetail({
                 className="mt-1 h-14 max-w-[220px] object-contain"
               />
             ) : (
-              <p className="mt-1 text-sm italic text-[#64748B]">
+              <p className="mt-1 text-sm italic text-form-muted">
                 No signature on file
               </p>
             )}
           </div>
-          <p className="text-xs text-[#64748B]">
+          <p className="text-xs text-form-muted">
             Submitted: {new Date(requisition.createdAt).toLocaleString()}
           </p>
         </div>
@@ -153,15 +149,14 @@ export default function ApplicantRequisitionDetail({
       </div>
 
       <div className={SECTION_WRAP}>
-        <p className={PART_LABEL}>Part Two</p>
         <h2 className={`${SECTION_TITLE} mb-3`}>
-          Journey ({requisition.trips.length}{" "}
+          Journey Details ({requisition.trips.length}{" "}
           {requisition.trips.length === 1 ? "trip" : "trips"})
         </h2>
 
         <div className="space-y-3">
           {requisition.trips.length === 0 ? (
-            <p className="text-sm text-[#64748B]">No trip details yet.</p>
+            <p className="text-sm text-form-muted">No trip details yet.</p>
           ) : (
             requisition.trips.map((trip, index) => {
               const allocation = allocations.find(
@@ -177,17 +172,17 @@ export default function ApplicantRequisitionDetail({
               return (
                 <div
                   key={trip.id}
-                  className="rounded-md border border-[#E2E8F0] p-4"
+                  className="rounded-lg border border-form-rule bg-white p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-medium text-[#1E293B]">
+                      <p className="text-sm font-medium text-form-ink">
                         {requisition.trips.length > 1
                           ? `Trip ${index + 1} · `
                           : ""}
                         {trip.date} · {trip.startTime}–{trip.endTime}
                       </p>
-                      <p className="mt-1 text-sm text-[#64748B]">
+                      <p className="mt-1 text-sm text-form-muted">
                         {trip.route}
                       </p>
 
@@ -218,7 +213,7 @@ export default function ApplicantRequisitionDetail({
                           ? "bg-[#DCFCE7] text-[#15803D]"
                           : trip.status === "Rejected"
                             ? "bg-[#FEE2E2] text-[#B91C1C]"
-                            : "bg-[#F1F5F9] text-[#64748B]"
+                            : "bg-[#F1F5F9] text-form-muted"
                       }`}
                     >
                       {trip.status}
@@ -232,19 +227,18 @@ export default function ApplicantRequisitionDetail({
       </div>
 
       <div className={SECTION_WRAP}>
-        <p className={PART_LABEL}>Part Three</p>
         <h2 className={`${SECTION_TITLE} mb-3`}>Documents</h2>
 
         {canDownloadConfirmationSlip ? (
           <button
             type="button"
             onClick={onDownloadConfirmationSlip}
-            className="h-9 rounded-md bg-[#0F2747] px-3 text-sm font-medium text-white hover:bg-[#334E68]"
+            className="h-9 rounded-md bg-form-action px-3 text-sm font-medium text-white hover:bg-secondary"
           >
             Download Confirmation Slip
           </button>
         ) : (
-          <p className="text-sm text-[#64748B]">
+          <p className="text-sm text-form-muted">
             The confirmation slip becomes available once the Transport
             Administrator approves at least one trip.
           </p>

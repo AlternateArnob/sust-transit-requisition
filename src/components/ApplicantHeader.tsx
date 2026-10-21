@@ -1,9 +1,10 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
 import NotificationBell from "./NotificationBell";
 import SustLogo from "./SustLogo";
+import LogoutButton from "./LogoutButton";
 
 type NavKey =
   | "dashboard"
@@ -63,19 +64,13 @@ interface ApplicantHeaderProps {
  * (never a sidebar) so navigation stays in the same place everywhere.
  */
 export default function ApplicantHeader({ active, title }: ApplicantHeaderProps) {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { logout, currentUser } = useAuth();
+  const { currentUser } = useAuth();
   const { recommendationsCount } = useNotifications();
 
   const isHead = currentUser?.role === "DepartmentHead";
   const links = isHead ? HEAD_LINKS : APPLICANT_LINKS;
   const current = active ?? keyFromPath(location.pathname);
-
-  function handleLogout() {
-    logout();
-    navigate("/login");
-  }
 
   const linkClass = (key: NavKey) =>
     current === key
@@ -109,13 +104,7 @@ export default function ApplicantHeader({ active, title }: ApplicantHeaderProps)
 
         <NotificationBell />
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="rounded-md border border-white/30 px-3 py-1.5 hover:bg-white/10"
-        >
-          Log out
-        </button>
+        <LogoutButton />
       </nav>
     </header>
   );

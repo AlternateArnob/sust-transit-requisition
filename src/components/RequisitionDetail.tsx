@@ -24,7 +24,7 @@ import {
 import Modal from "./Modal";
 import AllocationPicker from "./AllocationPicker";
 import GovFormMasthead from "./application/GovFormMasthead";
-import { PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import { SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 import type { UserAccount } from "../types";
 
 /**
@@ -82,14 +82,14 @@ function statusBadgeClass(status: Trip["status"]) {
   }
 
   if (status === "Completed") {
-    return "bg-[#CBD5E1] text-[#1E293B]";
+    return "bg-[#CBD5E1] text-form-ink";
   }
 
   if (status === "Rejected") {
     return "bg-[#FEE2E2] text-[#B91C1C]";
   }
 
-  return "bg-[#F1F5F9] text-[#64748B]";
+  return "bg-[#F1F5F9] text-form-muted";
 }
 
 export default function RequisitionDetail({
@@ -157,25 +157,21 @@ export default function RequisitionDetail({
 
   return (
     <div className="space-y-7">
-      <GovFormMasthead
-        formTitle="Requisition Review"
-        referenceLabel={`Ref. No.: ${requisition.id}`}
-      />
+      <GovFormMasthead formTitle="Requisition Review" applicationNo={requisition.id} />
 
       {/* Requester Info */}
       <div className={SECTION_WRAP}>
-      <p className={PART_LABEL}>Part One</p>
-      <h2 className={`${SECTION_TITLE} mb-3`}>Requester Details</h2>
-      <div className="grid grid-cols-1 gap-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:grid-cols-2">
-        <div>
-          <p className="text-xs font-medium text-[#64748B]">Requester</p>
-          <p className="text-sm text-[#1E293B]">
+      <h2 className={`${SECTION_TITLE} mb-3`}>Requester Information</h2>
+      <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+        <div className="border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Requester</p>
+          <p className="text-sm text-form-ink">
             {requisition.requesterName}
           </p>
         </div>
 
-        <div>
-          <p className="text-xs font-medium text-[#64748B]">Type</p>
+        <div className="border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Type</p>
           <span
             className={`mt-0.5 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${requisitionTypeBadgeClass(requisition.requisitionType)}`}
           >
@@ -184,43 +180,43 @@ export default function RequisitionDetail({
         </div>
 
         {requisition.department && (
-          <div>
-            <p className="text-xs font-medium text-[#64748B]">
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">
               Department / Organization
             </p>
-            <p className="text-sm text-[#1E293B]">{requisition.department}</p>
+            <p className="text-sm text-form-ink">{requisition.department}</p>
           </div>
         )}
 
         {requisition.contactNumber && (
-          <div>
-            <p className="text-xs font-medium text-[#64748B]">Contact</p>
-            <p className="text-sm text-[#1E293B]">
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Contact</p>
+            <p className="text-sm text-form-ink">
               {requisition.contactNumber}
             </p>
           </div>
         )}
 
-        <div>
-          <p className="text-xs font-medium text-[#64748B]">Date Range</p>
-          <p className="text-sm text-[#1E293B]">
+        <div className="border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Date Range</p>
+          <p className="text-sm text-form-ink">
             {formatDateRange(requisition.startDate, requisition.endDate)}
           </p>
         </div>
 
-        <div>
-          <p className="text-xs font-medium text-[#64748B]">Schedule Type</p>
-          <p className="text-sm text-[#1E293B]">{requisition.scheduleType}</p>
+        <div className="border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Schedule Type</p>
+          <p className="text-sm text-form-ink">{requisition.scheduleType}</p>
         </div>
 
-        <div className="sm:col-span-2">
-          <p className="text-xs font-medium text-[#64748B]">Purpose</p>
-          <p className="text-sm text-[#1E293B]">{requisition.purpose}</p>
+        <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+          <p className="text-xs font-medium text-form-muted">Purpose</p>
+          <p className="text-sm text-form-ink">{requisition.purpose}</p>
         </div>
 
         {requisition.supportingDocumentDataUrl && (
-          <div className="sm:col-span-2">
-            <p className="text-xs font-medium text-[#64748B]">
+          <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">
               Supporting Document
             </p>
             <a
@@ -235,9 +231,9 @@ export default function RequisitionDetail({
           </div>
         )}
 
-        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#E2E8F0] pt-3 sm:col-span-2">
-          <div>
-            <p className="text-xs font-medium text-[#64748B]">Signature</p>
+        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-form-rule pt-3 sm:col-span-2">
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Signature</p>
             {requester?.signatureDataUrl ? (
               <img
                 src={requester.signatureDataUrl}
@@ -245,12 +241,12 @@ export default function RequisitionDetail({
                 className="mt-1 h-14 max-w-[220px] object-contain"
               />
             ) : (
-              <p className="mt-1 text-sm italic text-[#64748B]">
+              <p className="mt-1 text-sm italic text-form-muted">
                 No signature on file
               </p>
             )}
           </div>
-          <p className="text-xs text-[#64748B]">
+          <p className="text-xs text-form-muted">
             Submitted: {new Date(requisition.createdAt).toLocaleString()}
           </p>
         </div>
@@ -266,7 +262,7 @@ export default function RequisitionDetail({
               : ""}
           </p>
           {requisition.recommenderMessage ? (
-            <p className="mt-1 text-[#1E293B]">
+            <p className="mt-1 text-form-ink">
               “{requisition.recommenderMessage}”
             </p>
           ) : null}
@@ -284,9 +280,8 @@ export default function RequisitionDetail({
 
       {/* Trips */}
       <div className={SECTION_WRAP}>
-        <p className={PART_LABEL}>Part Two</p>
         <h2 className={`${SECTION_TITLE} mb-3`}>
-          Journey ({requisition.trips.length}{" "}
+          Journey Details ({requisition.trips.length}{" "}
           {requisition.trips.length === 1 ? "trip" : "trips"})
         </h2>
 
@@ -303,27 +298,27 @@ export default function RequisitionDetail({
             return (
               <div
                 key={trip.id}
-                className="rounded-md border border-[#E2E8F0] p-4"
+                className="rounded-lg border border-form-rule bg-white p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
-                    <p className="text-sm font-medium text-[#1E293B]">
+                    <p className="text-sm font-medium text-form-ink">
                       Trip {index + 1} · {trip.date} · {trip.startTime}–
                       {trip.endTime}
                     </p>
 
-                    <p className="mt-1 text-sm text-[#64748B]">
+                    <p className="mt-1 text-sm text-form-muted">
                       {trip.vehicleCategory} · {trip.route}
                     </p>
 
                     {trip.stoppageSequence.length > 0 && (
-                      <p className="mt-1 text-xs text-[#64748B]">
+                      <p className="mt-1 text-xs text-form-muted">
                         {trip.stoppageSequence.join(" → ")}
                       </p>
                     )}
 
                     {trip.passengerGroups.length > 0 && (
-                      <p className="mt-1 text-xs text-[#64748B]">
+                      <p className="mt-1 text-xs text-form-muted">
                         Passengers: {trip.passengerGroups.join(", ")}
                       </p>
                     )}
@@ -341,7 +336,7 @@ export default function RequisitionDetail({
                       <p
                         className={`mt-2 text-xs font-medium ${
                           trip.status === "Rejected"
-                            ? "text-[#64748B] line-through"
+                            ? "text-form-muted line-through"
                             : "text-[#15803D]"
                         }`}
                       >
@@ -361,7 +356,7 @@ export default function RequisitionDetail({
                         <p className="mt-2 text-xs font-medium text-[#B45309]">
                           No vehicle on file — this trip shouldn't have
                           reached this queue without one. Send the
-                          application back to Transport In Charge.
+                          application back to Transport In-Charge.
                         </p>
                       )}
                   </div>
@@ -381,7 +376,7 @@ export default function RequisitionDetail({
                     <button
                       type="button"
                       onClick={() => setAllocatingTrip(trip)}
-                      className="h-8 rounded-md bg-[#0F2747] px-3 text-xs font-medium text-white hover:bg-[#334E68]"
+                      className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
                     >
                       {allocation ? "Change Vehicle" : "Assign Vehicle"}
                     </button>
@@ -390,7 +385,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => onRemoveVehicleAssignment?.(trip.id)}
-                        className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#F8FAFC]"
+                        className="h-8 rounded-md border border-form-rule px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#F8FAFC]"
                       >
                         Remove
                       </button>
@@ -416,7 +411,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => startReject(trip.id)}
-                        className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#F8FAFC]"
+                        className="h-8 rounded-md border border-form-rule px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#F8FAFC]"
                       >
                         Reject
                       </button>
@@ -432,7 +427,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => onCompleteTrip?.(trip.id)}
-                        className="h-8 rounded-md bg-[#0F2747] px-3 text-xs font-medium text-white hover:bg-[#334E68]"
+                        className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
                       >
                         Mark Completed
                       </button>
@@ -461,9 +456,9 @@ export default function RequisitionDetail({
                   )}
 
                 {rejectingTripId === trip.id && (
-                  <div className="mt-3 space-y-2 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-3">
+                  <div className="mt-3 space-y-2 rounded-md border border-form-rule bg-[#F8FAFC] p-3">
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-[#64748B]">
+                      <label className="mb-1 block text-xs font-medium text-form-muted">
                         Rejection Reason
                       </label>
 
@@ -472,7 +467,7 @@ export default function RequisitionDetail({
                         onChange={(event) =>
                           setReason(event.target.value as RejectionReason)
                         }
-                        className="h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                        className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
                       >
                         {REJECTION_REASONS.map((item) => (
                           <option key={item} value={item}>
@@ -483,7 +478,7 @@ export default function RequisitionDetail({
                     </div>
 
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-[#64748B]">
+                      <label className="mb-1 block text-xs font-medium text-form-muted">
                         Remarks (optional)
                       </label>
 
@@ -491,7 +486,7 @@ export default function RequisitionDetail({
                         type="text"
                         value={remarks}
                         onChange={(event) => setRemarks(event.target.value)}
-                        className="h-9 w-full rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+                        className="h-9 w-full rounded-md border border-form-rule px-3 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
                       />
                     </div>
 
@@ -499,7 +494,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => setRejectingTripId(null)}
-                        className="h-8 rounded-md border border-[#E2E8F0] bg-white px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+                        className="h-8 rounded-md border border-form-rule bg-white px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
                       >
                         Cancel
                       </button>
@@ -522,7 +517,7 @@ export default function RequisitionDetail({
 
       {/* Transport In Charge — forward / send back */}
       {mode === "transportInCharge" && (
-        <div className="space-y-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+        <div className="space-y-3 rounded-md border border-form-rule bg-[#F8FAFC] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-[#334E68]">
               {canForward
@@ -534,7 +529,7 @@ export default function RequisitionDetail({
               <button
                 type="button"
                 onClick={() => setShowSendBackToApplicant(true)}
-                className="h-9 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
+                className="h-9 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
               >
                 Send Back to Applicant
               </button>
@@ -543,7 +538,7 @@ export default function RequisitionDetail({
                 type="button"
                 onClick={onForwardToAdministrator}
                 disabled={!canForward}
-                className="h-9 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68] disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-9 rounded-md bg-form-action px-4 text-sm font-medium text-white hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Forward to Administrator
               </button>
@@ -571,7 +566,7 @@ export default function RequisitionDetail({
 
       {/* Transport Administrator — send back to Transport In Charge */}
       {mode === "transportAdministrator" && (
-        <div className="space-y-3 rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+        <div className="space-y-3 rounded-md border border-form-rule bg-[#F8FAFC] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-[#334E68]">
               Not right? Send the whole application back to Transport In
@@ -581,9 +576,9 @@ export default function RequisitionDetail({
             <button
               type="button"
               onClick={() => setShowSendBackToTIC(true)}
-              className="h-9 shrink-0 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
+              className="h-9 shrink-0 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
             >
-              Send Back to Transport In Charge
+              Send Back to Transport In-Charge
             </button>
           </div>
 
@@ -607,7 +602,6 @@ export default function RequisitionDetail({
       {/* Documents */}
       {mode !== "transportInCharge" && (
         <div className={SECTION_WRAP}>
-          <p className={PART_LABEL}>Part Three</p>
           <h2 className={`${SECTION_TITLE} mb-3`}>Documents</h2>
 
           {mode === "transportAdministrator" && (
@@ -616,12 +610,12 @@ export default function RequisitionDetail({
                 <button
                   type="button"
                   onClick={onGenerateConfirmationSlip}
-                  className="mb-3 h-9 rounded-md border border-[#E2E8F0] px-3 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+                  className="mb-3 h-9 rounded-md border border-form-rule px-3 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
                 >
                   Download Confirmation Slip
                 </button>
               ) : (
-                <p className="mb-3 text-sm text-[#64748B]">
+                <p className="mb-3 text-sm text-form-muted">
                   Confirmation slip becomes available once at least one trip
                   is approved.
                 </p>
@@ -630,7 +624,7 @@ export default function RequisitionDetail({
           )}
 
           {dutySlipGroups.length === 0 ? (
-            <p className="text-sm text-[#64748B]">
+            <p className="text-sm text-form-muted">
               No approved & allocated trips yet — duty slips become available
               once trips are approved.
             </p>
@@ -672,15 +666,15 @@ export default function RequisitionDetail({
                 return (
                   <div
                     key={group.driverId}
-                    className="rounded-md border border-[#E2E8F0] px-3 py-2"
+                    className="rounded-md border border-form-rule px-3 py-2"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-[#1E293B]">
+                        <p className="text-sm font-medium text-form-ink">
                           {assignedDriver?.name ?? "Unknown Driver"}
                         </p>
 
-                        <p className="text-xs text-[#64748B]">
+                        <p className="text-xs text-form-muted">
                           {group.trips.length} assigned day(s)
                         </p>
 
@@ -701,7 +695,7 @@ export default function RequisitionDetail({
                         <button
                           type="button"
                           onClick={handleGenerateClick}
-                          className="h-8 rounded-md bg-[#0F2747] px-3 text-xs font-medium text-white hover:bg-[#334E68]"
+                          className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
                         >
                           {latestSlip
                             ? "Regenerate Duty Slip"
@@ -711,7 +705,7 @@ export default function RequisitionDetail({
                     </div>
 
                     {olderSlips.length > 0 && (
-                      <div className="mt-2 border-t border-[#E2E8F0] pt-2">
+                      <div className="mt-2 border-t border-form-rule pt-2">
                         <button
                           type="button"
                           onClick={() =>
@@ -731,7 +725,7 @@ export default function RequisitionDetail({
                             {olderSlips.map((slip) => (
                               <li
                                 key={slip.id}
-                                className="flex items-center justify-between text-xs text-[#64748B]"
+                                className="flex items-center justify-between text-xs text-form-muted"
                               >
                                 <span>
                                   Generated{" "}
@@ -799,10 +793,10 @@ function SendBackForm({
   onConfirm: () => void;
 }) {
   return (
-    <div className="space-y-2 rounded-md border border-[#E2E8F0] bg-white p-3">
+    <div className="space-y-2 rounded-md border border-form-rule bg-white p-3">
       {withReason && reason && onReasonChange && (
         <div>
-          <label className="mb-1 block text-xs font-medium text-[#64748B]">
+          <label className="mb-1 block text-xs font-medium text-form-muted">
             Reason
           </label>
 
@@ -811,7 +805,7 @@ function SendBackForm({
             onChange={(event) =>
               onReasonChange(event.target.value as RejectionReason)
             }
-            className="h-9 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+            className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
           >
             {REJECTION_REASONS.map((item) => (
               <option key={item} value={item}>
@@ -823,7 +817,7 @@ function SendBackForm({
       )}
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-[#64748B]">
+        <label className="mb-1 block text-xs font-medium text-form-muted">
           Remarks (required)
         </label>
 
@@ -831,7 +825,7 @@ function SendBackForm({
           value={remarks}
           onChange={(event) => onRemarksChange(event.target.value)}
           rows={2}
-          className="w-full rounded-md border border-[#E2E8F0] px-3 py-2 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="w-full rounded-md border border-form-rule px-3 py-2 text-sm text-form-ink outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
         />
       </div>
 
@@ -839,7 +833,7 @@ function SendBackForm({
         <button
           type="button"
           onClick={onCancel}
-          className="h-8 rounded-md border border-[#E2E8F0] bg-white px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className="h-8 rounded-md border border-form-rule bg-white px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
         >
           Cancel
         </button>

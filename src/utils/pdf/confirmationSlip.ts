@@ -1,7 +1,14 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-import { PDF_COLORS, drawHeader, drawFooter } from "./pdfTheme";
+import {
+  PDF_COLORS,
+  drawFooter,
+  drawHeader,
+  drawInfoRows,
+  drawSectionHeading,
+  tableStyle,
+} from "./pdfTheme";
 import type { Requisition, Allocation, Vehicle, Driver } from "../../types";
 
 export function generateConfirmationSlip(
@@ -12,12 +19,11 @@ export function generateConfirmationSlip(
 ) {
   const doc = new jsPDF();
 
-  let y = drawHeader(doc, "Confirmation Slip");
+  let y = drawHeader(doc, "Confirmation Slip", requisition.id);
 
-  doc.setFontSize(9);
+  y = drawSectionHeading(doc, "Requester Information", y);
 
   const infoLines: [string, string][] = [
-    ["Application Ref.", requisition.id],
     ["Requester", requisition.requesterName],
     ["Department / Organization", requisition.department ?? "—"],
     ["Requisition Type", requisition.requisitionType],
@@ -33,15 +39,10 @@ export function generateConfirmationSlip(
     infoLines.push(["Target Passenger Group(s)", passengerGroups.join(", ")]);
   }
 
-  infoLines.forEach(([label, value]) => {
-    doc.setFont("helvetica", "bold");
-    doc.text(`${label}:`, 14, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(value, 65, y, { maxWidth: 130 });
-    y += 6;
-  });
+  y = drawInfoRows(doc, infoLines, y);
+  y += 5;
 
-  y += 4;
+  y = drawSectionHeading(doc, "Journey Details", y);
 
   const rows = requisition.trips.map((trip) => {
     const allocation = allocations.find((item) => item.tripId === trip.id);
@@ -69,18 +70,16 @@ export function generateConfirmationSlip(
   });
 
   autoTable(doc, {
+    ...tableStyle(),
     startY: y,
     head: [["Date", "Time", "Vehicle", "Driver", "Route", "Status"]],
     body: rows,
-    headStyles: {
-      fillColor: PDF_COLORS.navy,
-      textColor: PDF_COLORS.white,
-      fontSize: 8,
+    didParseCell: (data) => {
+      if (data.section !== "body" || data.column.index !== 5) return;
+      const status = String(data.cell.raw).split("\n")[0];
+      if (status === "Approved") data.cell.styles.textColor = PDF_COLORS.success;
+      if (status === "Rejected") data.cell.styles.textColor = PDF_COLORS.error;
     },
-    bodyStyles: { fontSize: 8, textColor: PDF_COLORS.charcoal },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    styles: { lineColor: PDF_COLORS.border, lineWidth: 0.1 },
-    margin: { left: 14, right: 14 },
   });
 
   drawFooter(doc);

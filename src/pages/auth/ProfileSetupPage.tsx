@@ -5,7 +5,7 @@ import useUsers from "../../hooks/useUsers";
 import ProfileField from "../../components/ProfileField";
 import SignatureUpload from "../../components/SignatureUpload";
 import SustLogo from "../../components/SustLogo";
-import { PART_LABEL, SECTION_TITLE } from "../../components/application/formTheme";
+import { SECTION_TITLE } from "../../components/application/formTheme";
 import ApplicantHeader from "../../components/ApplicantHeader";
 import { APPLICANT_PROFILES } from "../../types";
 import type { ApplicantProfile, UserAccount } from "../../types";
@@ -205,7 +205,7 @@ export default function ProfileSetupPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-8">
-            <ProfileSection part="Part One" title="Applicant Profile">
+            <ProfileSection title="Applicant Type">
               <div className="flex flex-col gap-4">
             <ProfileField
               label="Applicant profile"
@@ -231,7 +231,7 @@ export default function ProfileSetupPage() {
               </div>
             </ProfileSection>
 
-            <ProfileSection part="Part Two" title="Contact and Affiliation">
+            <ProfileSection title="Personal and Affiliation Details">
               <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <ProfileField
@@ -379,7 +379,7 @@ export default function ProfileSetupPage() {
               </div>
             </ProfileSection>
 
-            <ProfileSection part="Part Three" title="Signature">
+            <ProfileSection title="Signature">
             <ProfileField
               label="Signature"
               error={errors.signature}
@@ -393,7 +393,7 @@ export default function ProfileSetupPage() {
 
             </ProfileSection>
 
-            <ProfileSection part="Part Four" title="Password">
+            <ProfileSection title="Account Security">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <ProfileField
                 label={hasExistingPassword ? "New password" : "Password"}
@@ -453,19 +453,16 @@ export default function ProfileSetupPage() {
   );
 }
 
-/** One numbered part of the profile form, matching the requisition form's sections. */
+/** One titled section of the profile form, matching the requisition form. */
 function ProfileSection({
-  part,
   title,
   children,
 }: {
-  part: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
     <section className="pt-1">
-      <p className={PART_LABEL}>{part}</p>
       <h2 className={`${SECTION_TITLE} mb-4`}>{title}</h2>
       {children}
     </section>
