@@ -1,92 +1,109 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
+import useNotifications from "../hooks/useNotifications";
 import NotificationBell from "./NotificationBell";
+import SustLogo from "./SustLogo";
 
-type ApplicantNavKey =
+type NavKey =
   | "dashboard"
   | "apply"
   | "my-requisitions"
-  | "my-mileage";
+  | "my-mileage"
+  | "request"
+  | "recommended"
+  | "profile";
 
-type NavLinkItem = { key: ApplicantNavKey; to: string; label: string };
+type NavLinkItem = { key: NavKey; to: string; label: string };
 
-const NAV_LINKS: NavLinkItem[] = [
+const APPLICANT_LINKS: NavLinkItem[] = [
   { key: "dashboard", to: "/dashboard", label: "Dashboard" },
   { key: "apply", to: "/apply", label: "New Requisition" },
   { key: "my-requisitions", to: "/my-requisitions", label: "My Requisitions" },
   { key: "my-mileage", to: "/my-mileage", label: "My Mileage" },
 ];
 
+/**
+ * A Department / Office Head applies for vehicles like any teacher AND
+ * handles requests from their department, so they get one top bar that
+ * covers both — no left sidebar anywhere (see AdminLayout). Their
+ * Dashboard lives under /admin, which is the Applicant-only /dashboard's
+ * equivalent for this role.
+ */
+const HEAD_LINKS: NavLinkItem[] = [
+  { key: "dashboard", to: "/admin", label: "Dashboard" },
+  { key: "request", to: "/admin/recommender", label: "Request" },
+  { key: "recommended", to: "/admin/recommender/history", label: "Recommended by me" },
+  { key: "apply", to: "/apply", label: "New Requisition" },
+  { key: "my-requisitions", to: "/my-requisitions", label: "My Requisitions" },
+  { key: "my-mileage", to: "/my-mileage", label: "My Mileage" },
+];
+
+function keyFromPath(pathname: string): NavKey | undefined {
+  if (pathname === "/dashboard" || pathname === "/admin") return "dashboard";
+  if (pathname.startsWith("/apply")) return "apply";
+  if (pathname.startsWith("/my-requisitions")) return "my-requisitions";
+  if (pathname.startsWith("/my-mileage")) return "my-mileage";
+  if (pathname.startsWith("/admin/recommender/history")) return "recommended";
+  if (pathname.startsWith("/admin/recommender")) return "request";
+  if (pathname.startsWith("/profile-setup")) return "profile";
+  return undefined;
+}
+
 interface ApplicantHeaderProps {
-  /** Which nav item to underline as current. Omit on pages (like
-   *  Profile) that aren't one of the four primary destinations. */
-  active?: ApplicantNavKey;
+  /** Which nav item to underline as current. Defaults to whatever the
+   *  current URL implies, so pages rarely need to pass it. */
+  active?: NavKey;
   title?: string;
 }
 
 /**
- * Fix 3 — one shared header for every applicant-facing page
- * (ApplyRequisitionPage, MyRequisitionsPage, ApplicantDashboardPage,
- * MyMileagePage, and the Profile link's destination). Previously each
- * page hand-rolled its own header with a different, inconsistent subset
- * of links — none of them linked to /dashboard, and Profile Setup (the
- * applicant's only account-edit page — the admin-side /admin/profile
- * route is not reachable by the Applicant role, since it sits inside
- * the ADMIN_LAYOUT_ROLES-gated /admin shell) had no discoverable link
- * anywhere outside a buried line inside the requisition form itself.
+ * One shared top bar for every applicant-facing page and for the
+ * Department / Office Head's whole area. Always at the top of the page
+ * (never a sidebar) so navigation stays in the same place everywhere.
  */
 export default function ApplicantHeader({ active, title }: ApplicantHeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout, currentUser } = useAuth();
+  const { recommendationsCount } = useNotifications();
 
-  // A Department Head applies for vehicles like any teacher, but lives in
-  // the /admin shell: /dashboard and /profile-setup are Applicant-only,
-  // so their Dashboard and Profile links point at the admin equivalents,
-  // and they get a shortcut back to their recommendation inbox.
-  const isDepartmentHead = currentUser?.role === "DepartmentHead";
-  const links: NavLinkItem[] = NAV_LINKS.map((link) =>
-    isDepartmentHead && link.key === "dashboard"
-      ? { ...link, to: "/admin" }
-      : link,
-  );
+  const isHead = currentUser?.role === "DepartmentHead";
+  const links = isHead ? HEAD_LINKS : APPLICANT_LINKS;
+  const current = active ?? keyFromPath(location.pathname);
 
   function handleLogout() {
     logout();
     navigate("/login");
   }
 
-  return (
-    <header className="flex h-16 flex-wrap items-center justify-between gap-3 bg-[#0F2747] px-6 py-3 text-white">
-      <h1 className="text-lg font-semibold">
-        {title ? `SUST Transit — ${title}` : "SUST Transit"}
-      </h1>
+  const linkClass = (key: NavKey) =>
+    current === key
+      ? "font-semibold underline underline-offset-4"
+      : "hover:underline";
 
-      <nav className="flex flex-wrap items-center gap-4 text-sm">
+  return (
+    <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-6 gap-y-2 bg-[#0F2747] px-6 py-3 text-white">
+      <div className="flex items-center gap-3">
+        <SustLogo badge heightClass="h-8" />
+        <h1 className="text-lg font-semibold">
+          {title ? `SUST Transit — ${title}` : "SUST Transit"}
+        </h1>
+      </div>
+
+      <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         {links.map((link) => (
-          <Link
-            key={link.key}
-            to={link.to}
-            className={
-              active === link.key
-                ? "font-semibold underline underline-offset-4"
-                : "hover:underline"
-            }
-          >
+          <Link key={link.key} to={link.to} className={linkClass(link.key)}>
             {link.label}
+            {link.key === "request" && recommendationsCount > 0 ? (
+              <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#F59E0B] px-1.5 text-[11px] font-semibold text-[#0F2747]">
+                {recommendationsCount}
+              </span>
+            ) : null}
           </Link>
         ))}
 
-        {isDepartmentHead ? (
-          <Link to="/admin/recommender" className="hover:underline">
-            Recommendations
-          </Link>
-        ) : null}
-
-        <Link
-          to={isDepartmentHead ? "/admin/profile" : "/profile-setup"}
-          className="hover:underline"
-        >
+        <Link to="/profile-setup" className={linkClass("profile")}>
           Profile
         </Link>
 

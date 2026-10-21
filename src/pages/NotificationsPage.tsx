@@ -1,11 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import ApplicantHeader from "../components/ApplicantHeader";
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
 import type { AppNotification } from "../types";
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const { notifications, markAsRead, markAllAsRead } = useNotifications();
   const isApplicant = currentUser?.role === "Applicant";
 
@@ -46,11 +47,6 @@ export default function NotificationsPage() {
     }
 
     navigate("/admin/conflicts");
-  }
-
-  function handleLogout() {
-    logout();
-    navigate("/login");
   }
 
   const body = (
@@ -126,24 +122,7 @@ export default function NotificationsPage() {
   if (isApplicant) {
     return (
       <div className="min-h-screen bg-[#F8FAFC]">
-        <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
-          <h1 className="text-lg font-semibold">SUST Transit — Notifications</h1>
-          <div className="flex items-center gap-4 text-sm">
-            <Link to="/dashboard" className="hover:underline">
-              Dashboard
-            </Link>
-            <Link to="/my-requisitions" className="hover:underline">
-              My Requisitions
-            </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-md border border-white/30 px-3 py-1.5 hover:bg-white/10"
-            >
-              Log out
-            </button>
-          </div>
-        </header>
+        <ApplicantHeader title="Notifications" />
 
         <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">{body}</main>
       </div>

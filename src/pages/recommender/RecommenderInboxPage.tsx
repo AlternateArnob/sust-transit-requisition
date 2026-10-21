@@ -66,7 +66,7 @@ export default function RecommenderInboxPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Recommender inbox
+            Requests
           </h1>
           <p className="mt-1 text-sm text-[#64748B]">
             Review official requisitions awaiting your recommendation.

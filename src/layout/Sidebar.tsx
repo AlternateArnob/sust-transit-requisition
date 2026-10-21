@@ -15,22 +15,9 @@ interface NavItem {
 const DASHBOARD_ITEM: NavItem = { label: "Dashboard", path: "/admin" };
 
 const RECOMMENDER_ITEM: NavItem = {
-  label: "Recommender",
+  label: "Request",
   path: "/admin/recommender",
 };
-
-/**
- * A Department Head is also a teacher who can request vehicles, so their
- * sidebar carries links out to the applicant pages alongside the
- * recommender inbox.
- */
-const DEPARTMENT_HEAD_ITEMS: NavItem[] = [
-  DASHBOARD_ITEM,
-  RECOMMENDER_ITEM,
-  { label: "Recommended by me", path: "/admin/recommender/history" },
-  { label: "New Requisition", path: "/apply" },
-  { label: "My Requisitions", path: "/my-requisitions" },
-];
 
 /**
  * Corrections Step 3 — the three admin roles no longer share one nav
@@ -73,7 +60,7 @@ export default function Sidebar() {
       : isSuperAdmin(currentUser?.role)
         ? SUPER_ADMIN_ITEMS
         : currentUser?.role === "DepartmentHead"
-          ? DEPARTMENT_HEAD_ITEMS
+          ? [DASHBOARD_ITEM, RECOMMENDER_ITEM]
           : [DASHBOARD_ITEM];
 
   return (

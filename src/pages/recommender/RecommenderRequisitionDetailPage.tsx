@@ -66,7 +66,7 @@ export default function RecommenderRequisitionDetailPage() {
           to="/admin/recommender"
           className="mt-2 inline-block text-xs font-medium text-[#334E68] hover:underline"
         >
-          ← Back to inbox
+          ← Back to requests
         </Link>
       </div>
     );
@@ -186,7 +186,7 @@ export default function RecommenderRequisitionDetailPage() {
             to="/admin/recommender"
             className="text-xs font-medium text-[#334E68] hover:underline"
           >
-            ← Back to inbox
+            ← Back to requests
           </Link>
           <h1 className="mt-2 text-2xl font-semibold text-[#1E293B]">
             Requisition {requisition.id}

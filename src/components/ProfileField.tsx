@@ -25,7 +25,7 @@ export default function ProfileField({
 }: ProfileFieldProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="flex items-center gap-1.5 text-sm font-medium text-[#1E293B]">
+      <span className="flex items-center gap-1.5 text-[13px] font-medium text-form-muted">
         {label}
         {required ? <span className="text-[#B91C1C]">*</span> : null}
         {locked ? (
