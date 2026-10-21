@@ -9,7 +9,9 @@ type ApplicantNavKey =
   | "my-requisitions"
   | "my-mileage";
 
-const NAV_LINKS: Array<{ key: ApplicantNavKey; to: string; label: string }> = [
+type NavLinkItem = { key: ApplicantNavKey; to: string; label: string };
+
+const NAV_LINKS: NavLinkItem[] = [
   { key: "dashboard", to: "/dashboard", label: "Dashboard" },
   { key: "apply", to: "/apply", label: "New Requisition" },
   { key: "my-requisitions", to: "/my-requisitions", label: "My Requisitions" },
@@ -36,7 +38,18 @@ interface ApplicantHeaderProps {
  */
 export default function ApplicantHeader({ active, title }: ApplicantHeaderProps) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
+
+  // A Department Head applies for vehicles like any teacher, but lives in
+  // the /admin shell: /dashboard and /profile-setup are Applicant-only,
+  // so their Dashboard and Profile links point at the admin equivalents,
+  // and they get a shortcut back to their recommendation inbox.
+  const isDepartmentHead = currentUser?.role === "DepartmentHead";
+  const links: NavLinkItem[] = NAV_LINKS.map((link) =>
+    isDepartmentHead && link.key === "dashboard"
+      ? { ...link, to: "/admin" }
+      : link,
+  );
 
   function handleLogout() {
     logout();
@@ -50,7 +63,7 @@ export default function ApplicantHeader({ active, title }: ApplicantHeaderProps)
       </h1>
 
       <nav className="flex flex-wrap items-center gap-4 text-sm">
-        {NAV_LINKS.map((link) => (
+        {links.map((link) => (
           <Link
             key={link.key}
             to={link.to}
@@ -64,7 +77,16 @@ export default function ApplicantHeader({ active, title }: ApplicantHeaderProps)
           </Link>
         ))}
 
-        <Link to="/profile-setup" className="hover:underline">
+        {isDepartmentHead ? (
+          <Link to="/admin/recommender" className="hover:underline">
+            Recommendations
+          </Link>
+        ) : null}
+
+        <Link
+          to={isDepartmentHead ? "/admin/profile" : "/profile-setup"}
+          className="hover:underline"
+        >
           Profile
         </Link>
 

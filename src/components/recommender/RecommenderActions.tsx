@@ -23,7 +23,8 @@ interface RecommenderActionsProps {
    */
   isAssigned?: boolean;
   isSubmitting?: boolean;
-  onRecommend: () => void;
+  /** `message` is the optional note forwarded to the Transport Office. */
+  onRecommend: (message: string) => void;
   onReject: (reason: RejectionReason, remarks: string) => void;
   onSendBack: (reason: RejectionReason, remarks: string) => void;
 }
@@ -56,6 +57,7 @@ export default function RecommenderActions({
   const [reason, setReason] = useState<RejectionReason>(REJECTION_REASONS[0]);
   const [remarks, setRemarks] = useState("");
   const [validation, setValidation] = useState<string | null>(null);
+  const [recommendMessage, setRecommendMessage] = useState("");
 
   function openDialog(kind: Exclude<DialogKind, null>) {
     setDialog(kind);
@@ -121,10 +123,24 @@ export default function RecommenderActions({
         </p>
       </div>
 
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-[#1E293B]">
+          Message to Transport Office{" "}
+          <span className="font-normal text-[#64748B]">(optional)</span>
+        </label>
+        <textarea
+          value={recommendMessage}
+          onChange={(event) => setRecommendMessage(event.target.value)}
+          rows={2}
+          placeholder="Only used if you recommend — e.g. why this trip is needed."
+          className="w-full rounded-md border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-[#1E293B] outline-none placeholder:text-[#94A3B8] focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+        />
+      </div>
+
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={onRecommend}
+          onClick={() => onRecommend(recommendMessage)}
           disabled={isSubmitting}
           className="h-10 rounded-md bg-[#15803D] px-4 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
         >

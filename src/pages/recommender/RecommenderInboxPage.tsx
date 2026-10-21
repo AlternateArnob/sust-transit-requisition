@@ -73,6 +73,12 @@ export default function RecommenderInboxPage() {
           </p>
         </div>
         <div className="rounded-md border border-[#E2E8F0] bg-white px-4 py-2 text-xs text-[#64748B]">
+          <Link
+            to="/admin/recommender/history"
+            className="mb-1 block font-medium text-[#334E68] hover:underline"
+          >
+            View requisitions I recommended →
+          </Link>
           <p>
             <span className="font-semibold text-[#1E293B]">{counts.total}</span>{" "}
             pending ·{" "}

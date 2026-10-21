@@ -6,7 +6,8 @@ import type {
   TripDraft,
 } from "../../types";
 import { isWithinHoldWindow } from "../../utils/validators";
-import { ERROR_TEXT, FIELD_BOXED, FIELD_LABEL, FIELD_UNDERLINE } from "./formTheme";
+import { parseRoute } from "../../utils/routeUtils";
+import { ERROR_TEXT, FIELD_BOXED, FIELD_LABEL, FIELD_TEXTAREA } from "./formTheme";
 
 const VEHICLE_CATEGORY_OPTIONS: RequestedVehicleCategory[] = [
   ...VEHICLE_CATEGORIES,
@@ -28,6 +29,11 @@ interface Step3JourneyProps {
 }
 
 const ALL_TYPES: RequisitionType[] = ["Personal", "Departmental/Official"];
+
+const TYPE_HINTS: Partial<Record<RequisitionType, string>> = {
+  Personal: "One trip from Campus to a destination and back.",
+  "Departmental/Official": "One or more official trips with your own route.",
+};
 
 /**
  * Per spec §4, Students can only apply for Departmental/Official use.
@@ -74,26 +80,53 @@ export default function Step3Journey({
 
   return (
     <section className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className={FIELD_LABEL}>Requisition type</label>
-          <select
-            value={requisitionType}
-            onChange={(event) =>
-              onRequisitionTypeChange(event.target.value as RequisitionType)
-            }
-            className={FIELD_BOXED}
-          >
-            {available.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-          {errors.requisitionType ? (
-            <p className={ERROR_TEXT}>{errors.requisitionType}</p>
-          ) : null}
+      <div>
+        <p className={FIELD_LABEL}>Purpose of requisition</p>
+        <div
+          role="radiogroup"
+          aria-label="Purpose of requisition"
+          className={`grid grid-cols-1 gap-3 ${available.length > 1 ? "sm:grid-cols-2" : ""}`}
+        >
+          {available.map((type) => (
+            <label
+              key={type}
+              className="flex cursor-pointer items-start gap-3 rounded-lg border border-form-rule bg-white p-3.5 has-[:checked]:border-primary has-[:checked]:ring-1 has-[:checked]:ring-primary"
+            >
+              <input
+                type="radio"
+                name="requisitionType"
+                value={type}
+                checked={requisitionType === type}
+                onChange={() => onRequisitionTypeChange(type)}
+                className="mt-0.5 h-4 w-4 border-form-rule text-primary focus:ring-primary"
+              />
+              <span>
+                <span className="block text-sm font-medium text-form-ink">
+                  {type}
+                </span>
+                <span className="mt-0.5 block text-xs text-form-muted">
+                  {TYPE_HINTS[type]}
+                </span>
+              </span>
+            </label>
+          ))}
         </div>
+        {errors.requisitionType ? (
+          <p className={ERROR_TEXT}>{errors.requisitionType}</p>
+        ) : null}
+      </div>
+
+      <div
+        role="note"
+        className="flex items-start gap-2.5 rounded-md border border-form-warn-border bg-form-warn-bg px-3.5 py-2.5 text-sm text-form-warn-text"
+      >
+        <span
+          aria-hidden
+          className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-form-warn-text text-[10px] font-bold leading-none"
+        >
+          !
+        </span>
+        <p>Vehicle must not be kept for more than 03 (three) hours.</p>
       </div>
 
       <div className="space-y-3">
@@ -148,9 +181,10 @@ function TripCard({
 }) {
   const durationOk = isWithinHoldWindow(trip.startTime, trip.endTime);
   const holdLimitError = errors[`holdLimit-${trip.id}`];
+  const stops = parseRoute(trip.routeText);
 
   return (
-    <div className="rounded-none border border-form-rule bg-white p-4">
+    <div className="rounded-lg border border-form-rule bg-white p-4">
       {!isPersonal ? (
         <div className="mb-3 flex items-center justify-between">
           <p className="text-[13px] font-medium text-primary">
@@ -220,9 +254,6 @@ function TripCard({
             className={FIELD_BOXED}
           />
         </div>
-        <p className="-mt-2 text-xs text-form-muted sm:col-span-2">
-          Vehicle must not be kept for more than 03 (three) hours.
-        </p>
 
         {errors[`time-${trip.id}`] ? (
           <p className={`-mt-2 sm:col-span-2 ${ERROR_TEXT}`}>
@@ -239,119 +270,67 @@ function TripCard({
 
         {isPersonal ? (
           <div className="sm:col-span-2">
-            <label className={FIELD_LABEL}>
-              Destination — from Campus to
-            </label>
-            <input
-              value={trip.destination}
-              onChange={(event) =>
-                onChange({ destination: event.target.value })
-              }
-              placeholder="e.g. Osmani International Airport"
-              className={FIELD_UNDERLINE}
-            />
-            <p className="mt-1 text-xs text-form-muted">and return to Campus</p>
+            <label className={FIELD_LABEL}>Destination</label>
+            <div className="flex flex-col gap-2 rounded-md border border-form-rule bg-form-band p-2.5 sm:flex-row sm:items-center">
+              <span className="shrink-0 rounded bg-white px-2.5 py-1.5 text-xs font-medium text-form-ink ring-1 ring-form-rule">
+                From Campus
+              </span>
+              <span aria-hidden className="hidden text-form-muted sm:inline">
+                →
+              </span>
+              <input
+                value={trip.destination}
+                onChange={(event) =>
+                  onChange({ destination: event.target.value })
+                }
+                placeholder="e.g. Osmani International Airport"
+                className={FIELD_BOXED}
+              />
+              <span aria-hidden className="hidden text-form-muted sm:inline">
+                →
+              </span>
+              <span className="shrink-0 rounded bg-white px-2.5 py-1.5 text-xs font-medium text-form-ink ring-1 ring-form-rule">
+                Return to Campus
+              </span>
+            </div>
             {errors[`destination-${trip.id}`] ? (
               <p className={ERROR_TEXT}>{errors[`destination-${trip.id}`]}</p>
             ) : null}
           </div>
         ) : (
-          <>
-            <div className="sm:col-span-2">
-              <RepeatableTextList
-                label="Ordered stoppage sequence"
-                placeholder="e.g. Campus, Zindabazar, Airport, Campus"
-                addLabel="+ Add stop"
-                values={trip.stoppages}
-                onChange={(next) => onChange({ stoppages: next })}
-                error={errors[`stoppages-${trip.id}`]}
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <RepeatableTextList
-                label="Passenger groups (optional)"
-                placeholder="e.g. Department Students, Contestants"
-                addLabel="+ Add group"
-                values={trip.passengerGroups}
-                onChange={(next) => onChange({ passengerGroups: next })}
-              />
-            </div>
-          </>
+          <div className="sm:col-span-2">
+            <label className={FIELD_LABEL}>Route</label>
+            <textarea
+              value={trip.routeText}
+              onChange={(event) => onChange({ routeText: event.target.value })}
+              rows={2}
+              placeholder="Campus -> Amborkhana -> Zindabazar -> Campus"
+              className={FIELD_TEXTAREA}
+            />
+            <p className="mt-1 text-xs text-form-muted">
+              Write every stop in order, separated by{" "}
+              <span className="font-mono">-&gt;</span>.
+            </p>
+            {stops.length > 0 ? (
+              <ol className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-form-ink">
+                {stops.map((stop, stopIndex) => (
+                  <li key={`${stop}-${stopIndex}`} className="flex items-center gap-1.5">
+                    {stopIndex > 0 ? (
+                      <span className="text-form-muted">→</span>
+                    ) : null}
+                    <span className="rounded-md border border-form-rule bg-form-field px-2 py-0.5">
+                      {stop}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+            {errors[`route-${trip.id}`] ? (
+              <p className={ERROR_TEXT}>{errors[`route-${trip.id}`]}</p>
+            ) : null}
+          </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/**
- * Small repeatable text-list control shared by the stoppage-sequence and
- * passenger-groups inputs — an "Add" button appends a blank text field,
- * each entry has its own remove button, order is preserved as entered.
- */
-function RepeatableTextList({
-  label,
-  placeholder,
-  addLabel,
-  values,
-  onChange,
-  error,
-}: {
-  label: string;
-  placeholder?: string;
-  addLabel: string;
-  values: string[];
-  onChange: (next: string[]) => void;
-  error?: string;
-}) {
-  function updateAt(index: number, value: string) {
-    onChange(values.map((entry, i) => (i === index ? value : entry)));
-  }
-
-  function removeAt(index: number) {
-    onChange(values.filter((_, i) => i !== index));
-  }
-
-  function add() {
-    onChange([...values, ""]);
-  }
-
-  return (
-    <div>
-      <label className={FIELD_LABEL}>{label}</label>
-
-      <div className="space-y-2">
-        {values.map((entry, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <input
-              value={entry}
-              onChange={(event) => updateAt(index, event.target.value)}
-              placeholder={placeholder}
-              className={FIELD_UNDERLINE}
-            />
-            <button
-              type="button"
-              onClick={() => removeAt(index)}
-              className="text-sm font-medium text-form-seal hover:underline"
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={add}
-        className="mt-2 text-sm font-medium text-primary hover:underline"
-      >
-        {addLabel}
-      </button>
-
-      {error ? <p className={ERROR_TEXT}>{error}</p> : null}
-      {values.length === 0 && placeholder ? (
-        <p className="mt-1 text-xs text-form-muted">{placeholder}</p>
-      ) : null}
     </div>
   );
 }

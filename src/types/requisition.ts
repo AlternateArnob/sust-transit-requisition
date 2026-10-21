@@ -87,6 +87,14 @@ export interface Requisition {
   scheduleType: ScheduleType;
   status: ApplicationStatus;
   recommenderName?: string;
+  /** Id of the Department Head who recommended this requisition, so the
+   *  recommender can list "requisitions I recommended". */
+  recommenderId?: string;
+  /** Optional note the Department Head attached when recommending; shown
+   *  to the Transport Office alongside the requisition. */
+  recommenderMessage?: string;
+  /** ISO timestamp of the recommendation. */
+  recommendedAt?: string;
   /**
    * Phase 1 — set when the Transport Administrator sends the whole
    * application back to the Transport In Charge for rework (e.g. the

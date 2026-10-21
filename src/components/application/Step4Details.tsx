@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import { ERROR_TEXT, FIELD_LABEL, HELPER_TEXT } from "./formTheme";
+import { ERROR_TEXT, FIELD_LABEL, FIELD_TEXTAREA, HELPER_TEXT } from "./formTheme";
 
 export interface DetailsDraft {
   reason: string;
@@ -80,7 +80,8 @@ export default function Step4Details({
           value={value.reason}
           onChange={(event) => handleField("reason", event.target.value)}
           rows={4}
-          className="w-full rounded-none border border-form-rule bg-white px-3 py-2 text-sm text-form-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          placeholder="Briefly describe why the vehicle is needed"
+          className={FIELD_TEXTAREA}
         />
         {errors.reason ? <p className={ERROR_TEXT}>{errors.reason}</p> : null}
       </div>
@@ -88,18 +89,20 @@ export default function Step4Details({
       <div>
         <label className={FIELD_LABEL}>Supporting document (optional)</label>
 
-        {value.supportingDocumentDataUrl ? (
-          <div className="flex items-center gap-3 border border-form-rule bg-white px-3 py-2">
-            <span className="flex-1 truncate text-sm text-form-ink">
-              {value.supportingDocumentName}
-            </span>
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="text-sm font-medium text-primary hover:underline"
-            >
-              Replace
-            </button>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-form-dashed bg-form-band px-4 py-3">
+          <span
+            className={`min-w-0 flex-1 truncate text-sm ${
+              value.supportingDocumentDataUrl
+                ? "text-form-ink"
+                : "text-form-placeholder"
+            }`}
+          >
+            {value.supportingDocumentDataUrl
+              ? value.supportingDocumentName
+              : "No file chosen"}
+          </span>
+
+          {value.supportingDocumentDataUrl ? (
             <button
               type="button"
               onClick={handleRemove}
@@ -107,16 +110,16 @@ export default function Step4Details({
             >
               Remove
             </button>
-          </div>
-        ) : (
+          ) : null}
+
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="flex h-16 w-48 items-center justify-center rounded-none border border-dashed border-form-rule bg-white text-sm font-medium text-primary hover:bg-form-band"
+            className="h-9 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-ink hover:bg-form-field"
           >
-            Upload document
+            {value.supportingDocumentDataUrl ? "Replace" : "Browse"}
           </button>
-        )}
+        </div>
 
         <input
           ref={inputRef}

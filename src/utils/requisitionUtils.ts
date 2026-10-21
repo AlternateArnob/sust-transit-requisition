@@ -89,3 +89,23 @@ export function requisitionTypeBadgeClass(type: Requisition["requisitionType"]) 
   if (type === "Departmental/Official") return "bg-[#E0E7FF] text-[#4338CA]";
   return "bg-[#FCE7F3] text-[#BE185D]"; // Club
 }
+
+/**
+ * Human-readable application number, e.g. "TRS-2026-005": a per-year
+ * running count across every requisition already stored. Used as the
+ * requisition id itself, so the number shown on the form is the same one
+ * the applicant and the Transport Office see everywhere afterwards.
+ */
+export function generateApplicationNumber(
+  existingIds: string[],
+  now: Date = new Date(),
+): string {
+  const year = now.getFullYear();
+  const pattern = new RegExp(`^TRS-${year}-(\\d+)$`);
+  let highest = 0;
+  for (const id of existingIds) {
+    const match = pattern.exec(id);
+    if (match) highest = Math.max(highest, Number(match[1]));
+  }
+  return `TRS-${year}-${String(highest + 1).padStart(3, "0")}`;
+}

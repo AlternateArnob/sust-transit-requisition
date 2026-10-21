@@ -74,7 +74,7 @@ export default function Step2TransportUser({
           type="checkbox"
           checked={sameAsRequester}
           onChange={(event) => handleSameAsRequester(event.target.checked)}
-          className="h-4 w-4 rounded-none border-form-rule text-primary focus:ring-primary"
+          className="h-4 w-4 rounded border-form-rule text-primary focus:ring-primary"
         />
         Transport user is the same as the requester
       </label>

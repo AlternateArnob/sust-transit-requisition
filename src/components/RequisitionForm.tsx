@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import GovFormMasthead from "./application/GovFormMasthead";
+import sustLogo from "../assets/sust-logo.png";
 import Step1Requester from "./application/Step1Requester";
 import Step2TransportUser, {
   type TransportUserDraft,
@@ -12,6 +12,8 @@ import { ERROR_TEXT, PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./applicati
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
 import useUsers from "../hooks/useUsers";
+import useRequisitions from "../hooks/useRequisitions";
+import { generateApplicationNumber } from "../utils/requisitionUtils";
 import { requiresRecommendation } from "../utils/authUtils";
 import {
   buildRequisitionNotifications,
@@ -21,6 +23,7 @@ import { isWithinHoldWindow } from "../utils/validators";
 
 import type { Requisition, RequisitionType, Trip, TripDraft } from "../types";
 import { createEmptyTripDraft } from "../types";
+import { isValidRoute, parseRoute } from "../utils/routeUtils";
 
 interface RequisitionFormProps {
   onSubmit: (requisition: Requisition) => void;
@@ -47,6 +50,13 @@ export default function RequisitionForm({
   const { currentUser } = useAuth();
   const { addNotification } = useNotifications();
   const { users } = useUsers();
+  const { requisitions: existingRequisitions } = useRequisitions();
+
+  // Shown in the form header and used as the requisition's id on submit.
+  // Computed once on mount so it doesn't change while the form is open.
+  const [applicationNumber] = useState(() =>
+    generateApplicationNumber(existingRequisitions.map((item) => item.id)),
+  );
 
   const [sameAsRequester, setSameAsRequester] = useState(true);
   const [transportUser, setTransportUser] = useState<TransportUserDraft>({
@@ -94,8 +104,13 @@ export default function RequisitionForm({
 
   const requester = currentUser;
   const requiresRecommender = useMemo(
-    () => requiresRecommendation(requester?.applicantProfile, requisitionType),
-    [requester?.applicantProfile, requisitionType],
+    () =>
+      requiresRecommendation(
+        requester?.applicantProfile,
+        requisitionType,
+        requester?.role,
+      ),
+    [requester?.applicantProfile, requester?.role, requisitionType],
   );
 
   if (!requester) {
@@ -133,9 +148,9 @@ export default function RequisitionForm({
         if (!trip.destination.trim()) {
           next[`destination-${trip.id}`] = "Destination is required.";
         }
-      } else if (!trip.stoppages.some((stop) => stop.trim())) {
-        next[`stoppages-${trip.id}`] =
-          "At least one stoppage is required.";
+      } else if (!isValidRoute(trip.routeText)) {
+        next[`route-${trip.id}`] =
+          "Enter the route with at least two stops, separated by ->  (e.g. Campus -> Amborkhana -> Campus).";
       }
 
       // Step 7 — 3-hour vehicle-hold limit is a hard block, not a
@@ -169,7 +184,7 @@ export default function RequisitionForm({
     const destination = draft.destination.trim();
     const stoppageSequence = isPersonal
       ? ["Campus", destination, "Campus"]
-      : draft.stoppages.map((stop) => stop.trim()).filter(Boolean);
+      : parseRoute(draft.routeText);
     const route = isPersonal
       ? `Campus to ${destination} and Return to Campus`
       : stoppageSequence.join(" → ");
@@ -182,9 +197,10 @@ export default function RequisitionForm({
       vehicleCategory: draft.vehicleCategory,
       route,
       stoppageSequence,
-      passengerGroups: isPersonal
-        ? []
-        : draft.passengerGroups.map((group) => group.trim()).filter(Boolean),
+      // The single route box replaced the separate passenger-groups
+      // list; the field stays on Trip so older requisitions and the
+      // confirmation slip keep working.
+      passengerGroups: [],
       status: "Pending",
     };
   }
@@ -197,7 +213,7 @@ export default function RequisitionForm({
     const hasSupportingDocument = Boolean(details.supportingDocumentDataUrl);
 
     return {
-      id: crypto.randomUUID(),
+      id: applicationNumber,
       requesterId: requester!.id,
       requesterName:
         requester!.fullName?.trim() || transportUser.fullName.trim() || requester!.email,
@@ -281,21 +297,41 @@ export default function RequisitionForm({
     : "Submit Application";
 
   return (
-    <div className="bg-form-paper px-5 py-6 sm:px-10 sm:py-8">
-      <GovFormMasthead
-        formTitle="Vehicle Requisition Form"
-        referenceLabel="Ref. No.: assigned on submission"
-      />
+    <div className="mx-auto rounded-lg border border-form-rule bg-white px-5 py-6 shadow-sm sm:px-10 sm:py-9">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <img
+            src={sustLogo}
+            alt="SUST logo"
+            className="h-14 w-auto shrink-0"
+          />
+          <div>
+            <p className="text-xs text-form-muted">
+              Shahjalal University of Science and Technology · Transport Wing
+            </p>
+            <h1 className="mt-1 inline-block border-b-2 border-form-action pb-1 text-lg font-bold uppercase tracking-wide text-form-action sm:text-xl">
+              Vehicle Requisition Form
+            </h1>
+          </div>
+        </div>
 
-      <div className="mt-7 space-y-7">
+        <div className="text-right">
+          <p className="text-xs text-form-muted">Application No.</p>
+          <p className="text-base font-bold text-form-action">
+            {applicationNumber}
+          </p>
+        </div>
+      </header>
+
+      <div className="mt-8 space-y-8">
         {errorCount > 0 ? (
-          <div className="border border-form-seal/40 bg-form-seal/5 px-4 py-3 text-sm text-form-seal">
+          <div className="rounded-md border border-form-seal/30 bg-form-seal/5 px-4 py-3 text-sm text-form-seal">
             Please fix {errorCount} field{errorCount === 1 ? "" : "s"} below
             before submitting.
           </div>
         ) : null}
 
-        <FormSection first part="Part One" title="Requester Details">
+        <FormSection part="Part One" title="Requester Details">
           <Step1Requester requester={requester} />
         </FormSection>
 
@@ -334,10 +370,21 @@ export default function RequisitionForm({
         </FormSection>
 
         {requiresRecommender ? (
-          <p className="border border-[#B45309]/30 bg-[#FEF3C7]/60 px-4 py-3 text-sm text-[#B45309]">
-            This requisition type requires your Department/Office Head to
-            recommend it before Admin can review it.
-          </p>
+          <div
+            role="note"
+            className="flex items-start gap-2.5 rounded-md border border-form-warn-border bg-form-warn-bg px-3.5 py-2.5 text-sm text-form-warn-text"
+          >
+            <span
+              aria-hidden
+              className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-form-warn-text text-[10px] font-bold leading-none"
+            >
+              !
+            </span>
+            <p>
+              This requisition type requires your Department/Office Head to
+              recommend it before Admin can review it.
+            </p>
+          </div>
         ) : null}
 
         <div className={SECTION_WRAP}>
@@ -346,7 +393,7 @@ export default function RequisitionForm({
               type="checkbox"
               checked={declarationConfirmed}
               onChange={(event) => setDeclarationConfirmed(event.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded-none border-form-rule text-primary focus:ring-primary"
+              className="mt-0.5 h-4 w-4 rounded border-form-rule text-primary focus:ring-primary"
             />
             I confirm the information above is accurate, and I accept
             responsibility for the vehicle requested.
@@ -360,28 +407,28 @@ export default function RequisitionForm({
           <button
             type="button"
             onClick={onCancel}
-            className="h-10 rounded-none border border-form-rule bg-white px-4 text-sm font-medium text-form-muted hover:bg-form-band"
+            className="h-10 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-muted hover:bg-form-band"
           >
             Cancel
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={handleSaveDraft}
               disabled={isSubmitting}
-              className="h-10 rounded-none border border-form-rule bg-white px-4 text-sm font-medium text-form-muted hover:bg-form-band disabled:cursor-not-allowed"
+              className="h-10 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-ink hover:bg-form-band disabled:cursor-not-allowed"
             >
-              Save as Draft
+              Save Draft
             </button>
 
             <button
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="h-10 rounded-none bg-primary px-5 text-sm font-medium text-white hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
+              className="h-10 rounded-md bg-form-action px-5 text-sm font-medium text-white hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {submitLabel}
+              {submitLabel} →
             </button>
           </div>
         </div>
@@ -392,18 +439,16 @@ export default function RequisitionForm({
 
 /** One numbered part of the form ("Part One — Requester Details"), echoing how the printed form divides its sections. */
 function FormSection({
-  first = false,
   part,
   title,
   children,
 }: {
-  first?: boolean;
   part: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className={first ? "" : SECTION_WRAP}>
+    <div className={SECTION_WRAP}>
       <p className={PART_LABEL}>{part}</p>
       <h2 className={`${SECTION_TITLE} mb-3`}>{title}</h2>
       {children}

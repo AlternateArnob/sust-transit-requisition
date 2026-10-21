@@ -5,6 +5,7 @@ import useUsers from "../../hooks/useUsers";
 import ProfileField from "../../components/ProfileField";
 import SignatureUpload from "../../components/SignatureUpload";
 import GovFormMasthead from "../../components/application/GovFormMasthead";
+import ApplicantHeader from "../../components/ApplicantHeader";
 import { APPLICANT_PROFILES } from "../../types";
 import type { ApplicantProfile, UserAccount } from "../../types";
 import { requiresProfileFields } from "../../utils/authUtils";
@@ -166,6 +167,12 @@ export default function ProfileSetupPage() {
 
   return (
     <div className="min-h-screen bg-form-band">
+      {/* Step 5 — this page used to render with no navigation at all, so
+          an applicant mid-setup (or editing their profile later) had no
+          way to reach Dashboard / New Requisition / My Requisitions /
+          My Mileage without typing a URL. */}
+      <ApplicantHeader title="Profile" />
+
       <main className="mx-auto max-w-2xl px-4 py-10">
         <div className="border border-form-rule bg-form-paper px-6 py-6 shadow-sm sm:px-8">
           <GovFormMasthead formTitle="Applicant Profile" />

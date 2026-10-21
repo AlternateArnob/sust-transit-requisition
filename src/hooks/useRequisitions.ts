@@ -249,8 +249,10 @@ export default function useRequisitions() {
   function recommendRequisition(
     requisitionId: string,
     recommenderName: string,
+    options: { recommenderId?: string; message?: string } = {},
   ) {
     const trimmedName = recommenderName.trim();
+    const trimmedMessage = options.message?.trim();
 
     setRequisitions((current) =>
       current.map((requisition) => {
@@ -270,6 +272,9 @@ export default function useRequisitions() {
           ...requisition,
           status: "Recommended",
           recommenderName: trimmedName || requisition.recommenderName,
+          recommenderId: options.recommenderId ?? requisition.recommenderId,
+          recommenderMessage: trimmedMessage || undefined,
+          recommendedAt: new Date().toISOString(),
         };
       }),
     );

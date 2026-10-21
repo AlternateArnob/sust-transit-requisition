@@ -24,8 +24,16 @@
    */
   --color-form-paper: #FFFFFF;
   --color-form-band: #F8FAFC;
-  --color-form-ink: #1E293B;
+  --color-form-ink: #0F172A;
   --color-form-muted: #64748B;
   --color-form-rule: #E2E8F0;
   --color-form-seal: #B91C1C;
+  /* Requisition-form card design */
+  --color-form-field: #FAFAFA;
+  --color-form-placeholder: #94A3B8;
+  --color-form-dashed: #CBD5E1;
+  --color-form-action: #0F172A;
+  --color-form-warn-bg: #FFFBEB;
+  --color-form-warn-border: #FDE68A;
+  --color-form-warn-text: #9A3412;
 }

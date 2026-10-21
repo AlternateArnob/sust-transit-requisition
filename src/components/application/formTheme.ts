@@ -8,25 +8,36 @@
  * of the product.
  */
 
-/** Divider between form parts — a hairline rule, same tone as the app's standard borders. */
-export const SECTION_WRAP =
-  "border-t border-form-rule pt-7 first:border-t-0 first:pt-0";
+/**
+ * One section of the form. The divider now sits under each section's
+ * title (see SECTION_TITLE) rather than between sections, so the wrapper
+ * only adds breathing room.
+ */
+export const SECTION_WRAP = "pt-1";
 
-/** Small italic eyebrow ("Part One") above each section title. */
-export const PART_LABEL = "text-[13px] font-medium text-primary";
+/** Small muted eyebrow ("PART ONE") above each section title. */
+export const PART_LABEL =
+  "text-[11px] font-medium uppercase tracking-[0.12em] text-form-muted";
 
-/** Section title ("Requester Details") — sits under the eyebrow. */
-export const SECTION_TITLE = "text-[17px] font-semibold text-primary";
+/** Section title — dark bold uppercase with a full-width light divider beneath. */
+export const SECTION_TITLE =
+  "border-b border-form-rule pb-2 text-[13px] font-bold uppercase tracking-wide text-form-ink";
 
 export const FIELD_LABEL = "mb-1.5 block text-[13px] font-medium text-form-muted";
 
-/** Underline-only field — for the free-text entries a person "writes on the line". */
-export const FIELD_UNDERLINE =
-  "h-9 w-full rounded-none border-0 border-b border-form-rule bg-transparent px-0.5 text-sm text-form-ink outline-none placeholder:text-form-muted/70 focus:border-primary";
-
-/** Boxed field — for controls that need a visible hit target (select, date, time, checkbox row). */
+/** Boxed field — light muted background, light border, slate placeholder. */
 export const FIELD_BOXED =
-  "h-10 w-full rounded-none border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary";
+  "h-10 w-full rounded-md border border-form-rule bg-form-field px-3 text-sm text-form-ink outline-none placeholder:text-form-placeholder focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary";
+
+/**
+ * Previously an underline-only "write on the line" field; the card
+ * design uses the same boxed input everywhere, so this is an alias kept
+ * so existing imports don't change.
+ */
+export const FIELD_UNDERLINE = FIELD_BOXED;
+
+/** Multi-line version of FIELD_BOXED. */
+export const FIELD_TEXTAREA = `${FIELD_BOXED} h-auto py-2`;
 
 export const ERROR_TEXT = "mt-1 text-xs text-form-seal";
 export const HELPER_TEXT = "mt-1 text-xs text-form-muted";
