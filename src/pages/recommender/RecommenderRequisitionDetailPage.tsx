@@ -66,7 +66,7 @@ export default function RecommenderRequisitionDetailPage() {
           to="/admin/recommender"
           className="mt-2 inline-block text-xs font-medium text-[#334E68] hover:underline"
         >
-          ← Back to inbox
+          ← Back to requests
         </Link>
       </div>
     );
@@ -76,12 +76,16 @@ export default function RecommenderRequisitionDetailPage() {
   const recommenderName =
     currentUser.fullName?.trim() || currentUser.email || "Department Head";
 
-  function handleRecommend() {
+  function handleRecommend(message: string) {
     if (!requisition) return;
     setIsSubmitting(true);
     setActionError(null);
     try {
-      recommendRequisition(requisition.id, recommenderName);
+      const trimmedMessage = message.trim();
+      recommendRequisition(requisition.id, recommenderName, {
+        recommenderId: currentUser!.id,
+        message: trimmedMessage,
+      });
 
       // Step 8 — a recommendation is the only event that unblocks
       // Transport In Charge: per the applicant-module clarification,
@@ -93,7 +97,7 @@ export default function RecommenderRequisitionDetailPage() {
         {
           requisition,
           type: "New Requisition",
-          message: `${requisition.requesterName}'s requisition was recommended by ${recommenderName} and is awaiting Transport Office review.`,
+          message: `${requisition.requesterName}'s requisition was recommended by ${recommenderName} and is awaiting Transport Office review.${trimmedMessage ? ` Message: "${trimmedMessage}"` : ""}`,
         },
       )) {
         addNotification(notification);
@@ -182,7 +186,7 @@ export default function RecommenderRequisitionDetailPage() {
             to="/admin/recommender"
             className="text-xs font-medium text-[#334E68] hover:underline"
           >
-            ← Back to inbox
+            ← Back to requests
           </Link>
           <h1 className="mt-2 text-2xl font-semibold text-[#1E293B]">
             Requisition {requisition.id}
@@ -207,6 +211,15 @@ export default function RecommenderRequisitionDetailPage() {
           </p>
         </div>
       </div>
+
+      {requisition.recommenderMessage ? (
+        <div className="rounded-md border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#1E293B]">
+          <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+            Your message to the Transport Office
+          </p>
+          <p className="mt-1">{requisition.recommenderMessage}</p>
+        </div>
+      ) : null}
 
       {actionError && (
         <div className="rounded-md border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">

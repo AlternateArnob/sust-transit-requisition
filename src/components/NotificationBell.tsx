@@ -106,6 +106,18 @@ export default function NotificationBell() {
     // Admins land on the requisitions queue; everyone else still falls
     // back to the requisitions list.
     if (notification.linkType === "requisition") {
+      // A Department Head also applies for vehicles; a ping about their
+      // OWN requisition belongs in My Requisitions, not the recommender
+      // inbox.
+      const isOwnRequisition = requisitions.some(
+        (item) =>
+          item.id === notification.linkId &&
+          item.requesterId === currentUser?.id,
+      );
+      if (currentUser?.role === "DepartmentHead" && isOwnRequisition) {
+        navigate(`/my-requisitions?open=${notification.linkId}`);
+        return;
+      }
       const target =
         currentUser?.role === "DepartmentHead"
           ? `/admin/recommender/${notification.linkId}`

@@ -15,7 +15,7 @@ interface NavItem {
 const DASHBOARD_ITEM: NavItem = { label: "Dashboard", path: "/admin" };
 
 const RECOMMENDER_ITEM: NavItem = {
-  label: "Recommender",
+  label: "Request",
   path: "/admin/recommender",
 };
 

@@ -6,9 +6,10 @@ import type { RequestedVehicleCategory } from "./trip";
  *
  * `destination` only applies when the parent requisition type is
  * "Personal" (single simple trip, Campus → destination → Campus).
- * `stoppages`/`passengerGroups` only apply to "Departmental/Official"
- * trips, where the applicant enters the real ordered stop sequence
- * themselves instead of it being synthesized. See buildTrip() in
+ * `routeText` only applies to "Departmental/Official" trips, where the
+ * applicant types the whole ordered route in one box ("Campus ->
+ * Amborkhana -> Campus", parsed by utils/routeUtils.ts) instead of it
+ * being synthesized. See buildTrip() in
  * RequisitionForm.tsx for how each shape is turned into a submitted
  * Trip.
  */
@@ -19,8 +20,7 @@ export interface TripDraft {
   endTime: string;
   vehicleCategory: RequestedVehicleCategory;
   destination: string;
-  stoppages: string[];
-  passengerGroups: string[];
+  routeText: string;
 }
 
 export function createEmptyTripDraft(): TripDraft {
@@ -31,7 +31,6 @@ export function createEmptyTripDraft(): TripDraft {
     endTime: "",
     vehicleCategory: "Any",
     destination: "",
-    stoppages: [],
-    passengerGroups: [],
+    routeText: "",
   };
 }

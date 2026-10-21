@@ -5,6 +5,7 @@ import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
 
 import NotificationBell from "../components/NotificationBell";
+import SustLogo from "../components/SustLogo";
 
 interface NavbarProps {
   title: string;
@@ -46,7 +47,10 @@ function Navbar({ title }: NavbarProps) {
 
   return (
     <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
-      <h1 className="text-lg font-semibold">{title}</h1>
+      <div className="flex items-center gap-3">
+        <SustLogo badge heightClass="h-8" />
+        <h1 className="text-lg font-semibold">{title}</h1>
+      </div>
 
       <div className="flex items-center gap-4">
         {showRecommendationsBadge ? (

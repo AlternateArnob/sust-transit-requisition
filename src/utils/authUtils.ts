@@ -29,11 +29,20 @@ export function isSustEmail(email: string): boolean {
  * Per spec §5: a Department/Office Head recommendation is only required
  * for official use by Students, Teachers, and Officers. Personal and
  * Departmental use never go through a recommender.
+ *
+ * A Department Head applying for their own department's vehicle is the
+ * recommender, so there is nobody above them to recommend: their
+ * application goes straight to Transport In Charge. Pass the applicant's
+ * `role` so that case is detected.
  */
 export function requiresRecommendation(
   profile: ApplicantProfile | undefined,
   requisitionType: RequisitionType,
+  role?: UserRole,
 ): boolean {
+  if (role === "DepartmentHead") {
+    return false;
+  }
   if (requisitionType !== "Departmental/Official") {
     return false;
   }

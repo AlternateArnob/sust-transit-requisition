@@ -66,13 +66,19 @@ export default function RecommenderInboxPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Recommender inbox
+            Requests
           </h1>
           <p className="mt-1 text-sm text-[#64748B]">
             Review official requisitions awaiting your recommendation.
           </p>
         </div>
         <div className="rounded-md border border-[#E2E8F0] bg-white px-4 py-2 text-xs text-[#64748B]">
+          <Link
+            to="/admin/recommender/history"
+            className="mb-1 block font-medium text-[#334E68] hover:underline"
+          >
+            View requisitions I recommended →
+          </Link>
           <p>
             <span className="font-semibold text-[#1E293B]">{counts.total}</span>{" "}
             pending ·{" "}

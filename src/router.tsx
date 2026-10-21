@@ -20,6 +20,7 @@ import MyRequisitionsPage from "./pages/MyRequisitionsPage";
 import MyMileagePage from "./pages/MyMileagePage";
 
 import RecommenderInboxPage from "./pages/recommender/RecommenderInboxPage";
+import RecommendedByMePage from "./pages/recommender/RecommendedByMePage";
 import RecommenderRequisitionDetailPage from "./pages/recommender/RecommenderRequisitionDetailPage";
 
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -200,6 +201,14 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth roles={["DepartmentHead"]}>
             <RecommenderInboxPage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "recommender/history",
+        element: (
+          <RequireAuth roles={["DepartmentHead"]}>
+            <RecommendedByMePage />
           </RequireAuth>
         ),
       },

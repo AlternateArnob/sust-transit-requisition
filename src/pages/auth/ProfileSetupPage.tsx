@@ -4,7 +4,9 @@ import useAuth from "../../hooks/useAuth";
 import useUsers from "../../hooks/useUsers";
 import ProfileField from "../../components/ProfileField";
 import SignatureUpload from "../../components/SignatureUpload";
-import GovFormMasthead from "../../components/application/GovFormMasthead";
+import SustLogo from "../../components/SustLogo";
+import { PART_LABEL, SECTION_TITLE } from "../../components/application/formTheme";
+import ApplicantHeader from "../../components/ApplicantHeader";
 import { APPLICANT_PROFILES } from "../../types";
 import type { ApplicantProfile, UserAccount } from "../../types";
 import { requiresProfileFields } from "../../utils/authUtils";
@@ -53,7 +55,9 @@ export default function ProfileSetupPage() {
       navigate("/login");
       return;
     }
-    if (currentUser.role !== "Applicant") {
+    // Applicants and Department/Office Heads (who also apply for
+    // vehicles) use this page; Transport Office roles have /admin/profile.
+    if (currentUser.role !== "Applicant" && currentUser.role !== "DepartmentHead") {
       navigate("/admin");
       return;
     }
@@ -154,28 +158,55 @@ export default function ProfileSetupPage() {
     // Step 9 — same landing decision as LoginPage.tsx: an applicant
     // finishing profile setup for the first time should see the
     // dashboard first, not drop straight onto the requisition form.
-    navigate("/dashboard");
+    navigate(currentUser.role === "DepartmentHead" ? "/admin" : "/dashboard");
   }
 
   if (!currentUser) return null;
 
   const inputClass = (hasError?: boolean) =>
-    `h-10 rounded-none border bg-white px-3 text-sm text-form-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-form-band/60 disabled:text-form-muted disabled:cursor-not-allowed ${
+    `h-10 rounded-md border bg-form-field px-3 text-sm text-form-ink outline-none placeholder:text-form-placeholder focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary disabled:bg-form-band disabled:text-form-muted disabled:cursor-not-allowed ${
       hasError ? "border-form-seal" : "border-form-rule"
     }`;
 
-  return (
-    <div className="min-h-screen bg-form-band">
-      <main className="mx-auto max-w-2xl px-4 py-10">
-        <div className="border border-form-rule bg-form-paper px-6 py-6 shadow-sm sm:px-8">
-          <GovFormMasthead formTitle="Applicant Profile" />
+  const isHead = currentUser.role === "DepartmentHead";
 
-          <p className="mt-4 text-sm text-form-muted">
+  return (
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Same top bar as every other applicant page (Fix 3). */}
+      <ApplicantHeader active="profile" />
+
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <div className="mx-auto rounded-lg border border-form-rule bg-white px-5 py-6 shadow-sm sm:px-10 sm:py-9">
+          <header className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <SustLogo heightClass="h-14" />
+              <div>
+                <p className="text-xs text-form-muted">
+                  Shahjalal University of Science and Technology · Transport
+                  Wing
+                </p>
+                <h1 className="mt-1 inline-block border-b-2 border-form-action pb-1 text-lg font-bold uppercase tracking-wide text-form-action sm:text-xl">
+                  Applicant Profile
+                </h1>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <p className="text-xs text-form-muted">Account</p>
+              <p className="text-sm font-bold text-form-action">
+                {currentUser.email}
+              </p>
+            </div>
+          </header>
+
+          <p className="mt-5 text-sm text-form-muted">
             Update your details below at any time — this information is
             shown on your requisitions.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-8">
+            <ProfileSection part="Part One" title="Applicant Profile">
+              <div className="flex flex-col gap-4">
             <ProfileField
               label="Applicant profile"
               required
@@ -197,6 +228,11 @@ export default function ProfileSetupPage() {
               </select>
             </ProfileField>
 
+              </div>
+            </ProfileSection>
+
+            <ProfileSection part="Part Two" title="Contact and Affiliation">
+              <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <ProfileField
                 label="Full name"
@@ -340,6 +376,24 @@ export default function ProfileSetupPage() {
               </div>
             ) : null}
 
+              </div>
+            </ProfileSection>
+
+            <ProfileSection part="Part Three" title="Signature">
+            <ProfileField
+              label="Signature"
+              error={errors.signature}
+              helperText="PNG or JPG, ideally on a light background."
+            >
+              <SignatureUpload
+                value={signatureDataUrl}
+                onChange={setSignatureDataUrl}
+              />
+            </ProfileField>
+
+            </ProfileSection>
+
+            <ProfileSection part="Part Four" title="Password">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <ProfileField
                 label={hasExistingPassword ? "New password" : "Password"}
@@ -375,26 +429,45 @@ export default function ProfileSetupPage() {
               </ProfileField>
             </div>
 
-            <ProfileField
-              label="Signature"
-              error={errors.signature}
-              helperText="PNG or JPG, ideally on a light background."
-            >
-              <SignatureUpload
-                value={signatureDataUrl}
-                onChange={setSignatureDataUrl}
-              />
-            </ProfileField>
+            </ProfileSection>
 
-            <button
-              type="submit"
-              className="h-10 rounded-none bg-primary px-4 text-sm font-medium text-white hover:bg-secondary"
-            >
-              Save and continue
-            </button>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-form-rule pt-5">
+              <button
+                type="button"
+                onClick={() => navigate(isHead ? "/admin" : "/dashboard")}
+                className="h-10 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-muted hover:bg-form-band"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="h-10 rounded-md bg-form-action px-5 text-sm font-medium text-white hover:bg-secondary"
+              >
+                Save Profile →
+              </button>
+            </div>
           </form>
         </div>
       </main>
     </div>
+  );
+}
+
+/** One numbered part of the profile form, matching the requisition form's sections. */
+function ProfileSection({
+  part,
+  title,
+  children,
+}: {
+  part: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="pt-1">
+      <p className={PART_LABEL}>{part}</p>
+      <h2 className={`${SECTION_TITLE} mb-4`}>{title}</h2>
+      {children}
+    </section>
   );
 }

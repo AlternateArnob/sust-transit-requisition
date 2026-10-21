@@ -58,7 +58,7 @@ export default function ApplyRequisitionPage() {
 
 
   return (
-    <div className="min-h-screen bg-form-band">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <ApplicantHeader active="apply" />
 
       <main className="mx-auto max-w-3xl px-4 py-10">
@@ -101,12 +101,10 @@ export default function ApplyRequisitionPage() {
             </div>
           </div>
         ) : (
-          <div className="border border-form-rule shadow-sm">
-            <RequisitionForm
-              onSubmit={handleSubmit}
-              onCancel={() => window.history.back()}
-            />
-          </div>
+          <RequisitionForm
+            onSubmit={handleSubmit}
+            onCancel={() => window.history.back()}
+          />
         )}
       </main>
     </div>

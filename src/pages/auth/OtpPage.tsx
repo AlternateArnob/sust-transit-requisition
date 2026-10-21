@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import SustLogo from "../../components/SustLogo";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import useOtp from "../../hooks/useOtp";
 import useUsers from "../../hooks/useUsers";
@@ -125,6 +126,7 @@ export default function OtpPage() {
 
       <main className="mx-auto max-w-md px-4 py-10">
         <div className="rounded-lg border border-[#E2E8F0] bg-white p-6">
+          <SustLogo heightClass="h-16" className="mx-auto mb-4 block" />
           <h2 className="text-xl font-semibold text-[#1E293B]">
             Enter the verification code
           </h2>

@@ -1,3 +1,5 @@
+import sustLogo from "../../assets/sust-logo.png";
+
 interface GovFormMastheadProps {
   formTitle: string;
   referenceLabel?: string;
@@ -6,9 +8,8 @@ interface GovFormMastheadProps {
 /**
  * Step 11 — a letterhead block standing in for the printed masthead on
  * the paper "Vehicle Requisition Form" this page replaces: institution
- * name, wing, form title, and a reference line. The ring on the right is
- * a placeholder institutional seal, not a reproduction of SUST's actual
- * crest. Also reused (without a reference line) on the Register and
+ * name, wing, form title, and a reference line. The right-hand mark is the official
+ * SUST logo (src/assets/sust-logo.png). Also reused (without a reference line) on the Register and
  * Profile Setup pages for visual consistency.
  */
 export default function GovFormMasthead({
@@ -41,15 +42,10 @@ export default function GovFormMasthead({
 
 function SealMark() {
   return (
-    <div
-      aria-hidden
-      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-primary/50 text-center"
-    >
-      <span className="text-[10px] font-semibold leading-tight tracking-[0.06em] text-primary">
-        SUST
-        <br />
-        1991
-      </span>
-    </div>
+    <img
+      src={sustLogo}
+      alt="Shahjalal University of Science and Technology logo"
+      className="h-16 w-auto shrink-0"
+    />
   );
 }

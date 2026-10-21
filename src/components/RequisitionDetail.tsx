@@ -257,6 +257,22 @@ export default function RequisitionDetail({
       </div>
       </div>
 
+      {requisition.recommenderName ? (
+        <div className="rounded-md border border-[#BBF7D0] bg-[#F0FDF4] p-4 text-sm text-[#166534]">
+          <p className="font-medium">
+            Recommended by {requisition.recommenderName}
+            {requisition.recommendedAt
+              ? ` on ${new Date(requisition.recommendedAt).toLocaleDateString()}`
+              : ""}
+          </p>
+          {requisition.recommenderMessage ? (
+            <p className="mt-1 text-[#1E293B]">
+              “{requisition.recommenderMessage}”
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* Phase 1 — Administrator's send-back reason, visible to Transport
           In Charge until they forward it again. */}
       {requisition.transportOfficeRemarks && mode === "transportInCharge" && (
