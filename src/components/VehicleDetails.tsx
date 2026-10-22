@@ -66,16 +66,6 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
         </div>
       </div>
 
-      {/* Reservation */}
-      <div className="border-t border-border pt-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
-          Reserved For
-        </p>
-
-        <p className="mt-1 text-sm text-text">
-          {vehicle.reservedFor ?? "Not reserved"}
-        </p>
-      </div>
     </div>
   );
 }

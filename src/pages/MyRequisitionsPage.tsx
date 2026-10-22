@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
@@ -35,6 +35,7 @@ export default function MyRequisitionsPage() {
   const { vehicles } = useVehicles();
   const { driver } = useDriver();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -137,13 +138,24 @@ export default function MyRequisitionsPage() {
               header: "Actions",
               align: "right",
               render: (requisition) => (
-                <button
-                  type="button"
-                  onClick={() => setSelectedId(requisition.id)}
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  View
-                </button>
+                <div className="flex justify-end gap-4">
+                  {requisition.status === "Information Requested" ? (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/apply?resubmit=${requisition.id}`)}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Edit and Resubmit
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(requisition.id)}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    View
+                  </button>
+                </div>
               ),
             },
           ]}
@@ -163,6 +175,7 @@ export default function MyRequisitionsPage() {
             allocations={allocations}
             requester={currentUser}
             onDownloadConfirmationSlip={handleDownloadConfirmationSlip}
+            onEditAndResubmit={() => navigate(`/apply?resubmit=${selected.id}`)}
           />
         </Modal>
       )}

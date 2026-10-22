@@ -206,9 +206,9 @@ export default function RequisitionsPage() {
       .forEach((allocation) => removeAllocation(allocation.id));
   }
 
-  function handleSendBackToApplicant(reason: RejectionReason, remarks: string) {
+  function handleSendBackToApplicant(note: string) {
     if (!selected) return;
-    sendBackToApplicant(selected.id, reason, remarks);
+    sendBackToApplicant(selected.id, undefined, note, "Transport In-Charge");
     // The application is going back to square one for the applicant, so
     // any vehicle Transport In Charge had tentatively picked is released
     // rather than held against a requisition that's no longer active.
@@ -217,7 +217,9 @@ export default function RequisitionsPage() {
     addNotification(
       buildApplicantNotification(selected, {
         type: "Sent Back to Applicant",
-        message: `Your requisition was sent back by Transport In Charge: ${remarks}`,
+        message: note
+          ? `Your requisition was sent back by the Transport In-Charge for correction: ${note}`
+          : "Your requisition was sent back by the Transport In-Charge for correction. Please review it, edit and resubmit.",
       }),
     );
   }
@@ -307,7 +309,13 @@ export default function RequisitionsPage() {
 
   function handleGenerateDutySlip(driverId: string) {
     if (!selected) return;
-    if (modeFor(selected) !== "transportAdministrator") return;
+    // The Transport Administrator generates/regenerates duty slips; the
+    // Transport In-Charge may download them once the requisition is approved.
+    const role = currentUser?.role;
+    const allowed =
+      modeFor(selected) === "transportAdministrator" ||
+      (isTransportInCharge(role) && canGenerateSlips(selected));
+    if (!allowed) return;
 
     const group = getEligibleDutySlipGroups(selected, allocations).find(
       (item) => item.driverId === driverId,
@@ -317,6 +325,11 @@ export default function RequisitionsPage() {
     if (!group || !driverMember) return;
 
     generateDutySlipPdf(selected, driverMember, group.trips, vehicles);
+
+    // A Transport In-Charge download is a copy of the current slip, so it
+    // is not recorded in the slip history (that belongs to the
+    // Administrator's generate/regenerate action).
+    if (modeFor(selected) !== "transportAdministrator") return;
 
     addDutySlip({
       id: crypto.randomUUID(),
@@ -555,6 +568,9 @@ export default function RequisitionsPage() {
             onRemoveVehicleAssignment={handleRemoveVehicleAssignment}
             onForwardToAdministrator={handleForwardToAdministrator}
             onSendBackToApplicant={handleSendBackToApplicant}
+            canDownloadDriverSlip={
+              isTransportInCharge(currentUser?.role) && canGenerateSlips(selected)
+            }
             onApproveTrip={handleApproveTrip}
             onRejectTrip={handleRejectTrip}
             onResetTripDecision={handleResetTrip}

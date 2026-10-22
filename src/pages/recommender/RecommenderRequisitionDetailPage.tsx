@@ -155,7 +155,7 @@ export default function RecommenderRequisitionDetailPage() {
     setIsSubmitting(true);
     setActionError(null);
     try {
-      sendBackToApplicant(requisition.id, reason, remarks);
+      sendBackToApplicant(requisition.id, reason, remarks, "Department Head");
 
       // Same reasoning as handleReject — the applicant hasn't even
       // cleared their Department/Office Head yet, so the Transport

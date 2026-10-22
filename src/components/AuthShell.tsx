@@ -11,6 +11,8 @@ interface AuthShellProps {
   children: ReactNode;
   /** Small line under the card's content (e.g. "Need an account? Register"). */
   footer?: ReactNode;
+  /** Only the verification step shows Log out: that visitor is signed in but not finished. */
+  showLogout?: boolean;
 }
 
 /**
@@ -20,12 +22,12 @@ interface AuthShellProps {
  * verifying (so they land here), a Log out button is shown top-right so
  * they are never stuck without a way out.
  */
-export default function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
+export default function AuthShell({ title, subtitle, children, footer, showLogout = false }: AuthShellProps) {
   const { isAuthenticated } = useAuth();
 
   return (
     <div className="min-h-screen bg-surface px-4 py-10">
-      {isAuthenticated ? (
+      {showLogout && isAuthenticated ? (
         <div className="mx-auto mb-4 flex max-w-md justify-end">
           <LogoutButton tone="light" />
         </div>

@@ -64,7 +64,10 @@ interface RequisitionDetailProps {
   onAssignVehicle?: (tripId: string, vehicleId: string, driverId?: string) => void;
   onRemoveVehicleAssignment?: (tripId: string) => void;
   onForwardToAdministrator?: () => void;
-  onSendBackToApplicant?: (reason: RejectionReason, remarks: string) => void;
+  /** The note is optional: an empty string sends the application back with no note. */
+  onSendBackToApplicant?: (note: string) => void;
+  /** Transport In-Charge may download the driver slip once the requisition is approved. */
+  canDownloadDriverSlip?: boolean;
 
   // Transport Administrator stage (FRD §19) — omit in other modes.
   onApproveTrip?: (tripId: string) => void;
@@ -90,6 +93,7 @@ export default function RequisitionDetail({
   onRemoveVehicleAssignment,
   onForwardToAdministrator,
   onSendBackToApplicant,
+  canDownloadDriverSlip = false,
   onApproveTrip,
   onRejectTrip,
   onResetTripDecision,
@@ -523,15 +527,16 @@ export default function RequisitionDetail({
 
           {showSendBackToApplicant && (
             <SendBackForm
-              withReason
-              reason={reason}
-              onReasonChange={setReason}
+              withReason={false}
+              noteOptional
               remarks={remarks}
               onRemarksChange={setRemarks}
-              onCancel={() => setShowSendBackToApplicant(false)}
+              onCancel={() => {
+                setShowSendBackToApplicant(false);
+                setRemarks("");
+              }}
               onConfirm={() => {
-                if (!remarks.trim()) return;
-                onSendBackToApplicant?.(reason, remarks);
+                onSendBackToApplicant?.(remarks.trim());
                 setShowSendBackToApplicant(false);
                 setRemarks("");
               }}
@@ -667,6 +672,16 @@ export default function RequisitionDetail({
                         )}
                       </div>
 
+                      {mode !== "transportAdministrator" && canDownloadDriverSlip && (
+                        <button
+                          type="button"
+                          onClick={() => onGenerateDutySlip?.(group.driverId)}
+                          className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
+                        >
+                          Download Driver Slip
+                        </button>
+                      )}
+
                       {mode === "transportAdministrator" && (
                         <button
                           type="button"
@@ -759,7 +774,9 @@ function SendBackForm({
   onRemarksChange,
   onCancel,
   onConfirm,
+  noteOptional = false,
 }: {
+  noteOptional?: boolean;
   withReason: boolean;
   reason?: RejectionReason;
   onReasonChange?: (reason: RejectionReason) => void;
@@ -794,13 +811,14 @@ function SendBackForm({
 
       <div>
         <label className="mb-1 block text-xs font-medium text-form-muted">
-          Remarks (required)
+          {noteOptional ? "Note to applicant (optional)" : "Remarks (required)"}
         </label>
 
         <textarea
           value={remarks}
           onChange={(event) => onRemarksChange(event.target.value)}
           rows={2}
+          placeholder={noteOptional ? "Explain what the applicant should correct" : undefined}
           className="w-full rounded-md border border-form-rule px-3 py-2 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
         />
       </div>
@@ -816,7 +834,7 @@ function SendBackForm({
 
         <button
           type="button"
-          disabled={!remarks.trim()}
+          disabled={!noteOptional && !remarks.trim()}
           onClick={onConfirm}
           className="h-8 rounded-md bg-error px-3 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >

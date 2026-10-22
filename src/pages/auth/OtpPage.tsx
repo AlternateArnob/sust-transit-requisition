@@ -122,6 +122,7 @@ export default function OtpPage() {
 
   return (
     <AuthShell
+      showLogout
       title="Verify your email"
       subtitle={
         <>

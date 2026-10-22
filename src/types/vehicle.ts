@@ -31,8 +31,6 @@ export interface Vehicle {
 
   operationalStatus: VehicleStatus;
 
-  reservedFor?: string;
-
   availableForRequisition: boolean;
 
   // Permanent driver assigned to this vehicle

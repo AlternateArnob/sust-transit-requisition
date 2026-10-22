@@ -2,6 +2,7 @@ import type { Requisition, Vehicle, Driver, Allocation, UserAccount } from "../t
 import GovFormMasthead from "./application/GovFormMasthead";
 import { ApplicationStatusBadge, TripStatusBadge } from "./ui/StatusBadge";
 import { SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import { buttonClass } from "./ui/buttonStyles";
 import { formatDateRange } from "../utils/requisitionUtils";
 import { canGenerateSlips } from "../utils/dutySlipUtils";
 
@@ -13,6 +14,8 @@ interface ApplicantRequisitionDetailProps {
   /** Fix 8 — the applicant's own account, for the signature on file. */
   requester?: UserAccount;
   onDownloadConfirmationSlip: () => void;
+  /** Opens the edit-and-resubmit form for a requisition that was sent back. */
+  onEditAndResubmit?: () => void;
 }
 
 /**
@@ -28,6 +31,7 @@ export default function ApplicantRequisitionDetail({
   allocations,
   requester,
   onDownloadConfirmationSlip,
+  onEditAndResubmit,
 }: ApplicantRequisitionDetailProps) {
   // Phase 1 — "Final Approved" is retired; the confirmation slip is
   // available as soon as the Administrator has approved anything,
@@ -46,6 +50,32 @@ export default function ApplicantRequisitionDetail({
       <div className="flex justify-end">
         <ApplicationStatusBadge status={requisition.status} />
       </div>
+
+      {requisition.status === "Information Requested" ? (
+        <div
+          role="note"
+          className="rounded-md border border-form-warn-border bg-form-warn-bg px-4 py-3 text-sm text-form-warn-text"
+        >
+          <p className="font-semibold">
+            Returned for correction
+            {requisition.sentBackBy ? ` by ${requisition.sentBackBy}` : ""}
+          </p>
+          <p className="mt-1">
+            {requisition.sendBackNote ??
+              requisition.trips[0]?.rejectionRemarks ??
+              "No note was added. Please review your application and resubmit."}
+          </p>
+          {onEditAndResubmit ? (
+            <button
+              type="button"
+              onClick={onEditAndResubmit}
+              className={`${buttonClass("primary", "sm")} mt-3`}
+            >
+              Edit and Resubmit
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className={SECTION_WRAP}>
       <h2 className={`${SECTION_TITLE} mb-3`}>Requester Information</h2>

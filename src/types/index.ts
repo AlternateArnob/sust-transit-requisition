@@ -38,7 +38,7 @@ export type {
 
 export type { Trip, RequestedVehicleCategory } from "./trip";
 export type { TripDraft } from "./tripDraft";
-export { createEmptyTripDraft } from "./tripDraft";
+export { createEmptyTripDraft, tripToDraft } from "./tripDraft";
 
 export {
   APPLICANT_PROFILES,

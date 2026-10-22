@@ -255,8 +255,6 @@ export default function VehiclePage() {
 
                 <th className="px-4 py-3 font-semibold">Status</th>
 
-                <th className="px-4 py-3 font-semibold">Reserved For</th>
-
                 <th className="px-4 py-3 font-semibold">Requisition</th>
 
                 <th
@@ -275,7 +273,7 @@ export default function VehiclePage() {
               {filteredVehicles.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={7}
                     className="
                       px-4 py-12
                       text-center
@@ -350,10 +348,6 @@ export default function VehiclePage() {
 
                     <td className="px-4 py-3">
                       <StatusBadge status={vehicle.operationalStatus} />
-                    </td>
-
-                    <td className="px-4 py-3 text-text-muted">
-                      {vehicle.reservedFor ?? "—"}
                     </td>
 
                     <td className="px-4 py-3">

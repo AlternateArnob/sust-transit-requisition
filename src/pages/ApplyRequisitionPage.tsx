@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { buttonClass } from "../components/ui/buttonStyles";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 import useRequisitions from "../hooks/useRequisitions";
 import useNotifications from "../hooks/useNotifications";
@@ -24,14 +25,37 @@ import type { Requisition } from "../types";
  * review, approve, reject, or allocate them.
  */
 export default function ApplyRequisitionPage() {
-  const { addRequisition } = useRequisitions();
+  const { currentUser } = useAuth();
+  const { requisitions, addRequisition, resubmitRequisition } = useRequisitions();
+  const [searchParams] = useSearchParams();
   const { addNotification } = useNotifications();
   const { users } = useUsers();
 
   const [submitted, setSubmitted] = useState<Requisition | null>(null);
 
+  // ?resubmit=<id> opens a requisition the Transport Office or Department
+  // Head sent back, so the applicant can correct and resubmit it.
+  const resubmitId = searchParams.get("resubmit");
+  const returned = resubmitId
+    ? requisitions.find(
+        (item) =>
+          item.id === resubmitId &&
+          item.requesterId === currentUser?.id &&
+          item.status === "Information Requested",
+      )
+    : undefined;
+  const wasResubmitted = Boolean(submitted && resubmitId);
+
+  if (resubmitId && !returned && !submitted) {
+    return <Navigate to="/my-requisitions" replace />;
+  }
+
   function handleSubmit(requisition: Requisition) {
-    addRequisition(requisition);
+    if (returned) {
+      resubmitRequisition(returned.id, requisition);
+    } else {
+      addRequisition(requisition);
+    }
 
     // Step 8 (applicant module) — per FRD §6, a Departmental/Official
     // requisition from a Student/Teacher/Officer must clear the
@@ -48,7 +72,7 @@ export default function ApplyRequisitionPage() {
       for (const notification of buildRequisitionNotifications(recipients, {
         requisition,
         type: "New Requisition",
-        message: `${requisition.requesterName} submitted a ${requisition.requisitionType.toLowerCase()} requisition (${requisition.trips.length} trip${requisition.trips.length === 1 ? "" : "s"})`,
+        message: `${requisition.requesterName} ${returned ? "resubmitted a corrected" : "submitted a"} ${requisition.requisitionType.toLowerCase()} requisition (${requisition.trips.length} trip${requisition.trips.length === 1 ? "" : "s"})`,
       })) {
         addNotification(notification);
       }
@@ -70,7 +94,7 @@ export default function ApplyRequisitionPage() {
             </div>
 
             <h2 className="mt-4 text-xl font-semibold text-text">
-              Requisition submitted
+              {wasResubmitted ? "Requisition resubmitted" : "Requisition submitted"}
             </h2>
 
             <p className="mt-2 text-sm text-text-muted">
@@ -85,6 +109,7 @@ export default function ApplyRequisitionPage() {
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+{wasResubmitted ? null : (
               <button
                 type="button"
                 onClick={() => setSubmitted(null)}
@@ -92,6 +117,7 @@ export default function ApplyRequisitionPage() {
               >
                 Submit another requisition
               </button>
+)}
 
               <Link
                 to="/my-requisitions"
@@ -103,6 +129,8 @@ export default function ApplyRequisitionPage() {
           </div>
         ) : (
           <RequisitionForm
+            key={returned?.id ?? "new"}
+            initial={returned}
             onSubmit={handleSubmit}
             onCancel={() => window.history.back()}
           />

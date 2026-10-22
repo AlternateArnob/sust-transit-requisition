@@ -58,7 +58,6 @@ export default function VehicleForm({
     vehicle?.operationalStatus ?? "Active",
   );
 
-  const [reservedFor, setReservedFor] = useState(vehicle?.reservedFor ?? "");
 
   const [permanentDriverId, setPermanentDriverId] = useState(
     vehicle?.permanentDriverId ?? "",
@@ -112,8 +111,6 @@ export default function VehicleForm({
       fuelType: fuelType.trim() || undefined,
 
       operationalStatus,
-
-      reservedFor: reservedFor.trim() || undefined,
 
       permanentDriverId: permanentDriverId || undefined,
 
@@ -289,39 +286,6 @@ export default function VehicleForm({
             {errors.operationalStatus}
           </p>
         )}
-      </div>
-
-      {/* Reserved For */}
-      <div>
-        <label
-          htmlFor="reservedFor"
-          className="
-            mb-1.5 block
-            text-sm font-medium
-            text-text
-          "
-        >
-          Reserved For
-        </label>
-
-        <input
-          id="reservedFor"
-          type="text"
-          value={reservedFor}
-          onChange={(event) => setReservedFor(event.target.value)}
-          placeholder="User of the transport"
-          className="
-            h-10 w-full rounded-md
-            border border-border
-            px-3
-            text-sm text-text
-            outline-none
-            placeholder:text-text-muted
-            focus:border-secondary
-            focus:ring-1
-            focus:ring-secondary
-          "
-        />
       </div>
 
       {/* Driver */}
