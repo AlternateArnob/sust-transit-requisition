@@ -20,6 +20,7 @@ import {
   ADMIN_ROLES,
   type AdminRole,
 } from "../utils/permissions";
+import PageTitle from "../components/ui/PageTitle";
 
 /**
  * Corrections Step 3 — this used to be one dashboard computing
@@ -51,18 +52,13 @@ export default function DashboardPage() {
 
 function DashboardHeader({ subtitle }: { subtitle: string }) {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-[#1E293B]">Dashboard</h1>
-      <p className="mt-1 text-sm text-[#64748B]">
-        {subtitle} —{" "}
+    <PageTitle title="Dashboard" subtitle={<>{subtitle} —{" "}
         {new Date().toLocaleDateString(undefined, {
           weekday: "long",
           day: "numeric",
           month: "long",
           year: "numeric",
-        })}
-      </p>
-    </div>
+        })}</>} />
   );
 }
 
@@ -92,7 +88,7 @@ function SuperAdminDashboard() {
           href="/admin/users"
         />
         <StatCard
-          label="Transport In Charge"
+          label="Transport In-Charge"
           value={countByRole("TransportInCharge")}
           href="/admin/users"
         />
@@ -195,34 +191,34 @@ function TransportAdministratorDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-            <p className="text-sm font-medium text-[#1E293B]">
+        <div className="rounded-lg border border-border bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <p className="text-sm font-medium text-text">
               Today's Allocations
             </p>
 
             <Link
               to="/admin/requisitions"
-              className="text-xs font-medium text-[#334E68] hover:underline"
+              className="text-xs font-medium text-secondary hover:underline"
             >
               View all
             </Link>
           </div>
 
-          <div className="divide-y divide-[#E2E8F0]">
+          <div className="divide-y divide-border">
             {todaysAllocations.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm text-[#64748B]">
+              <p className="px-5 py-8 text-center text-sm text-text-muted">
                 No allocations scheduled for today.
               </p>
             ) : (
               todaysAllocations.slice(0, 5).map((allocation) => (
                 <div key={allocation.id} className="px-5 py-3">
-                  <p className="text-sm font-medium text-[#1E293B]">
+                  <p className="text-sm font-medium text-text">
                     {allocation.startTime}–{allocation.endTime} ·{" "}
                     {getVehicleLabel(allocation.vehicleId)}
                   </p>
 
-                  <p className="mt-0.5 text-xs text-[#64748B]">
+                  <p className="mt-0.5 text-xs text-text-muted">
                     Driver: {getDriverName(allocation.driverId)}
                   </p>
                 </div>
@@ -231,23 +227,23 @@ function TransportAdministratorDashboard() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-            <p className="text-sm font-medium text-[#1E293B]">
+        <div className="rounded-lg border border-border bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <p className="text-sm font-medium text-text">
               Active Conflicts
             </p>
 
             <Link
               to="/admin/conflicts"
-              className="text-xs font-medium text-[#334E68] hover:underline"
+              className="text-xs font-medium text-secondary hover:underline"
             >
               View all
             </Link>
           </div>
 
-          <div className="divide-y divide-[#E2E8F0]">
+          <div className="divide-y divide-border">
             {conflicts.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm text-[#64748B]">
+              <p className="px-5 py-8 text-center text-sm text-text-muted">
                 No conflicts detected.
               </p>
             ) : (
@@ -257,19 +253,19 @@ function TransportAdministratorDashboard() {
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                         conflict.severity === "Blocking"
-                          ? "bg-[#FEE2E2] text-[#B91C1C]"
-                          : "bg-[#FEF3C7] text-[#B45309]"
+                          ? "bg-error-bg text-error"
+                          : "bg-warning-bg text-warning"
                       }`}
                     >
                       {conflict.severity}
                     </span>
 
-                    <p className="text-sm font-medium text-[#1E293B]">
+                    <p className="text-sm font-medium text-text">
                       {conflict.type}
                     </p>
                   </div>
 
-                  <p className="mt-1 text-xs text-[#64748B]">
+                  <p className="mt-1 text-xs text-text-muted">
                     {conflict.description}
                   </p>
                 </div>
@@ -398,34 +394,34 @@ function TransportInChargeDashboard() {
       {/* Detail panels */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Today's Allocations */}
-        <div className="rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-            <p className="text-sm font-medium text-[#1E293B]">
+        <div className="rounded-lg border border-border bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <p className="text-sm font-medium text-text">
               Today's Allocations
             </p>
 
             <Link
               to="/admin/requisitions"
-              className="text-xs font-medium text-[#334E68] hover:underline"
+              className="text-xs font-medium text-secondary hover:underline"
             >
               View all
             </Link>
           </div>
 
-          <div className="divide-y divide-[#E2E8F0]">
+          <div className="divide-y divide-border">
             {todaysAllocations.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm text-[#64748B]">
+              <p className="px-5 py-8 text-center text-sm text-text-muted">
                 No allocations scheduled for today.
               </p>
             ) : (
               todaysAllocations.slice(0, 5).map((allocation) => (
                 <div key={allocation.id} className="px-5 py-3">
-                  <p className="text-sm font-medium text-[#1E293B]">
+                  <p className="text-sm font-medium text-text">
                     {allocation.startTime}–{allocation.endTime} ·{" "}
                     {getVehicleLabel(allocation.vehicleId)}
                   </p>
 
-                  <p className="mt-0.5 text-xs text-[#64748B]">
+                  <p className="mt-0.5 text-xs text-text-muted">
                     Driver: {getDriverName(allocation.driverId)}
                   </p>
                 </div>
@@ -435,23 +431,23 @@ function TransportInChargeDashboard() {
         </div>
 
         {/* Conflicts */}
-        <div className="rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-            <p className="text-sm font-medium text-[#1E293B]">
+        <div className="rounded-lg border border-border bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <p className="text-sm font-medium text-text">
               Active Conflicts
             </p>
 
             <Link
               to="/admin/conflicts"
-              className="text-xs font-medium text-[#334E68] hover:underline"
+              className="text-xs font-medium text-secondary hover:underline"
             >
               View all
             </Link>
           </div>
 
-          <div className="divide-y divide-[#E2E8F0]">
+          <div className="divide-y divide-border">
             {conflicts.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm text-[#64748B]">
+              <p className="px-5 py-8 text-center text-sm text-text-muted">
                 No conflicts detected.
               </p>
             ) : (
@@ -461,19 +457,19 @@ function TransportInChargeDashboard() {
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                         conflict.severity === "Blocking"
-                          ? "bg-[#FEE2E2] text-[#B91C1C]"
-                          : "bg-[#FEF3C7] text-[#B45309]"
+                          ? "bg-error-bg text-error"
+                          : "bg-warning-bg text-warning"
                       }`}
                     >
                       {conflict.severity}
                     </span>
 
-                    <p className="text-sm font-medium text-[#1E293B]">
+                    <p className="text-sm font-medium text-text">
                       {conflict.type}
                     </p>
                   </div>
 
-                  <p className="mt-1 text-xs text-[#64748B]">
+                  <p className="mt-1 text-xs text-text-muted">
                     {conflict.description}
                   </p>
                 </div>

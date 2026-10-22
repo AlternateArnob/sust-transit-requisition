@@ -27,10 +27,10 @@ export default function ProfileField({
     <label className="flex flex-col gap-1">
       <span className="flex items-center gap-1.5 text-[13px] font-medium text-form-muted">
         {label}
-        {required ? <span className="text-[#B91C1C]">*</span> : null}
+        {required ? <span className="text-error">*</span> : null}
         {locked ? (
           <span
-            className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#FEF3C7] text-[10px] font-bold text-[#B45309]"
+            className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-warning-bg text-[10px] font-bold text-warning"
             title={lockedReason}
             aria-label={lockedReason}
           >
@@ -42,11 +42,11 @@ export default function ProfileField({
       {children}
 
       {helperText && !error ? (
-        <span className="text-xs text-[#64748B]">{helperText}</span>
+        <span className="text-xs text-text-muted">{helperText}</span>
       ) : null}
 
       {error ? (
-        <span className="text-xs text-[#B91C1C]">{error}</span>
+        <span className="text-xs text-error">{error}</span>
       ) : null}
     </label>
   );

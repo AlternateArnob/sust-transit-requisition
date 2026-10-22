@@ -7,6 +7,9 @@ import useRequisitions from "../../hooks/useRequisitions";
 import useUsers from "../../hooks/useUsers";
 
 import RecommenderActions from "../../components/recommender/RecommenderActions";
+import Card, { SectionHeading } from "../../components/ui/Card";
+import PageTitle from "../../components/ui/PageTitle";
+import { ApplicationStatusBadge, TripStatusBadge } from "../../components/ui/StatusBadge";
 
 import {
   formatDateRange,
@@ -60,11 +63,11 @@ export default function RecommenderRequisitionDetailPage() {
 
   if (!requisition) {
     return (
-      <div className="rounded-md border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">
+      <div className="rounded-md border border-error-bg bg-error-bg/50 px-4 py-3 text-sm text-error">
         <p className="font-medium">Requisition not found.</p>
         <Link
           to="/admin/recommender"
-          className="mt-2 inline-block text-xs font-medium text-[#334E68] hover:underline"
+          className="mt-2 inline-block text-xs font-medium text-secondary hover:underline"
         >
           ← Back to requests
         </Link>
@@ -152,7 +155,7 @@ export default function RecommenderRequisitionDetailPage() {
     setIsSubmitting(true);
     setActionError(null);
     try {
-      sendBackToApplicant(requisition.id, reason, remarks);
+      sendBackToApplicant(requisition.id, reason, remarks, "Department Head");
 
       // Same reasoning as handleReject — the applicant hasn't even
       // cleared their Department/Office Head yet, so the Transport
@@ -180,126 +183,119 @@ export default function RecommenderRequisitionDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link
-            to="/admin/recommender"
-            className="text-xs font-medium text-[#334E68] hover:underline"
-          >
-            ← Back to requests
-          </Link>
-          <h1 className="mt-2 text-2xl font-semibold text-[#1E293B]">
-            Requisition {requisition.id}
-          </h1>
-          <p className="mt-1 text-sm text-[#64748B]">
-            Submitted by {requisition.requesterName} on{" "}
-            {new Date(requisition.createdAt).toLocaleString()}
-          </p>
-        </div>
-        <div className="rounded-md border border-[#E2E8F0] bg-white px-4 py-2 text-xs text-[#64748B]">
-          <p>
-            Status:{" "}
-            <span className="font-medium text-[#1E293B]">
-              {requisition.status}
-            </span>
-          </p>
-          <p className="mt-1">
-            Scope:{" "}
-            <span className="font-medium text-[#1E293B]">
-              {isAssigned ? "Assigned to you" : "Other department"}
-            </span>
-          </p>
+      <div>
+        <Link
+          to="/admin/recommender"
+          className="text-xs font-medium text-primary hover:underline"
+        >
+          ← Back to requests
+        </Link>
+        <div className="mt-2">
+          <PageTitle
+            title={`Requisition ${requisition.id}`}
+            subtitle={`Submitted by ${requisition.requesterName} on ${new Date(
+              requisition.createdAt,
+            ).toLocaleString()}`}
+            actions={
+              <Card className="px-4 py-2.5 text-xs text-text-muted">
+                <p>
+                  Status:{" "}
+                  <ApplicationStatusBadge status={requisition.status} />
+                </p>
+                <p className="mt-1">
+                  Scope:{" "}
+                  <span className="font-medium text-text">
+                    {isAssigned ? "Assigned to you" : "Other department"}
+                  </span>
+                </p>
+              </Card>
+            }
+          />
         </div>
       </div>
 
       {requisition.recommenderMessage ? (
-        <div className="rounded-md border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#1E293B]">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+        <Card className="px-4 py-3 text-sm text-text">
+          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
             Your message to the Transport Office
           </p>
           <p className="mt-1">{requisition.recommenderMessage}</p>
-        </div>
+        </Card>
       ) : null}
 
       {actionError && (
-        <div className="rounded-md border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">
+        <div className="rounded-md border border-error-bg bg-error-bg/50 px-4 py-3 text-sm text-error">
           {actionError}
         </div>
       )}
 
-      <section className="rounded-lg border border-[#E2E8F0] bg-white p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#64748B]">
-          Journey summary
-        </h2>
+      <Card>
+        <SectionHeading>Journey summary</SectionHeading>
         <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+            <dt className="text-xs uppercase tracking-wide text-text-muted">
               Type
             </dt>
-            <dd className="mt-1 text-[#1E293B]">{requisition.requisitionType}</dd>
+            <dd className="mt-1 text-text">{requisition.requisitionType}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+            <dt className="text-xs uppercase tracking-wide text-text-muted">
               Department / Office
             </dt>
-            <dd className="mt-1 text-[#1E293B]">{requisition.department ?? "—"}</dd>
+            <dd className="mt-1 text-text">{requisition.department ?? "—"}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+            <dt className="text-xs uppercase tracking-wide text-text-muted">
               Date range
             </dt>
-            <dd className="mt-1 text-[#1E293B]">
+            <dd className="mt-1 text-text">
               {formatDateRange(requisition.startDate, requisition.endDate)}
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+            <dt className="text-xs uppercase tracking-wide text-text-muted">
               Trips
             </dt>
-            <dd className="mt-1 text-[#1E293B]">
+            <dd className="mt-1 text-text">
               {counts.pending} pending · {counts.approved} approved ·{" "}
               {counts.rejected} rejected
             </dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-xs uppercase tracking-wide text-[#64748B]">
+            <dt className="text-xs uppercase tracking-wide text-text-muted">
               Purpose
             </dt>
-            <dd className="mt-1 text-[#1E293B]">{requisition.purpose}</dd>
+            <dd className="mt-1 text-text">{requisition.purpose}</dd>
           </div>
         </dl>
-      </section>
+      </Card>
 
-      <section className="rounded-lg border border-[#E2E8F0] bg-white p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#64748B]">
-          Trips
-        </h2>
+      <Card>
+        <SectionHeading>Trips</SectionHeading>
         <ul className="mt-4 space-y-3">
           {requisition.trips.map((trip, index) => (
             <li
               key={trip.id ?? `${requisition.id}-${index}`}
-              className="rounded-md border border-[#E2E8F0] p-4 text-sm"
+              className="rounded-md border border-border p-4 text-sm"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-medium text-[#1E293B]">
+                <p className="font-medium text-text">
                   Trip {index + 1} · {trip.route}
                 </p>
-                <span className="rounded-full bg-[#F8FAFC] px-2.5 py-1 text-xs text-[#64748B]">
-                  {trip.status}
-                </span>
+                <TripStatusBadge status={trip.status} />
               </div>
-              <p className="mt-1 text-xs text-[#64748B]">
+              <p className="mt-1 text-xs text-text-muted">
                 {trip.date} · {trip.startTime}–{trip.endTime}
               </p>
               {trip.rejectionRemarks && (
-                <p className="mt-2 text-xs text-[#B91C1C]">
+                <p className="mt-2 text-xs text-error">
                   Previous recommender note: {trip.rejectionRemarks}
                 </p>
               )}
             </li>
           ))}
         </ul>
-      </section>
+      </Card>
 
       <RecommenderActions
         status={requisition.status}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
 import useAllocations from "../hooks/useAllocations";
@@ -11,6 +11,7 @@ import {
   type OffDayType,
   type Weekday,
 } from "../types";
+import { buttonClass } from "./ui/buttonStyles";
 
 interface OffDayFormProps {
   onSubmit: (offDay: VehicleOffDay) => void;
@@ -36,10 +37,11 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState("");
 
-  useEffect(() => {
+  function changeType(next: OffDayType) {
+    setType(next);
     setErrors({});
     setSubmitError("");
-  }, [type]);
+  }
 
   function getConflictingAllocations() {
     if (!vehicleId) {
@@ -128,7 +130,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
       <div>
         <label
           htmlFor="offDayVehicle"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Vehicle
         </label>
@@ -137,7 +139,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
           id="offDayVehicle"
           value={vehicleId}
           onChange={(event) => setVehicleId(event.target.value)}
-          className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
         >
           <option value="">Select a vehicle</option>
 
@@ -149,33 +151,33 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
         </select>
 
         {errors.vehicleId && (
-          <p className="mt-1 text-xs text-[#B91C1C]">{errors.vehicleId}</p>
+          <p className="mt-1 text-xs text-error">{errors.vehicleId}</p>
         )}
       </div>
 
       {/* Type */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#1E293B]">
+        <label className="mb-2 block text-sm font-medium text-text">
           Off-Day Type
         </label>
 
         <div className="flex gap-5">
-          <label className="flex items-center gap-2 text-sm text-[#1E293B]">
+          <label className="flex items-center gap-2 text-sm text-text">
             <input
               type="radio"
               name="offDayType"
               checked={type === "One-time"}
-              onChange={() => setType("One-time")}
+              onChange={() => changeType("One-time")}
             />
             One-time (specific date)
           </label>
 
-          <label className="flex items-center gap-2 text-sm text-[#1E293B]">
+          <label className="flex items-center gap-2 text-sm text-text">
             <input
               type="radio"
               name="offDayType"
               checked={type === "Recurring"}
-              onChange={() => setType("Recurring")}
+              onChange={() => changeType("Recurring")}
             />
             Recurring (weekday)
           </label>
@@ -187,7 +189,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
         <div>
           <label
             htmlFor="offDayDate"
-            className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+            className="mb-1.5 block text-sm font-medium text-text"
           >
             Date
           </label>
@@ -197,18 +199,18 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
             type="date"
             value={date}
             onChange={(event) => setDate(event.target.value)}
-            className="h-10 w-full rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+            className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
           />
 
           {errors.date && (
-            <p className="mt-1 text-xs text-[#B91C1C]">{errors.date}</p>
+            <p className="mt-1 text-xs text-error">{errors.date}</p>
           )}
         </div>
       ) : (
         <div>
           <label
             htmlFor="offDayWeekday"
-            className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+            className="mb-1.5 block text-sm font-medium text-text"
           >
             Weekday
           </label>
@@ -217,7 +219,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
             id="offDayWeekday"
             value={weekday}
             onChange={(event) => setWeekday(event.target.value as Weekday)}
-            className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
           >
             {WEEKDAYS.map((day) => (
               <option key={day} value={day}>
@@ -227,7 +229,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
           </select>
 
           {errors.weekday && (
-            <p className="mt-1 text-xs text-[#B91C1C]">{errors.weekday}</p>
+            <p className="mt-1 text-xs text-error">{errors.weekday}</p>
           )}
         </div>
       )}
@@ -236,7 +238,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
       <div>
         <label
           htmlFor="offDayReason"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Reason (optional)
         </label>
@@ -247,30 +249,30 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
           value={reason}
           onChange={(event) => setReason(event.target.value)}
           placeholder="e.g. Route duty, servicing"
-          className="h-10 w-full rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none placeholder:text-[#64748B] focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none placeholder:text-text-muted focus:border-secondary focus:ring-1 focus:ring-secondary"
         />
       </div>
 
       {/* Submit Error */}
       {submitError && (
-        <div className="rounded-md border border-[#FECACA] bg-[#FEF2F2] px-3 py-2">
-          <p className="text-sm text-[#B91C1C]">{submitError}</p>
+        <div className="rounded-md border border-error/30 bg-error-bg/50 px-3 py-2">
+          <p className="text-sm text-error">{submitError}</p>
         </div>
       )}
 
       {/* Buttons */}
-      <div className="flex justify-end gap-3 border-t border-[#E2E8F0] pt-4">
+      <div className="flex justify-end gap-3 border-t border-border pt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className={buttonClass("secondary")}
         >
           Cancel
         </button>
 
         <button
           type="submit"
-          className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+          className={buttonClass("primary")}
         >
           Mark Off-Day
         </button>

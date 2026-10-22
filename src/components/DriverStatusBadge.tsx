@@ -6,8 +6,8 @@ interface DriverStatusBadgeProps {
 
 export default function DriverStatusBadge({ status }: DriverStatusBadgeProps) {
   const styles: Record<DriverStatus, string> = {
-    Active: "bg-[#DCFCE7] text-[#15803D]",
-    Inactive: "bg-[#F1F5F9] text-[#64748B]",
+    Active: "bg-success-bg text-success",
+    Inactive: "bg-neutral-bg text-text-muted",
   };
 
   return (

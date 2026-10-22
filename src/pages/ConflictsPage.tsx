@@ -11,6 +11,8 @@ import AllocationPicker from "../components/AllocationPicker";
 
 import { detectConflicts, type Conflict } from "../utils/conflictUtils";
 import { reassignAllocation } from "../utils/allocationUtils";
+import { buttonClass } from "../components/ui/buttonStyles";
+import PageTitle from "../components/ui/PageTitle";
 
 export default function ConflictsPage() {
   const { requisitions, rejectTrip } = useRequisitions();
@@ -72,19 +74,13 @@ export default function ConflictsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-[#1E293B]">Conflicts</h1>
-
-        <p className="mt-1 text-sm text-[#64748B]">
-          Automatically detected resource conflicts across current allocations
-        </p>
-      </div>
+      <PageTitle title="Conflicts" subtitle="Automatically detected resource conflicts across current allocations" />
 
       {conflicts.length === 0 ? (
-        <div className="rounded-lg border border-[#E2E8F0] bg-white p-8 text-center">
-          <p className="font-medium text-[#1E293B]">No conflicts detected</p>
+        <div className="rounded-lg border border-border bg-white shadow-sm p-8 text-center">
+          <p className="font-medium text-text">No conflicts detected</p>
 
-          <p className="mt-1 text-sm text-[#64748B]">
+          <p className="mt-1 text-sm text-text-muted">
             All current allocations are clear of vehicle, off-day, and route
             conflicts.
           </p>
@@ -94,7 +90,7 @@ export default function ConflictsPage() {
           {conflicts.map((conflict) => (
             <div
               key={conflict.id}
-              className="rounded-lg border border-[#E2E8F0] bg-white p-4"
+              className="rounded-lg border border-border bg-white shadow-sm p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -102,23 +98,23 @@ export default function ConflictsPage() {
                     <span
                       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
                         conflict.severity === "Blocking"
-                          ? "bg-[#FEE2E2] text-[#B91C1C]"
-                          : "bg-[#FEF3C7] text-[#B45309]"
+                          ? "bg-error-bg text-error"
+                          : "bg-warning-bg text-warning"
                       }`}
                     >
                       {conflict.severity}
                     </span>
 
-                    <span className="text-sm font-medium text-[#1E293B]">
+                    <span className="text-sm font-medium text-text">
                       {conflict.type}
                     </span>
                   </div>
 
-                  <p className="mt-2 text-sm text-[#64748B]">
+                  <p className="mt-2 text-sm text-text-muted">
                     {conflict.description}
                   </p>
 
-                  <p className="mt-2 text-xs text-[#64748B]">
+                  <p className="mt-2 text-xs text-text-muted">
                     Source: {conflict.requisition.requesterName} —{" "}
                     {conflict.trip.date} {conflict.trip.startTime}–
                     {conflict.trip.endTime} ·{" "}
@@ -130,7 +126,7 @@ export default function ConflictsPage() {
                   <button
                     type="button"
                     onClick={() => setReassignConflict(conflict)}
-                    className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+                    className="h-8 rounded-md border border-border px-3 text-xs font-medium text-secondary hover:bg-surface"
                   >
                     Reassign Vehicle
                   </button>
@@ -138,7 +134,7 @@ export default function ConflictsPage() {
                   <button
                     type="button"
                     onClick={() => handleReject(conflict)}
-                    className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#F8FAFC]"
+                    className={buttonClass("danger","sm")}
                   >
                     Reject Trip
                   </button>

@@ -10,6 +10,8 @@ import { buildAccountStatusNotification } from "../utils/notificationUtils";
 import { hashPassword, MIN_PASSWORD_LENGTH } from "../utils/passwordUtils";
 import { DEPARTMENTS, OFFICES } from "../data/sustDirectory";
 import type { UserAccount, UserRole } from "../types";
+import { buttonClass } from "../components/ui/buttonStyles";
+import PageTitle from "../components/ui/PageTitle";
 
 /**
  * Corrections Step 4+5 (answered together — Step 5's scoping question
@@ -157,36 +159,27 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Registered Accounts
-          </h1>
-          <p className="mt-1 text-sm text-[#64748B]">
-            Every registered account — edit name, email, mobile, role, or
-            active status. Delete is only available for other Super Admin
-            accounts.
-          </p>
-        </div>
+        <PageTitle title="Registered Accounts" subtitle="Every registered account — edit name, email, mobile, role, or active status. Delete is only available for other Super Admin accounts." />
 
         <button
           type="button"
           onClick={() => setShowCreate(true)}
-          className="h-9 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+          className={buttonClass("primary")}
         >
           Add Transport Office Account
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-[#0F2747] text-white">
+            <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
               <tr>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Email</th>
-                <th className="px-4 py-3 font-medium">Role</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                <th className="px-4 py-3 font-semibold">Name</th>
+                <th className="px-4 py-3 font-semibold">Email</th>
+                <th className="px-4 py-3 font-semibold">Role</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -196,24 +189,24 @@ export default function UsersPage() {
                 return (
                   <tr
                     key={user.id}
-                    className={`border-t border-[#E2E8F0] ${index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"}`}
+                    className={`border-t border-border ${index % 2 === 1 ? "bg-surface" : "bg-white"}`}
                   >
-                    <td className="px-4 py-3 font-medium text-[#1E293B]">
+                    <td className="px-4 py-3 font-medium text-text">
                       {user.fullName ?? "—"}
                       {user.id === currentUser?.id && (
-                        <span className="ml-2 text-xs font-normal text-[#64748B]">
+                        <span className="ml-2 text-xs font-normal text-text-muted">
                           (you)
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-[#64748B]">{user.email}</td>
-                    <td className="px-4 py-3 text-[#64748B]">{user.role}</td>
+                    <td className="px-4 py-3 text-text-muted">{user.email}</td>
+                    <td className="px-4 py-3 text-text-muted">{user.role}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
                           isActive
-                            ? "bg-[#DCFCE7] text-[#15803D]"
-                            : "bg-[#FEE2E2] text-[#B91C1C]"
+                            ? "bg-success-bg text-success"
+                            : "bg-error-bg text-error"
                         }`}
                       >
                         {isActive ? "Active" : "Deactivated"}
@@ -224,7 +217,7 @@ export default function UsersPage() {
                         <button
                           type="button"
                           onClick={() => setEditing(user)}
-                          className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+                          className="h-8 rounded-md border border-border px-3 text-xs font-medium text-secondary hover:bg-surface"
                         >
                           Edit
                         </button>
@@ -233,7 +226,7 @@ export default function UsersPage() {
                           <button
                             type="button"
                             onClick={() => handleDelete(user)}
-                            className="h-8 rounded-md border border-[#E2E8F0] px-3 text-xs font-medium text-[#B91C1C] hover:bg-[#FEF2F2]"
+                            className={buttonClass("danger","sm")}
                           >
                             Delete
                           </button>
@@ -353,27 +346,27 @@ function EditAccountForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">Full Name</span>
+        <span className="text-sm font-medium text-text">Full Name</span>
         <input
           type="text"
           value={fullName}
           onChange={(event) => setFullName(event.target.value)}
-          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">Email</span>
+        <span className="text-sm font-medium text-text">Email</span>
         <input
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">
+        <span className="text-sm font-medium text-text">
           Mobile Number
         </span>
         <input
@@ -381,18 +374,18 @@ function EditAccountForm({
           value={mobile}
           onChange={(event) => setMobile(event.target.value)}
           placeholder="01XXXXXXXXX"
-          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">Role</span>
+        <span className="text-sm font-medium text-text">Role</span>
         <select
           value={role}
           disabled={lock.locked}
           title={lock.locked ? lock.reason : undefined}
           onChange={(event) => setRole(event.target.value as UserRole)}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747] disabled:cursor-not-allowed disabled:bg-[#F1F5F9] disabled:text-[#94A3B8]"
+          className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:bg-neutral-bg disabled:text-form-placeholder"
         >
           {ALL_ROLES.map((item) => (
             <option key={item} value={item}>
@@ -405,13 +398,13 @@ function EditAccountForm({
       {role === "DepartmentHead" ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-[#1E293B]">
+            <span className="text-sm font-medium text-text">
               Head of Department
             </span>
             <select
               value={headOfDepartment}
               onChange={(event) => setHeadOfDepartment(event.target.value)}
-              className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+              className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
             >
               <option value="">— none —</option>
               {DEPARTMENTS.map((dept) => (
@@ -423,13 +416,13 @@ function EditAccountForm({
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-[#1E293B]">
+            <span className="text-sm font-medium text-text">
               Head of Office
             </span>
             <select
               value={headOfOffice}
               onChange={(event) => setHeadOfOffice(event.target.value)}
-              className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+              className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
             >
               <option value="">— none —</option>
               {OFFICES.map((off) => (
@@ -440,7 +433,7 @@ function EditAccountForm({
             </select>
           </label>
 
-          <p className="text-xs text-[#64748B] sm:col-span-2">
+          <p className="text-xs text-text-muted sm:col-span-2">
             Set one of these to determine which requisitions route to this
             person for recommendation — a requisition's Department or
             Office must match exactly for it to reach them.
@@ -448,8 +441,8 @@ function EditAccountForm({
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between rounded-md border border-[#E2E8F0] px-3 py-2">
-        <span className="text-sm font-medium text-[#1E293B]">
+      <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+        <span className="text-sm font-medium text-text">
           Account Active
         </span>
         <button
@@ -459,8 +452,8 @@ function EditAccountForm({
           onClick={() => setIsActive((current) => !current)}
           className={`h-8 rounded-md border px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
             isActive
-              ? "border-[#E2E8F0] text-[#15803D] hover:bg-[#F0FDF4]"
-              : "border-[#E2E8F0] text-[#B91C1C] hover:bg-[#FEF2F2]"
+              ? "border-border text-success hover:bg-success-bg/40"
+              : "border-border text-error hover:bg-error-bg/50"
           }`}
         >
           {isActive ? "Active" : "Deactivated"}
@@ -468,11 +461,11 @@ function EditAccountForm({
       </div>
 
       {lock.locked && (
-        <p className="text-xs text-[#94A3B8]">{lock.reason}</p>
+        <p className="text-xs text-form-placeholder">{lock.reason}</p>
       )}
 
       {error && (
-        <p className="rounded-md border border-[#FEE2E2] bg-[#FEE2E2] px-3 py-2 text-sm text-[#B91C1C]">
+        <p className="rounded-md border border-error-bg bg-error-bg px-3 py-2 text-sm text-error">
           {error}
         </p>
       )}
@@ -481,14 +474,14 @@ function EditAccountForm({
         <button
           type="button"
           onClick={onCancel}
-          className="h-9 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className={buttonClass("secondary")}
         >
           Cancel
         </button>
 
         <button
           type="submit"
-          className="h-9 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+          className={buttonClass("primary")}
         >
           Save Changes
         </button>
@@ -553,32 +546,32 @@ function CreateAccountForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">Full Name</span>
+        <span className="text-sm font-medium text-text">Full Name</span>
         <input
           type="text"
           value={fullName}
           onChange={(event) => setFullName(event.target.value)}
-          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">Email</span>
+        <span className="text-sm font-medium text-text">Email</span>
         <input
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="name@sust.edu"
-          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">Role</span>
+        <span className="text-sm font-medium text-text">Role</span>
         <select
           value={role}
           onChange={(event) => setRole(event.target.value as AdminRole)}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+          className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         >
           {ADMIN_ROLES.map((item) => (
             <option key={item} value={item}>
@@ -589,7 +582,7 @@ function CreateAccountForm({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-[#1E293B]">
+        <span className="text-sm font-medium text-text">
           Initial Password
         </span>
         <input
@@ -597,12 +590,12 @@ function CreateAccountForm({
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
-          className="h-10 rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#0F2747] focus:ring-2 focus:ring-[#0F2747]"
+          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
         />
       </label>
 
       {error && (
-        <p className="rounded-md border border-[#FEE2E2] bg-[#FEE2E2] px-3 py-2 text-sm text-[#B91C1C]">
+        <p className="rounded-md border border-error-bg bg-error-bg px-3 py-2 text-sm text-error">
           {error}
         </p>
       )}
@@ -611,14 +604,14 @@ function CreateAccountForm({
         <button
           type="button"
           onClick={onCancel}
-          className="h-9 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className={buttonClass("secondary")}
         >
           Cancel
         </button>
 
         <button
           type="submit"
-          className="h-9 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+          className={buttonClass("primary")}
         >
           Create Account
         </button>

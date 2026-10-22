@@ -89,15 +89,15 @@ export default function OtpInput({
           onKeyDown={(event) => handleKeyDown(event, index)}
           onPaste={handlePaste}
           className={`
-            h-12 w-10 rounded-md border bg-white text-center text-lg font-semibold
-            text-[#1E293B] outline-none transition
-            focus:ring-2 focus:ring-[#0F2747] focus:ring-offset-1
+            h-12 w-10 rounded-md border bg-form-field text-center text-lg font-semibold
+            text-form-ink outline-none transition
+            focus:bg-white focus:ring-2 focus:ring-primary focus:ring-offset-1
             ${
               invalid
-                ? "border-[#B91C1C] focus:ring-[#B91C1C]"
-                : "border-[#E2E8F0]"
+                ? "border-error focus:ring-error"
+                : "border-form-rule"
             }
-            ${disabled ? "cursor-not-allowed bg-[#F8FAFC]" : ""}
+            ${disabled ? "cursor-not-allowed bg-surface" : ""}
           `}
         />
       ))}

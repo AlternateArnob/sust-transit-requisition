@@ -156,22 +156,22 @@ export default function NotificationBell() {
         </svg>
 
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#B91C1C] px-1 text-[10px] font-medium text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-error px-1 text-[10px] font-medium text-white">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-[#E2E8F0] bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] px-4 py-3">
-            <p className="text-sm font-medium text-[#1E293B]">Notifications</p>
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-border bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <p className="text-sm font-medium text-text">Notifications</p>
 
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={markAllAsRead}
-                className="text-xs font-medium text-[#334E68] hover:underline"
+                className="text-xs font-medium text-secondary hover:underline"
               >
                 Mark all read
               </button>
@@ -180,7 +180,7 @@ export default function NotificationBell() {
 
           <div className="max-h-96 overflow-y-auto">
             {recent.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-[#64748B]">
+              <p className="px-4 py-6 text-center text-sm text-text-muted">
                 No notifications yet
               </p>
             ) : (
@@ -189,17 +189,17 @@ export default function NotificationBell() {
                   key={notification.id}
                   type="button"
                   onClick={() => handleClick(notification)}
-                  className={`block w-full border-b border-[#E2E8F0] px-4 py-3 text-left last:border-b-0 hover:bg-[#F8FAFC] ${
-                    notification.isRead ? "" : "bg-[#EFF6FF]"
+                  className={`block w-full border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-surface ${
+                    notification.isRead ? "" : "bg-info-bg/40"
                   }`}
                 >
-                  <p className="text-xs font-medium text-[#0F2747]">
+                  <p className="text-xs font-medium text-primary">
                     {notification.type}
                   </p>
-                  <p className="mt-0.5 text-sm text-[#1E293B]">
+                  <p className="mt-0.5 text-sm text-text">
                     {notification.message}
                   </p>
-                  <p className="mt-1 text-xs text-[#64748B]">
+                  <p className="mt-1 text-xs text-text-muted">
                     {new Date(notification.timestamp).toLocaleString()}
                   </p>
                 </button>
@@ -207,7 +207,7 @@ export default function NotificationBell() {
             )}
           </div>
 
-          <div className="border-t border-[#E2E8F0] px-4 py-2 text-center">
+          <div className="border-t border-border px-4 py-2 text-center">
             <button
               type="button"
               onClick={() => {
@@ -218,7 +218,7 @@ export default function NotificationBell() {
                     : "/admin/notifications",
                 );
               }}
-              className="text-xs font-medium text-[#334E68] hover:underline"
+              className="text-xs font-medium text-secondary hover:underline"
             >
               See More
             </button>

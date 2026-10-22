@@ -13,7 +13,7 @@ function AdminLayout() {
   // no left sidebar, so the navigation never jumps between top and left.
   if (currentUser?.role === "DepartmentHead") {
     return (
-      <div className="min-h-screen bg-[#F8FAFC]">
+      <div className="min-h-screen bg-surface">
         <ApplicantHeader />
         <main className="mx-auto max-w-6xl p-6">
           <Outlet />
@@ -23,7 +23,7 @@ function AdminLayout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8FAFC]">
+    <div className="flex min-h-screen flex-col bg-surface">
       <Navbar title="SUST Transit Admin" />
 
       <div className="flex flex-1">

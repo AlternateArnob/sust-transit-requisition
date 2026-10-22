@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Trip } from "../types";
 import { isPositiveNumber } from "../utils/validators";
+import { buttonClass } from "./ui/buttonStyles";
 
 interface MileageEntryFormProps {
   /**
@@ -48,7 +49,7 @@ export default function MileageEntryForm({
         <div>
           <label
             htmlFor="mileageTrip"
-            className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+            className="mb-1.5 block text-sm font-medium text-text"
           >
             Trip
           </label>
@@ -57,7 +58,7 @@ export default function MileageEntryForm({
             id="mileageTrip"
             value={selectedTripId}
             onChange={(event) => setSelectedTripId(event.target.value)}
-            className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
           >
             {trips.map((trip) => (
               <option key={trip.id} value={trip.id}>
@@ -69,20 +70,20 @@ export default function MileageEntryForm({
       )}
 
       {selectedTrip && (
-        <div className="rounded-md border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-sm text-[#1E293B]">
+        <div className="rounded-md border border-border bg-surface p-3 text-sm text-text">
           <p className="font-medium">
             {selectedTrip.date} · {selectedTrip.startTime}–
             {selectedTrip.endTime}
           </p>
 
-          <p className="mt-1 text-[#64748B]">{selectedTrip.route}</p>
+          <p className="mt-1 text-text-muted">{selectedTrip.route}</p>
         </div>
       )}
 
       <div>
         <label
           htmlFor="distanceKm"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Total Distance Travelled (km)
         </label>
@@ -94,29 +95,29 @@ export default function MileageEntryForm({
           step="0.1"
           value={distanceKm}
           onChange={(event) => setDistanceKm(event.target.value)}
-          className="h-10 w-full rounded-md border border-[#E2E8F0] px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
         />
 
-        {error && <p className="mt-1 text-xs text-[#B91C1C]">{error}</p>}
+        {error && <p className="mt-1 text-xs text-error">{error}</p>}
       </div>
 
-      <p className="text-xs text-[#64748B]">
+      <p className="text-xs text-text-muted">
         Billing rate is calculated separately by the Accounts Department — only
         distance is recorded here.
       </p>
 
-      <div className="flex justify-end gap-3 border-t border-[#E2E8F0] pt-4">
+      <div className="flex justify-end gap-3 border-t border-border pt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+          className={buttonClass("secondary")}
         >
           Cancel
         </button>
 
         <button
           type="submit"
-          className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+          className={buttonClass("primary")}
         >
           Record Mileage
         </button>

@@ -307,28 +307,20 @@ export default function useRequisitions() {
 
   /**
    * Phase 4 — recommender sends the requisition back to the applicant
-   * for edits. Per spec §5 Stage A, a reason is required so the
-   * applicant knows what to fix. The requisition transitions to
-   * "Information Requested" so the applicant can re-open it from the
-   * My Requisitions page (Phase 6).
-   *
-   * We do NOT mutate the trips — they're left as-is so the admin can
-   * still see what was originally requested once the applicant
-   * resubmits.
+   * for edits (the Transport In-Charge and the Department/Office Head
+   * can both do this). The requisition transitions to "Information
+   * Requested" and the applicant re-opens it from My Requisitions to
+   * edit and resubmit. The note is optional. Trip details are kept as
+   * they were so the applicant edits the original data.
    */
   function sendBackToApplicant(
     requisitionId: string,
-    reason: RejectionReason,
+    reason: RejectionReason | undefined,
     remarks: string,
+    sentBy?: string,
   ) {
+    // The note is optional: an empty one still sends the application back.
     const trimmedRemarks = remarks.trim();
-    if (!trimmedRemarks) {
-      // The caller should validate this — we double-check so an
-      // empty reason can't silently break the audit trail.
-      throw new Error(
-        "sendBackToApplicant requires a non-empty remarks string.",
-      );
-    }
 
     setRequisitions((current) =>
       current.map((requisition) =>
@@ -336,14 +328,42 @@ export default function useRequisitions() {
           ? {
               ...requisition,
               status: "Information Requested" as const,
+              sendBackNote: trimmedRemarks || undefined,
+              sentBackBy: sentBy,
+              sentBackAt: new Date().toISOString(),
               trips: requisition.trips.map(
                 (trip): Trip => ({
                   ...trip,
                   status: "Pending" as const,
                   rejectionReason: reason,
-                  rejectionRemarks: trimmedRemarks,
+                  rejectionRemarks: trimmedRemarks || undefined,
                 }),
               ),
+            }
+          : requisition,
+      ),
+    );
+  }
+
+  /**
+   * The applicant corrected a returned requisition and sends it on again.
+   * The id and original creation time are kept; everything the applicant
+   * can edit is replaced by `updated`, and the send-back note is cleared.
+   */
+  function resubmitRequisition(requisitionId: string, updated: Requisition) {
+    setRequisitions((current) =>
+      current.map((requisition) =>
+        requisition.id === requisitionId
+          ? {
+              ...requisition,
+              ...updated,
+              id: requisition.id,
+              createdAt: requisition.createdAt,
+              resubmittedAt: new Date().toISOString(),
+              sendBackNote: undefined,
+              sentBackBy: undefined,
+              sentBackAt: undefined,
+              transportOfficeRemarks: undefined,
             }
           : requisition,
       ),
@@ -363,5 +383,6 @@ export default function useRequisitions() {
     recommendRequisition,
     rejectRequisition,
     sendBackToApplicant,
+    resubmitRequisition,
   };
 }

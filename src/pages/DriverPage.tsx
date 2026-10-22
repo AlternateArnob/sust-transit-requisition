@@ -7,6 +7,8 @@ import Modal from "../components/Modal";
 import DriverForm from "../components/DriverForm";
 
 import type { Driver } from "../types";
+import { buttonClass } from "../components/ui/buttonStyles";
+import PageTitle from "../components/ui/PageTitle";
 
 export default function DriverPage() {
   const {
@@ -103,38 +105,30 @@ export default function DriverPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Driver Management
-          </h1>
-
-          <p className="mt-1 text-sm text-[#64748B]">
-            Manage university drivers ({driver.length} drivers)
-          </p>
-        </div>
+        <PageTitle title="Driver Management" subtitle={<>Manage university drivers ({driver.length} drivers)</>} />
 
         <button
           type="button"
           onClick={() => setIsAddModalOpen(true)}
-          className="h-10 rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+          className={buttonClass("primary")}
         >
           + Add Driver
         </button>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-[#E2E8F0] bg-white p-4 md:flex-row">
+      <div className="flex flex-col gap-3 rounded-lg border border-border bg-white shadow-sm p-4 md:flex-row">
         <input
           type="text"
           placeholder="Search drivers..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          className="h-10 w-full rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none placeholder:text-[#64748B] focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68] md:flex-1"
+          className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none placeholder:text-text-muted focus:border-secondary focus:ring-1 focus:ring-secondary md:flex-1"
         />
 
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
-          className="h-10 rounded-md border border-[#E2E8F0] bg-white px-3 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+          className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
         >
           <option value="">All Statuses</option>
           <option value="Active">Active</option>
@@ -142,17 +136,17 @@ export default function DriverPage() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-[#0F2747] text-white">
+            <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
               <tr>
-                <th className="px-4 py-3 font-medium">Driver</th>
-                <th className="px-4 py-3 font-medium">Designation</th>
-                <th className="px-4 py-3 font-medium">Phone</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Vehicle</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                <th className="px-4 py-3 font-semibold">Driver</th>
+                <th className="px-4 py-3 font-semibold">Designation</th>
+                <th className="px-4 py-3 font-semibold">Phone</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Vehicle</th>
+                <th className="px-4 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
 
@@ -160,10 +154,10 @@ export default function DriverPage() {
               {filteredDriver.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center">
-                    <p className="font-medium text-[#1E293B]">
+                    <p className="font-medium text-text">
                       No drivers found
                     </p>
-                    <p className="mt-1 text-sm text-[#64748B]">
+                    <p className="mt-1 text-sm text-text-muted">
                       Try changing your search or filters.
                     </p>
                   </td>
@@ -172,19 +166,19 @@ export default function DriverPage() {
                 filteredDriver.map((member, index) => (
                   <tr
                     key={member.id}
-                    className={`border-t border-[#E2E8F0] ${
-                      index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
+                    className={`border-t border-border ${
+                      index % 2 === 1 ? "bg-surface" : "bg-white"
                     }`}
                   >
-                    <td className="px-4 py-3 font-medium text-[#1E293B]">
+                    <td className="px-4 py-3 font-medium text-text">
                       {member.name}
                     </td>
 
-                    <td className="px-4 py-3 text-[#64748B]">
+                    <td className="px-4 py-3 text-text-muted">
                       {member.designation}
                     </td>
 
-                    <td className="px-4 py-3 text-[#64748B]">
+                    <td className="px-4 py-3 text-text-muted">
                       {member.phone ?? "—"}
                     </td>
 
@@ -192,15 +186,15 @@ export default function DriverPage() {
                       <span
                         className={
                           member.status === "Active"
-                            ? "text-[#15803D]"
-                            : "text-[#64748B]"
+                            ? "text-success"
+                            : "text-text-muted"
                         }
                       >
                         {member.status}
                       </span>
                     </td>
 
-                    <td className="px-4 py-3 font-medium text-[#334E68]">
+                    <td className="px-4 py-3 font-medium text-secondary">
                       {getVehicleRegistration(member.permanentVehicleId)}
                     </td>
 
@@ -209,7 +203,7 @@ export default function DriverPage() {
                         <button
                           type="button"
                           onClick={() => setEditingDriver(member)}
-                          className="text-sm font-medium text-[#334E68] hover:underline"
+                          className="text-sm font-medium text-secondary hover:underline"
                         >
                           Edit
                         </button>
@@ -218,7 +212,7 @@ export default function DriverPage() {
                           <button
                             type="button"
                             onClick={() => handleDeactivate(member)}
-                            className="text-sm font-medium text-[#B45309] hover:underline"
+                            className="text-sm font-medium text-warning hover:underline"
                           >
                             Deactivate
                           </button>
@@ -226,7 +220,7 @@ export default function DriverPage() {
                           <button
                             type="button"
                             onClick={() => handleActivate(member)}
-                            className="text-sm font-medium text-[#15803D] hover:underline"
+                            className="text-sm font-medium text-success hover:underline"
                           >
                             Activate
                           </button>
@@ -235,7 +229,7 @@ export default function DriverPage() {
                         <button
                           type="button"
                           onClick={() => handleDelete(member)}
-                          className="text-sm font-medium text-[#B91C1C] hover:underline"
+                          className="text-sm font-medium text-error hover:underline"
                         >
                           Delete
                         </button>

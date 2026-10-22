@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import useDriver from "../hooks/useDriver";
 
@@ -9,6 +9,7 @@ import {
   type VehicleCategory,
   type VehicleStatus,
 } from "../types";
+import { buttonClass } from "./ui/buttonStyles";
 
 interface VehicleFormProps {
   vehicle?: Vehicle;
@@ -57,7 +58,6 @@ export default function VehicleForm({
     vehicle?.operationalStatus ?? "Active",
   );
 
-  const [reservedFor, setReservedFor] = useState(vehicle?.reservedFor ?? "");
 
   const [permanentDriverId, setPermanentDriverId] = useState(
     vehicle?.permanentDriverId ?? "",
@@ -71,27 +71,6 @@ export default function VehicleForm({
 
   const [submitError, setSubmitError] = useState("");
 
-  /*
-   * When editing a different vehicle, reset form values.
-   */
-  useEffect(() => {
-    setRegistrationNumber(vehicle?.registrationNumber ?? "");
-
-    setCategory(vehicle?.category ?? VEHICLE_CATEGORIES[0]);
-
-    setFuelType(vehicle?.fuelType ?? "");
-
-    setOperationalStatus(vehicle?.operationalStatus ?? "Active");
-
-    setReservedFor(vehicle?.reservedFor ?? "");
-
-    setPermanentDriverId(vehicle?.permanentDriverId ?? "");
-
-    setAvailableForRequisition(vehicle?.availableForRequisition ?? true);
-
-    setErrors({});
-    setSubmitError("");
-  }, [vehicle]);
 
   function validate(): boolean {
     const newErrors: FormErrors = {};
@@ -133,8 +112,6 @@ export default function VehicleForm({
 
       operationalStatus,
 
-      reservedFor: reservedFor.trim() || undefined,
-
       permanentDriverId: permanentDriverId || undefined,
 
       availableForRequisition,
@@ -160,7 +137,7 @@ export default function VehicleForm({
           className="
             mb-1.5 block
             text-sm font-medium
-            text-[#1E293B]
+            text-text
           "
         >
           Registration Number
@@ -174,19 +151,19 @@ export default function VehicleForm({
           placeholder="e.g. SUST-001"
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
+            border border-border
             px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            placeholder:text-[#64748B]
-            focus:border-[#334E68]
+            placeholder:text-text-muted
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         />
 
         {errors.registrationNumber && (
-          <p className="mt-1 text-xs text-[#B91C1C]">
+          <p className="mt-1 text-xs text-error">
             {errors.registrationNumber}
           </p>
         )}
@@ -199,7 +176,7 @@ export default function VehicleForm({
           className="
             mb-1.5 block
             text-sm font-medium
-            text-[#1E293B]
+            text-text
           "
         >
           Category
@@ -213,13 +190,13 @@ export default function VehicleForm({
           }
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
+            border border-border
             bg-white px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            focus:border-[#334E68]
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         >
           {VEHICLE_CATEGORIES.map((item) => (
@@ -230,7 +207,7 @@ export default function VehicleForm({
         </select>
 
         {errors.category && (
-          <p className="mt-1 text-xs text-[#B91C1C]">{errors.category}</p>
+          <p className="mt-1 text-xs text-error">{errors.category}</p>
         )}
       </div>
 
@@ -241,7 +218,7 @@ export default function VehicleForm({
           className="
             mb-1.5 block
             text-sm font-medium
-            text-[#1E293B]
+            text-text
           "
         >
           Fuel Type
@@ -255,14 +232,14 @@ export default function VehicleForm({
           placeholder="e.g. Diesel"
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
+            border border-border
             px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            placeholder:text-[#64748B]
-            focus:border-[#334E68]
+            placeholder:text-text-muted
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         />
       </div>
@@ -274,7 +251,7 @@ export default function VehicleForm({
           className="
             mb-1.5 block
             text-sm font-medium
-            text-[#1E293B]
+            text-text
           "
         >
           Operational Status
@@ -288,13 +265,13 @@ export default function VehicleForm({
           }
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
+            border border-border
             bg-white px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            focus:border-[#334E68]
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         >
           {VEHICLE_STATUSES.map((item) => (
@@ -305,43 +282,10 @@ export default function VehicleForm({
         </select>
 
         {errors.operationalStatus && (
-          <p className="mt-1 text-xs text-[#B91C1C]">
+          <p className="mt-1 text-xs text-error">
             {errors.operationalStatus}
           </p>
         )}
-      </div>
-
-      {/* Reserved For */}
-      <div>
-        <label
-          htmlFor="reservedFor"
-          className="
-            mb-1.5 block
-            text-sm font-medium
-            text-[#1E293B]
-          "
-        >
-          Reserved For
-        </label>
-
-        <input
-          id="reservedFor"
-          type="text"
-          value={reservedFor}
-          onChange={(event) => setReservedFor(event.target.value)}
-          placeholder="User of the transport"
-          className="
-            h-10 w-full rounded-md
-            border border-[#E2E8F0]
-            px-3
-            text-sm text-[#1E293B]
-            outline-none
-            placeholder:text-[#64748B]
-            focus:border-[#334E68]
-            focus:ring-1
-            focus:ring-[#334E68]
-          "
-        />
       </div>
 
       {/* Driver */}
@@ -351,7 +295,7 @@ export default function VehicleForm({
           className="
             mb-1.5 block
             text-sm font-medium
-            text-[#1E293B]
+            text-text
           "
         >
           Driver
@@ -363,13 +307,13 @@ export default function VehicleForm({
           onChange={(event) => setPermanentDriverId(event.target.value)}
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
+            border border-border
             bg-white px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            focus:border-[#334E68]
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         >
           <option value="">No Driver</option>
@@ -388,7 +332,7 @@ export default function VehicleForm({
           className="
           mb-2 block
           text-sm font-medium
-          text-[#1E293B]
+          text-text
         "
         >
           Available for Requisition
@@ -398,7 +342,7 @@ export default function VehicleForm({
           <label
             className="
             flex items-center gap-2
-            text-sm text-[#1E293B]
+            text-sm text-text
           "
           >
             <input
@@ -413,7 +357,7 @@ export default function VehicleForm({
           <label
             className="
             flex items-center gap-2
-            text-sm text-[#1E293B]
+            text-sm text-text
           "
           >
             <input
@@ -432,12 +376,12 @@ export default function VehicleForm({
         <div
           className="
           rounded-md
-          border border-[#FECACA]
-          bg-[#FEF2F2]
+          border border-error/30
+          bg-error-bg/50
           px-3 py-2
         "
         >
-          <p className="text-sm text-[#B91C1C]">{submitError}</p>
+          <p className="text-sm text-error">{submitError}</p>
         </div>
       )}
 
@@ -445,34 +389,21 @@ export default function VehicleForm({
       <div
         className="
         flex justify-end gap-3
-        border-t border-[#E2E8F0]
+        border-t border-border
         pt-4
       "
       >
         <button
           type="button"
           onClick={onCancel}
-          className="
-            h-10 rounded-md
-            border border-[#E2E8F0]
-            bg-white px-4
-            text-sm font-medium
-            text-[#334E68]
-            hover:bg-[#F8FAFC]
-          "
+          className={buttonClass("secondary")}
         >
           Cancel
         </button>
 
         <button
           type="submit"
-          className="
-            h-10 rounded-md
-            bg-[#0F2747] px-4
-            text-sm font-medium
-            text-white
-            hover:bg-[#334E68]
-          "
+          className={buttonClass("primary")}
         >
           {isEditing ? "Save Changes" : "Add Vehicle"}
         </button>

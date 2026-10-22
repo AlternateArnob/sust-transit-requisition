@@ -13,6 +13,20 @@
   --color-warning-bg: #FEF3C7;
   --color-error: #B91C1C;
   --color-error-bg: #FEE2E2;
+  --color-info: #0F2747;
+  --color-info-bg: #DBEAFE;
+  --color-neutral: #64748B;
+  --color-neutral-bg: #F1F5F9;
+  --color-review: #6D28D9;
+  --color-review-bg: #EDE9FE;
+  --color-accent: #F59E0B;
+  /* Requisition-type badges */
+  --color-type-personal: #0E7490;
+  --color-type-personal-bg: #CFFAFE;
+  --color-type-official: #4338CA;
+  --color-type-official-bg: #E0E7FF;
+  --color-type-club: #BE185D;
+  --color-type-club-bg: #FCE7F3;
 
   /*
    * Applicant-facing forms (requisition, register, profile setup) use a

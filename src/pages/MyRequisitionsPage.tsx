@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
@@ -10,21 +10,12 @@ import useDriver from "../hooks/useDriver";
 import Modal from "../components/Modal";
 import ApplicantRequisitionDetail from "../components/ApplicantRequisitionDetail";
 import ApplicantHeader from "../components/ApplicantHeader";
+import DataTable from "../components/DataTable";
+import PageTitle from "../components/ui/PageTitle";
+import { ApplicationStatusBadge } from "../components/ui/StatusBadge";
 
 import { formatDateRange } from "../utils/requisitionUtils";
 import { generateConfirmationSlip } from "../utils/pdf/confirmationSlip";
-
-import type { ApplicationStatus } from "../types";
-
-function statusBadgeClass(status: ApplicationStatus) {
-  if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
-  if (status === "Completed") return "bg-[#CBD5E1] text-[#1E293B]";
-  if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
-  if (status === "Information Requested") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Partially Approved") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Draft") return "bg-[#F1F5F9] text-[#64748B]";
-  return "bg-[#DBEAFE] text-[#0F2747]";
-}
 
 /**
  * Phase 6 — applicant-facing "My Requisitions" page (spec §6, Post-Approval).
@@ -44,6 +35,7 @@ export default function MyRequisitionsPage() {
   const { vehicles } = useVehicles();
   const { driver } = useDriver();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -58,15 +50,30 @@ export default function MyRequisitionsPage() {
   // /my-requisitions?open=<id> instead of an admin route. Once the list
   // has loaded, open that requisition's detail modal automatically, then
   // drop the query param so refreshing/closing doesn't reopen it.
+  //
+  // The "open" id is applied while rendering (React's documented way to
+  // adjust state from changing inputs) rather than inside an effect;
+  // `handledOpenId` stops it re-applying before the param is removed.
+  const openParam = searchParams.get("open");
+  const [handledOpenId, setHandledOpenId] = useState<string | null>(null);
+  if (
+    openParam &&
+    openParam !== handledOpenId &&
+    myRequisitions.some((requisition) => requisition.id === openParam)
+  ) {
+    setHandledOpenId(openParam);
+    setSelectedId(openParam);
+  } else if (!openParam && handledOpenId) {
+    setHandledOpenId(null);
+  }
+
   useEffect(() => {
-    const openId = searchParams.get("open");
-    if (openId && myRequisitions.some((requisition) => requisition.id === openId)) {
-      setSelectedId(openId);
+    if (openParam && openParam === handledOpenId) {
       const next = new URLSearchParams(searchParams);
       next.delete("open");
       setSearchParams(next, { replace: true });
     }
-  }, [searchParams, myRequisitions, setSearchParams]);
+  }, [openParam, handledOpenId, searchParams, setSearchParams]);
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
@@ -82,96 +89,77 @@ export default function MyRequisitionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface">
       <ApplicantHeader active="my-requisitions" title="My Requisitions" />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-[#1E293B]">
-            Your requisitions
-          </h2>
-          <p className="mt-1 text-sm text-[#64748B]">
-            Track the status of every vehicle requisition you've submitted,
-            and download the confirmation slip once Admin gives final
-            approval.
-          </p>
+          <PageTitle
+            title="Your requisitions"
+            subtitle="Track the status of every vehicle requisition you've submitted, and download the confirmation slip once the Transport Administrator approves."
+          />
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#0F2747] text-white">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Purpose</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 text-right font-medium">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {myRequisitions.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-12 text-center">
-                      <p className="font-medium text-[#1E293B]">
-                        No requisitions yet
-                      </p>
-                      <p className="mt-1 text-sm text-[#64748B]">
-                        <Link
-                          to="/apply"
-                          className="font-medium text-[#334E68] hover:underline"
-                        >
-                          Submit your first requisition
-                        </Link>
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  myRequisitions.map((requisition, index) => (
-                    <tr
-                      key={requisition.id}
-                      className={`border-t border-[#E2E8F0] ${
-                        index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
-                      }`}
+        <DataTable
+          rowKey={(requisition) => requisition.id}
+          rows={myRequisitions}
+          emptyTitle="No requisitions yet"
+          emptyDescription="Use New Requisition in the top bar to submit your first one."
+          columns={[
+            {
+              header: "Application No.",
+              render: (requisition) => (
+                <span className="font-medium text-text">{requisition.id}</span>
+              ),
+            },
+            {
+              header: "Purpose",
+              render: (requisition) => (
+                <span
+                  className="block max-w-xs truncate"
+                  title={requisition.purpose}
+                >
+                  {requisition.purpose || "—"}
+                </span>
+              ),
+            },
+            {
+              header: "Date",
+              render: (requisition) =>
+                formatDateRange(requisition.startDate, requisition.endDate),
+            },
+            {
+              header: "Status",
+              render: (requisition) => (
+                <ApplicationStatusBadge status={requisition.status} />
+              ),
+            },
+            {
+              header: "Actions",
+              align: "right",
+              render: (requisition) => (
+                <div className="flex justify-end gap-4">
+                  {requisition.status === "Information Requested" ? (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/apply?resubmit=${requisition.id}`)}
+                      className="text-sm font-medium text-primary hover:underline"
                     >
-                      <td
-                        className="max-w-xs truncate px-4 py-3 text-[#1E293B]"
-                        title={requisition.purpose}
-                      >
-                        {requisition.purpose || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-[#64748B]">
-                        {formatDateRange(
-                          requisition.startDate,
-                          requisition.endDate,
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(
-                            requisition.status,
-                          )}`}
-                        >
-                          {requisition.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedId(requisition.id)}
-                          className="text-sm font-medium text-[#334E68] hover:underline"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      Edit and Resubmit
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(requisition.id)}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    View
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+        />
       </main>
 
       {selected && (
@@ -187,6 +175,7 @@ export default function MyRequisitionsPage() {
             allocations={allocations}
             requester={currentUser}
             onDownloadConfirmationSlip={handleDownloadConfirmationSlip}
+            onEditAndResubmit={() => navigate(`/apply?resubmit=${selected.id}`)}
           />
         </Modal>
       )}

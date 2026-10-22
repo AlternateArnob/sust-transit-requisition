@@ -6,9 +6,9 @@ interface StatusBadgeProps {
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
   const statusStyles: Record<VehicleStatus, string> = {
-    Active: "bg-[#DCFCE7] text-[#15803D]",
-    "Under Maintenance": "bg-[#FEF3C7] text-[#B45309]",
-    "Out-of-Service": "bg-[#FEE2E2] text-[#B91C1C]",
+    Active: "bg-success-bg text-success",
+    "Under Maintenance": "bg-warning-bg text-warning",
+    "Out-of-Service": "bg-error-bg text-error",
   };
 
   return (

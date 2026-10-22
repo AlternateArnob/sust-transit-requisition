@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { buttonClass } from "./ui/buttonStyles";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import type { UserRole } from "../types";
@@ -75,19 +76,19 @@ export default function RequireAuth({
   if (!isVerified) {
     if (showUnverifiedMessage) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-6">
-          <div className="max-w-md rounded-lg border border-[#E2E8F0] bg-white p-6 text-center">
-            <h2 className="text-lg font-semibold text-[#1E293B]">
+        <div className="flex min-h-screen items-center justify-center bg-surface p-6">
+          <div className="max-w-md rounded-lg border border-border bg-white p-6 text-center">
+            <h2 className="text-lg font-semibold text-text">
               Verify your account to continue
             </h2>
-            <p className="mt-2 text-sm text-[#64748B]">
+            <p className="mt-2 text-sm text-text-muted">
               Your account is not yet verified. Complete the OTP step to
               unlock requisition submissions.
             </p>
             <Link
               to="/otp"
               state={{ email: currentUser.email }}
-              className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+              className={`mt-4 ${buttonClass("primary")}`}
             >
               Go to verification
             </Link>

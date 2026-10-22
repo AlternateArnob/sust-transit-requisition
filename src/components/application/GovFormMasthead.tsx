@@ -1,51 +1,48 @@
-import sustLogo from "../../assets/sust-logo.png";
+import SustLogo from "../SustLogo";
 
 interface GovFormMastheadProps {
   formTitle: string;
+  /** Application number shown top-right ("Application No."). */
+  applicationNo?: string;
+  /** Free-text line shown top-right when there is no application number yet. */
   referenceLabel?: string;
 }
 
 /**
- * Step 11 — a letterhead block standing in for the printed masthead on
- * the paper "Vehicle Requisition Form" this page replaces: institution
- * name, wing, form title, and a reference line. The right-hand mark is the official
- * SUST logo (src/assets/sust-logo.png). Also reused (without a reference line) on the Register and
- * Profile Setup pages for visual consistency.
+ * Header shared by the requisition form, the two requisition review
+ * screens and the Register page: SUST logo, university line, bold
+ * uppercase title with a dark rule under it, and the application number
+ * on the right.
  */
 export default function GovFormMasthead({
   formTitle,
+  applicationNo,
   referenceLabel,
 }: GovFormMastheadProps) {
   return (
-    <div className="border-b-4 border-double border-primary pb-5">
-      <div className="flex items-start justify-between gap-5">
+    <header className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex items-center gap-4">
+        <SustLogo heightClass="h-14" />
         <div>
-          <h1 className="text-[22px] font-semibold leading-tight text-primary sm:text-2xl">
-            Shahjalal University of Science and Technology
+          <p className="text-xs text-form-muted">
+            Shahjalal University of Science and Technology · Transport Wing
+          </p>
+          <h1 className="mt-1 inline-block border-b-2 border-form-action pb-1 text-lg font-bold uppercase tracking-wide text-form-action sm:text-xl">
+            {formTitle}
           </h1>
-          <p className="mt-0.5 text-sm text-form-muted">
-            Transport Wing, Sylhet
+        </div>
+      </div>
+
+      {applicationNo ? (
+        <div className="text-right">
+          <p className="text-xs text-form-muted">Application No.</p>
+          <p className="text-base font-bold text-form-action">
+            {applicationNo}
           </p>
         </div>
-        <SealMark />
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-baseline justify-between gap-2 border-t border-form-rule pt-3">
-        <p className="text-lg text-form-ink">{formTitle}</p>
-        {referenceLabel ? (
-          <p className="text-xs text-form-muted">{referenceLabel}</p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function SealMark() {
-  return (
-    <img
-      src={sustLogo}
-      alt="Shahjalal University of Science and Technology logo"
-      className="h-16 w-auto shrink-0"
-    />
+      ) : referenceLabel ? (
+        <p className="text-xs text-form-muted">{referenceLabel}</p>
+      ) : null}
+    </header>
   );
 }

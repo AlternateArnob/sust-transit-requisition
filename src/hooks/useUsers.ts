@@ -23,19 +23,19 @@ const SEED_ACCOUNTS: ReadonlyArray<{
     id: "USR-SEED-TIC",
     email: "transport-in-charge@sust.edu",
     role: "TransportInCharge",
-    fullName: "Transport In Charge (Seed)",
+    fullName: "Transport In-Charge",
   },
   {
     id: "USR-SEED-TA",
     email: "transport-admin@sust.edu",
     role: "TransportAdministrator",
-    fullName: "Transport Administrator (Seed)",
+    fullName: "Transport Administrator",
   },
   {
     id: "USR-SEED-SUPERADMIN",
     email: "superadmin@sust.edu",
     role: "SuperAdmin",
-    fullName: "Super Admin (Seed)",
+    fullName: "Super Admin",
   },
 ];
 
@@ -48,8 +48,15 @@ function readUsers(): UserAccount[] {
     // Phase 9 migration — pre-Phase-9 records have no isActive field at
     // all; treat that as "always was active" rather than leaving it
     // undefined, so every other file can rely on it being a real boolean.
+    //
+    // Display-name migration — the dev seed accounts used to be stored
+    // as e.g. "Transport In Charge (Seed)"; browsers that already have
+    // that saved would keep showing it, so strip the suffix on read.
     return parsed.map((user) => ({
       ...user,
+      fullName: user.fullName
+        ?.replace(/\s*\(seed\)\s*$/i, "")
+        .replace(/^Transport In Charge$/, "Transport In-Charge"),
       isActive: user.isActive ?? true,
     }));
   } catch (error) {

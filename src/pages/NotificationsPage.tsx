@@ -2,12 +2,17 @@ import { useNavigate } from "react-router-dom";
 import ApplicantHeader from "../components/ApplicantHeader";
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
+import useRequisitions from "../hooks/useRequisitions";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import PageTitle from "../components/ui/PageTitle";
 import type { AppNotification } from "../types";
 
 export default function NotificationsPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { notifications, markAsRead, markAllAsRead } = useNotifications();
+  const { requisitions } = useRequisitions();
   const isApplicant = currentUser?.role === "Applicant";
 
   const sorted = [...notifications].sort((a, b) =>
@@ -34,6 +39,22 @@ export default function NotificationsPage() {
     }
 
     if (notification.linkType === "requisition") {
+      // Department/Office Heads have no /admin/requisitions page: their
+      // pings go to the request detail, or to My Requisitions when it is
+      // their own application (same rule as the notification bell).
+      if (currentUser?.role === "DepartmentHead") {
+        const isOwn = requisitions.some(
+          (item) =>
+            item.id === notification.linkId &&
+            item.requesterId === currentUser.id,
+        );
+        navigate(
+          isOwn
+            ? `/my-requisitions?open=${notification.linkId}`
+            : `/admin/recommender/${notification.linkId}`,
+        );
+        return;
+      }
       navigate("/admin/requisitions");
       return;
     }
@@ -51,31 +72,21 @@ export default function NotificationsPage() {
 
   const body = (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Notifications
-          </h1>
+      <PageTitle
+        title="Notifications"
+        subtitle="New requisitions and detected conflicts"
+        actions={
+          notifications.some((notification) => !notification.isRead) ? (
+            <Button variant="secondary" onClick={markAllAsRead}>
+              Mark all read
+            </Button>
+          ) : null
+        }
+      />
 
-          <p className="mt-1 text-sm text-[#64748B]">
-            New requisitions and detected conflicts
-          </p>
-        </div>
-
-        {notifications.some((notification) => !notification.isRead) && (
-          <button
-            type="button"
-            onClick={markAllAsRead}
-            className="h-10 rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
-          >
-            Mark all read
-          </button>
-        )}
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
+      <Card flush className="overflow-hidden">
         {sorted.length === 0 ? (
-          <p className="px-4 py-12 text-center text-sm text-[#64748B]">
+          <p className="px-4 py-12 text-center text-sm text-text-muted">
             No notifications yet
           </p>
         ) : (
@@ -84,31 +95,31 @@ export default function NotificationsPage() {
               key={notification.id}
               type="button"
               onClick={() => handleClick(notification)}
-              className={`block w-full border-t border-[#E2E8F0] px-5 py-4 text-left first:border-t-0 hover:bg-[#F8FAFC] ${
-                notification.isRead ? "bg-white" : "bg-[#EFF6FF]"
+              className={`block w-full border-t border-border px-5 py-4 text-left first:border-t-0 hover:bg-surface ${
+                notification.isRead ? "bg-white" : "bg-info-bg/40"
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-[#0F2747]">
+                <p className="text-sm font-medium text-primary">
                   {notification.type}
                 </p>
 
                 {!notification.isRead && (
-                  <span className="h-2 w-2 rounded-full bg-[#B91C1C]" />
+                  <span className="h-2 w-2 rounded-full bg-error" />
                 )}
               </div>
 
-              <p className="mt-1 text-sm text-[#1E293B]">
+              <p className="mt-1 text-sm text-text">
                 {notification.message}
               </p>
 
-              <p className="mt-1 text-xs text-[#64748B]">
+              <p className="mt-1 text-xs text-text-muted">
                 {new Date(notification.timestamp).toLocaleString()}
               </p>
             </button>
           ))
         )}
-      </div>
+      </Card>
     </div>
   );
 
@@ -121,7 +132,7 @@ export default function NotificationsPage() {
   // dropped on an unstyled, nav-less page.
   if (isApplicant) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC]">
+      <div className="min-h-screen bg-surface">
         <ApplicantHeader title="Notifications" />
 
         <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">{body}</main>

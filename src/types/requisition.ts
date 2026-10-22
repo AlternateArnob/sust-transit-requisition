@@ -104,6 +104,18 @@ export interface Requisition {
    */
   transportOfficeRemarks?: string;
   /**
+   * Set when the requisition is sent back to the applicant for correction
+   * (by the Transport In-Charge or the Department/Office Head). The note is
+   * optional, so only `sentBackAt` is guaranteed while the status is
+   * "Information Requested". All three are cleared when the applicant
+   * resubmits.
+   */
+  sendBackNote?: string;
+  sentBackBy?: string;
+  sentBackAt?: string;
+  /** ISO timestamp of the latest resubmission after a send-back. */
+  resubmittedAt?: string;
+  /**
    * Step 6 (applicant module) — the optional file uploaded in Step 4 of
    * the application form (FRD §5.1 "Supporting document, where
    * applicable"). Stored as a data URL alongside the requisition, same

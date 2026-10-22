@@ -85,9 +85,9 @@ export function formatDateRange(startDate: string, endDate: string): string {
  *  RequisitionsPage/RequisitionDetail, so the queue reads as one
  *  consistent tagging system rather than two different UI patterns. */
 export function requisitionTypeBadgeClass(type: Requisition["requisitionType"]) {
-  if (type === "Personal") return "bg-[#CFFAFE] text-[#0E7490]";
-  if (type === "Departmental/Official") return "bg-[#E0E7FF] text-[#4338CA]";
-  return "bg-[#FCE7F3] text-[#BE185D]"; // Club
+  if (type === "Personal") return "bg-type-personal-bg text-type-personal";
+  if (type === "Departmental/Official") return "bg-type-official-bg text-type-official";
+  return "bg-type-club-bg text-type-club"; // Club
 }
 
 /**

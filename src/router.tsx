@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 
 import AdminLayout from "./layout/AdminLayout";
 import RequireAuth from "./components/RequireAuth";
@@ -27,11 +27,12 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import OtpPage from "./pages/auth/OtpPage";
 import ProfileSetupPage from "./pages/auth/ProfileSetupPage";
 import LoginPage from "./pages/auth/LoginPage";
+import LandingPage from "./pages/LandingPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
+    element: <LandingPage />,
   },
   {
     path: "/login",

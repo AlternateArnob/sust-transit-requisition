@@ -1,7 +1,13 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-import { PDF_COLORS, drawHeader, drawFooter } from "./pdfTheme";
+import {
+  drawFooter,
+  drawHeader,
+  drawInfoRows,
+  drawSectionHeading,
+  tableStyle,
+} from "./pdfTheme";
 import type {
   Requisition,
   Vehicle,
@@ -18,26 +24,20 @@ export function generateDutySlipPdf(
 ) {
   const doc = new jsPDF();
 
-  let y = drawHeader(doc, "Duty Slip");
+  let y = drawHeader(doc, "Duty Slip", requisition.id);
 
-  doc.setFontSize(9);
+  y = drawSectionHeading(doc, "Driver and Trip Information", y);
 
   const infoLines: [string, string][] = [
-    ["Application Ref.", requisition.id],
     ["Driver Name", driver.name],
     ["Designation", driver.designation],
     ["Trip Purpose", requisition.purpose],
   ];
 
-  infoLines.forEach(([label, value]) => {
-    doc.setFont("helvetica", "bold");
-    doc.text(`${label}:`, 14, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(value, 65, y, { maxWidth: 130 });
-    y += 6;
-  });
+  y = drawInfoRows(doc, infoLines, y);
+  y += 5;
 
-  y += 4;
+  y = drawSectionHeading(doc, "Journey Details", y);
 
   const rows = trips.map(({ trip, allocation }) => {
     const vehicle = vehicles.find((item) => item.id === allocation.vehicleId);
@@ -53,20 +53,12 @@ export function generateDutySlipPdf(
   });
 
   autoTable(doc, {
+    ...tableStyle(),
     startY: y,
     head: [
       ["Date", "Reporting Location", "Reporting Time", "Vehicle", "Route"],
     ],
     body: rows,
-    headStyles: {
-      fillColor: PDF_COLORS.navy,
-      textColor: PDF_COLORS.white,
-      fontSize: 8,
-    },
-    bodyStyles: { fontSize: 8, textColor: PDF_COLORS.charcoal },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    styles: { lineColor: PDF_COLORS.border, lineWidth: 0.1 },
-    margin: { left: 14, right: 14 },
   });
 
   drawFooter(doc);

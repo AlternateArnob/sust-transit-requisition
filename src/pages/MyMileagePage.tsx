@@ -7,6 +7,9 @@ import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
 import useMileageEntries from "../hooks/useMileageEntries";
 import ApplicantHeader from "../components/ApplicantHeader";
+import Card from "../components/ui/Card";
+import DataTable from "../components/DataTable";
+import PageTitle from "../components/ui/PageTitle";
 
 import {
   getRecordedMileageTrips,
@@ -52,99 +55,68 @@ export default function MyMileagePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface">
       <ApplicantHeader active="my-mileage" title="My Mileage" />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-[#1E293B]">
-            Your personal trip mileage
-          </h2>
-          <p className="mt-1 text-sm text-[#64748B]">
-            Admin records the distance travelled after each personal-use
-            trip. This page tracks the total across your history.
-          </p>
+          <PageTitle
+            title="Your personal trip mileage"
+            subtitle="The Transport Office records the distance travelled after each personal-use trip. This page tracks the total across your history."
+          />
         </div>
 
-        <div className="mb-6 rounded-lg border border-[#E2E8F0] bg-white p-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#64748B]">
+        <Card className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
             Total kilometres travelled
           </p>
-          <p className="mt-2 text-3xl font-semibold text-[#1E293B]">
+          <p className="mt-2 text-3xl font-semibold text-text">
             {totalKm.toLocaleString()} km
           </p>
-          <p className="mt-1 text-xs text-[#64748B]">
+          <p className="mt-1 text-xs text-text-muted">
             Across {myPersonalTrips.length} recorded personal trip
             {myPersonalTrips.length === 1 ? "" : "s"}
           </p>
-        </div>
+        </Card>
 
-        <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#0F2747] text-white">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Route</th>
-                  <th className="px-4 py-3 font-medium">Vehicle</th>
-                  <th className="px-4 py-3 text-right font-medium">
-                    Distance
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {myPersonalTrips.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-12 text-center">
-                      <p className="font-medium text-[#1E293B]">
-                        No mileage recorded yet
-                      </p>
-                      <p className="mt-1 text-sm text-[#64748B]">
-                        This fills in once Admin records the distance for one
-                        of your personal-use trips.
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
-                  myPersonalTrips.map(
-                    ({ requisition, trip, allocation, entry }, index) => {
-                      const vehicle = vehicles.find(
-                        (item) => item.id === allocation.vehicleId,
-                      );
-
-                      return (
-                        <tr
-                          key={entry.id}
-                          className={`border-t border-[#E2E8F0] ${
-                            index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"
-                          }`}
-                        >
-                          <td className="px-4 py-3 text-[#1E293B]">
-                            {trip.date}
-                          </td>
-                          <td
-                            className="max-w-xs truncate px-4 py-3 text-[#64748B]"
-                            title={`${requisition.id} · ${trip.route}`}
-                          >
-                            {trip.route}
-                          </td>
-                          <td className="px-4 py-3 text-[#64748B]">
-                            {vehicle
-                              ? `${vehicle.registrationNumber} (${vehicle.category})`
-                              : "—"}
-                          </td>
-                          <td className="px-4 py-3 text-right font-medium text-[#1E293B]">
-                            {entry.distanceKm} km
-                          </td>
-                        </tr>
-                      );
-                    },
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable
+          rowKey={({ entry }) => entry.id}
+          rows={myPersonalTrips}
+          emptyTitle="No mileage recorded yet"
+          emptyDescription="This fills in once the Transport Office records the distance for one of your personal-use trips."
+          columns={[
+            { header: "Date", render: ({ trip }) => trip.date },
+            {
+              header: "Route",
+              render: ({ requisition, trip }) => (
+                <span
+                  className="block max-w-xs truncate"
+                  title={`${requisition.id} · ${trip.route}`}
+                >
+                  {trip.route}
+                </span>
+              ),
+            },
+            {
+              header: "Vehicle",
+              render: ({ allocation }) => {
+                const vehicle = vehicles.find(
+                  (item) => item.id === allocation.vehicleId,
+                );
+                return vehicle
+                  ? `${vehicle.registrationNumber} (${vehicle.category})`
+                  : "—";
+              },
+            },
+            {
+              header: "Distance",
+              align: "right",
+              render: ({ entry }) => (
+                <span className="font-medium">{entry.distanceKm} km</span>
+              ),
+            },
+          ]}
+        />
       </main>
     </div>
   );

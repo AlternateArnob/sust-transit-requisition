@@ -15,10 +15,6 @@
  */
 export const SECTION_WRAP = "pt-1";
 
-/** Small muted eyebrow ("PART ONE") above each section title. */
-export const PART_LABEL =
-  "text-[11px] font-medium uppercase tracking-[0.12em] text-form-muted";
-
 /** Section title — dark bold uppercase with a full-width light divider beneath. */
 export const SECTION_TITLE =
   "border-b border-form-rule pb-2 text-[13px] font-bold uppercase tracking-wide text-form-ink";

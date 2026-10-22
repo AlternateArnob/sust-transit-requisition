@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
 
 import NotificationBell from "../components/NotificationBell";
 import SustLogo from "../components/SustLogo";
+import LogoutButton from "../components/LogoutButton";
 
 interface NavbarProps {
   title: string;
 }
 
 function Navbar({ title }: NavbarProps) {
-  const navigate = useNavigate();
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const { recommendationsCount } = useNotifications();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -39,14 +39,8 @@ function Navbar({ title }: NavbarProps) {
   const showRecommendationsBadge =
     currentUser?.role === "DepartmentHead" && recommendationsCount > 0;
 
-  function handleLogout() {
-    setIsMenuOpen(false);
-    logout();
-    navigate("/login");
-  }
-
   return (
-    <header className="flex h-16 items-center justify-between bg-[#0F2747] px-6 text-white">
+    <header className="flex h-16 items-center justify-between bg-primary px-6 text-white">
       <div className="flex items-center gap-3">
         <SustLogo badge heightClass="h-8" />
         <h1 className="text-lg font-semibold">{title}</h1>
@@ -60,7 +54,7 @@ function Navbar({ title }: NavbarProps) {
             aria-label={`${recommendationsCount} pending recommendation${recommendationsCount === 1 ? "" : "s"}`}
           >
             <span
-              className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#F59E0B] px-1.5 text-[11px] font-semibold text-[#0F2747]"
+              className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-primary"
             >
               {recommendationsCount}
             </span>
@@ -93,25 +87,19 @@ function Navbar({ title }: NavbarProps) {
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-[#E2E8F0] bg-white py-1 text-[#1E293B] shadow-lg">
+            <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-border bg-white py-1 text-text shadow-lg">
               <Link
                 to="/admin/profile"
                 onClick={() => setIsMenuOpen(false)}
-                className="block px-4 py-2 text-sm hover:bg-[#F8FAFC]"
+                className="block px-4 py-2 text-sm hover:bg-surface"
               >
                 Edit Profile
               </Link>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="block w-full px-4 py-2 text-left text-sm text-[#B91C1C] hover:bg-[#FEF2F2]"
-              >
-                Log Out
-              </button>
             </div>
           )}
         </div>
+
+        <LogoutButton />
       </div>
     </header>
   );

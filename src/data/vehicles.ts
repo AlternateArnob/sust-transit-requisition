@@ -6,7 +6,6 @@ export const initialVehicles: Vehicle[] = [
     registrationNumber: "Sylhet Metro Gha 11-0035",
     category: "Jeep",
     operationalStatus: "Active",
-    reservedFor: "Honorable Vice-Chancellor",
     availableForRequisition: false,
   },
   {
@@ -14,7 +13,6 @@ export const initialVehicles: Vehicle[] = [
     registrationNumber: "Sylhet Metro Gha 11-0036",
     category: "Jeep",
     operationalStatus: "Active",
-    reservedFor: "Honorable Treasurer",
     availableForRequisition: false,
   },
   {
@@ -22,7 +20,6 @@ export const initialVehicles: Vehicle[] = [
     registrationNumber: "Sylhet Metro Gha 11-0037",
     category: "Jeep",
     operationalStatus: "Active",
-    reservedFor: "Honorable Registrar",
     availableForRequisition: false,
   },
   {
@@ -31,7 +28,6 @@ export const initialVehicles: Vehicle[] = [
     category: "Microbus",
     fuelType: "LPG",
     operationalStatus: "Active",
-    reservedFor: "General Official Use",
     availableForRequisition: true,
   },
 ];

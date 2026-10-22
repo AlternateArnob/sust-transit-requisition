@@ -11,6 +11,7 @@ import useUsers from "../hooks/useUsers";
 import useNotifications from "../hooks/useNotifications";
 
 import Modal from "../components/Modal";
+import { ApplicationStatusBadge, RequisitionTypeBadge } from "../components/ui/StatusBadge";
 import RequisitionDetail from "../components/RequisitionDetail";
 import MileageEntryForm from "../components/MileageEntryForm";
 
@@ -20,7 +21,6 @@ import {
   isInActiveQueue,
   getTripStatusCounts,
   formatDateRange,
-  requisitionTypeBadgeClass,
 } from "../utils/requisitionUtils";
 import { getEligibleDutySlipGroups, canGenerateSlips } from "../utils/dutySlipUtils";
 import { reassignAllocation } from "../utils/allocationUtils";
@@ -43,28 +43,16 @@ import {
 } from "../utils/notificationUtils";
 
 import type {
-  ApplicationStatus,
   Requisition,
   RejectionReason,
   RequisitionType,
 } from "../types";
 import { REQUISITION_TYPES } from "../types";
+import PageTitle from "../components/ui/PageTitle";
 
 type Tab = "queue" | "approved" | "rejected" | "all";
 type Mode = "transportInCharge" | "transportAdministrator" | "viewOnly";
 type TypeFilter = RequisitionType | "All";
-
-function statusBadgeClass(status: ApplicationStatus) {
-  if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
-  if (status === "Completed") return "bg-[#CBD5E1] text-[#1E293B]";
-  if (status === "Ready for Accounts") return "bg-[#E2E8F0] text-[#334E68]";
-  if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
-  if (status === "Partially Approved") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Pending Administrator") return "bg-[#EDE9FE] text-[#6D28D9]";
-  if (status === "Pending on Transport Office")
-    return "bg-[#DBEAFE] text-[#0F2747]";
-  return "bg-[#DBEAFE] text-[#0F2747]";
-}
 
 export default function RequisitionsPage() {
   const { currentUser } = useAuth();
@@ -218,9 +206,9 @@ export default function RequisitionsPage() {
       .forEach((allocation) => removeAllocation(allocation.id));
   }
 
-  function handleSendBackToApplicant(reason: RejectionReason, remarks: string) {
+  function handleSendBackToApplicant(note: string) {
     if (!selected) return;
-    sendBackToApplicant(selected.id, reason, remarks);
+    sendBackToApplicant(selected.id, undefined, note, "Transport In-Charge");
     // The application is going back to square one for the applicant, so
     // any vehicle Transport In Charge had tentatively picked is released
     // rather than held against a requisition that's no longer active.
@@ -229,7 +217,9 @@ export default function RequisitionsPage() {
     addNotification(
       buildApplicantNotification(selected, {
         type: "Sent Back to Applicant",
-        message: `Your requisition was sent back by Transport In Charge: ${remarks}`,
+        message: note
+          ? `Your requisition was sent back by the Transport In-Charge for correction: ${note}`
+          : "Your requisition was sent back by the Transport In-Charge for correction. Please review it, edit and resubmit.",
       }),
     );
   }
@@ -319,7 +309,13 @@ export default function RequisitionsPage() {
 
   function handleGenerateDutySlip(driverId: string) {
     if (!selected) return;
-    if (modeFor(selected) !== "transportAdministrator") return;
+    // The Transport Administrator generates/regenerates duty slips; the
+    // Transport In-Charge may download them once the requisition is approved.
+    const role = currentUser?.role;
+    const allowed =
+      modeFor(selected) === "transportAdministrator" ||
+      (isTransportInCharge(role) && canGenerateSlips(selected));
+    if (!allowed) return;
 
     const group = getEligibleDutySlipGroups(selected, allocations).find(
       (item) => item.driverId === driverId,
@@ -329,6 +325,11 @@ export default function RequisitionsPage() {
     if (!group || !driverMember) return;
 
     generateDutySlipPdf(selected, driverMember, group.trips, vehicles);
+
+    // A Transport In-Charge download is a copy of the current slip, so it
+    // is not recorded in the slip history (that belongs to the
+    // Administrator's generate/regenerate action).
+    if (modeFor(selected) !== "transportAdministrator") return;
 
     addDutySlip({
       id: crypto.randomUUID(),
@@ -381,21 +382,16 @@ export default function RequisitionsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-[#1E293B]">Requisitions</h1>
-        <p className="mt-1 text-sm text-[#64748B]">
-          {isTransportInCharge(currentUser?.role) &&
+      <PageTitle title="Requisitions" subtitle={<>{isTransportInCharge(currentUser?.role) &&
             "Assign vehicles to incoming requisitions and forward them for approval"}
           {isTransportAdministrator(currentUser?.role) &&
             "Review forwarded requisitions and approve or reject each trip"}
           {!isTransportInCharge(currentUser?.role) &&
             !isTransportAdministrator(currentUser?.role) &&
-            "Oversight view of the transport requisition pipeline"}
-        </p>
-      </div>
+            "Oversight view of the transport requisition pipeline"}</>} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2 border-b border-[#E2E8F0]">
+        <div className="flex gap-2 border-b border-border">
           {tabs.map(([value, label]) => (
             <button
               key={value}
@@ -403,8 +399,8 @@ export default function RequisitionsPage() {
               onClick={() => setTab(value)}
               className={`px-4 py-2 text-sm font-medium ${
                 tab === value
-                  ? "border-b-2 border-[#0F2747] text-[#0F2747]"
-                  : "text-[#64748B] hover:text-[#1E293B]"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-text-muted hover:text-text"
               }`}
             >
               {label}
@@ -413,14 +409,14 @@ export default function RequisitionsPage() {
         </div>
 
         {tab === "queue" && (
-          <label className="flex items-center gap-2 text-sm text-[#64748B]">
+          <label className="flex items-center gap-2 text-sm text-text-muted">
             Type
             <select
               value={typeFilter}
               onChange={(event) =>
                 setTypeFilter(event.target.value as TypeFilter)
               }
-              className="h-9 rounded-md border border-[#E2E8F0] bg-white px-2 text-sm text-[#1E293B] outline-none focus:border-[#334E68] focus:ring-1 focus:ring-[#334E68]"
+              className="h-9 rounded-md border border-border bg-white px-2 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
             >
               <option value="All">All Types</option>
               {REQUISITION_TYPES.map((type) => (
@@ -433,29 +429,29 @@ export default function RequisitionsPage() {
         )}
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white">
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-[#0F2747] text-white">
+            <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
               <tr>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Requester</th>
-                <th className="px-4 py-3 font-medium">Purpose</th>
-                <th className="px-4 py-3 font-medium">Date Range</th>
-                <th className="px-4 py-3 font-medium">Trips</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Mileage</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                <th className="px-4 py-3 font-semibold">Type</th>
+                <th className="px-4 py-3 font-semibold">Requester</th>
+                <th className="px-4 py-3 font-semibold">Purpose</th>
+                <th className="px-4 py-3 font-semibold">Date Range</th>
+                <th className="px-4 py-3 font-semibold">Trips</th>
+                <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Mileage</th>
+                <th className="px-4 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center">
-                    <p className="font-medium text-[#1E293B]">
+                    <p className="font-medium text-text">
                       No requisitions found
                     </p>
-                    <p className="mt-1 text-sm text-[#64748B]">
+                    <p className="mt-1 text-sm text-text-muted">
                       Add a requisition to get started.
                     </p>
                   </td>
@@ -472,60 +468,52 @@ export default function RequisitionsPage() {
                   return (
                     <tr
                       key={requisition.id}
-                      className={`border-t border-[#E2E8F0] ${index % 2 === 1 ? "bg-[#F8FAFC]" : "bg-white"}`}
+                      className={`border-t border-border ${index % 2 === 1 ? "bg-surface" : "bg-white"}`}
                     >
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${requisitionTypeBadgeClass(requisition.requisitionType)}`}
-                        >
-                          {requisition.requisitionType}
-                        </span>
+                        <RequisitionTypeBadge type={requisition.requisitionType} />
                       </td>
-                      <td className="px-4 py-3 font-medium text-[#1E293B]">
+                      <td className="px-4 py-3 font-medium text-text">
                         {requisition.requesterName}
                       </td>
                       <td
-                        className="max-w-xs truncate px-4 py-3 text-[#64748B]"
+                        className="max-w-xs truncate px-4 py-3 text-text-muted"
                         title={requisition.purpose}
                       >
                         {requisition.purpose}
                       </td>
-                      <td className="px-4 py-3 text-[#64748B]">
+                      <td className="px-4 py-3 text-text-muted">
                         {formatDateRange(
                           requisition.startDate,
                           requisition.endDate,
                         )}
                       </td>
-                      <td className="px-4 py-3 text-[#64748B]">
+                      <td className="px-4 py-3 text-text-muted">
                         {requisition.trips.length}
                         {counts.approved + counts.rejected > 0 && (
-                          <span className="ml-1 text-xs text-[#94A3B8]">
+                          <span className="ml-1 text-xs text-form-placeholder">
                             ({counts.approved} approved, {counts.rejected}{" "}
                             rejected)
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(requisition.status)}`}
-                        >
-                          {requisition.status}
-                        </span>
+                        <ApplicationStatusBadge status={requisition.status} />
                       </td>
                       <td className="px-4 py-3">
                         {mileageStatus.kind === "not-applicable" && (
-                          <span className="text-[#64748B]">—</span>
+                          <span className="text-text-muted">—</span>
                         )}
                         {mileageStatus.kind === "not-ready" && (
                           <span
-                            className="text-[#64748B]"
+                            className="text-text-muted"
                             title="Approve and allocate a vehicle first"
                           >
                             —
                           </span>
                         )}
                         {mileageStatus.kind === "recorded" && (
-                          <span className="font-medium text-[#15803D]">
+                          <span className="font-medium text-success">
                             {mileageStatus.distanceKm} km
                           </span>
                         )}
@@ -536,19 +524,19 @@ export default function RequisitionsPage() {
                               onClick={() =>
                                 setMileageTarget(mileageStatus.trips)
                               }
-                              className="text-sm font-medium text-[#334E68] hover:underline"
+                              className="text-sm font-medium text-secondary hover:underline"
                             >
                               Record Mileage
                             </button>
                           ) : (
-                            <span className="text-[#64748B]">Awaiting</span>
+                            <span className="text-text-muted">Awaiting</span>
                           ))}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button
                           type="button"
                           onClick={() => setSelectedId(requisition.id)}
-                          className="text-sm font-medium text-[#334E68] hover:underline"
+                          className="text-sm font-medium text-secondary hover:underline"
                         >
                           View
                         </button>
@@ -580,6 +568,9 @@ export default function RequisitionsPage() {
             onRemoveVehicleAssignment={handleRemoveVehicleAssignment}
             onForwardToAdministrator={handleForwardToAdministrator}
             onSendBackToApplicant={handleSendBackToApplicant}
+            canDownloadDriverSlip={
+              isTransportInCharge(currentUser?.role) && canGenerateSlips(selected)
+            }
             onApproveTrip={handleApproveTrip}
             onRejectTrip={handleRejectTrip}
             onResetTripDecision={handleResetTrip}

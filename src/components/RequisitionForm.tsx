@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 
-import sustLogo from "../assets/sust-logo.png";
+import GovFormMasthead from "./application/GovFormMasthead";
 import Step1Requester from "./application/Step1Requester";
 import Step2TransportUser, {
   type TransportUserDraft,
 } from "./application/Step2TransportUser";
 import Step3Journey from "./application/Step3Journey";
 import Step4Details, { type DetailsDraft } from "./application/Step4Details";
-import { ERROR_TEXT, PART_LABEL, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import { ERROR_TEXT, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 
 import useAuth from "../hooks/useAuth";
 import useNotifications from "../hooks/useNotifications";
@@ -22,12 +22,18 @@ import {
 import { isWithinHoldWindow } from "../utils/validators";
 
 import type { Requisition, RequisitionType, Trip, TripDraft } from "../types";
-import { createEmptyTripDraft } from "../types";
+import { createEmptyTripDraft, tripToDraft } from "../types";
 import { isValidRoute, parseRoute } from "../utils/routeUtils";
 
 interface RequisitionFormProps {
   onSubmit: (requisition: Requisition) => void;
   onCancel: () => void;
+  /**
+   * A requisition sent back for correction. When set the form is
+   * pre-filled with its data, keeps its application number, and submits
+   * as a resubmission instead of a new application.
+   */
+  initial?: Requisition;
 }
 
 /**
@@ -46,7 +52,9 @@ interface RequisitionFormProps {
 export default function RequisitionForm({
   onSubmit,
   onCancel,
+  initial,
 }: RequisitionFormProps) {
+  const isResubmit = Boolean(initial);
   const { currentUser } = useAuth();
   const { addNotification } = useNotifications();
   const { users } = useUsers();
@@ -54,8 +62,10 @@ export default function RequisitionForm({
 
   // Shown in the form header and used as the requisition's id on submit.
   // Computed once on mount so it doesn't change while the form is open.
-  const [applicationNumber] = useState(() =>
-    generateApplicationNumber(existingRequisitions.map((item) => item.id)),
+  const [applicationNumber] = useState(
+    () =>
+      initial?.id ??
+      generateApplicationNumber(existingRequisitions.map((item) => item.id)),
   );
 
   const [sameAsRequester, setSameAsRequester] = useState(true);
@@ -67,11 +77,16 @@ export default function RequisitionForm({
 
   const [requisitionType, setRequisitionType] = useState<RequisitionType>(
     () =>
-      currentUser?.applicantProfile === "Student"
+      initial?.requisitionType ??
+      (currentUser?.applicantProfile === "Student"
         ? "Departmental/Official"
-        : "Personal",
+        : "Personal"),
   );
-  const [trips, setTrips] = useState<TripDraft[]>([createEmptyTripDraft()]);
+  const [trips, setTrips] = useState<TripDraft[]>(() =>
+    initial && initial.trips.length > 0
+      ? initial.trips.map((trip) => tripToDraft(trip, initial.requisitionType))
+      : [createEmptyTripDraft()],
+  );
 
   /**
    * Step 5 — "Personal" requisitions are always exactly one trip. When the
@@ -90,9 +105,9 @@ export default function RequisitionForm({
   }
 
   const [details, setDetails] = useState<DetailsDraft>({
-    reason: "",
-    supportingDocumentName: "",
-    supportingDocumentDataUrl: undefined,
+    reason: initial?.purpose ?? "",
+    supportingDocumentName: initial?.supportingDocumentName ?? "",
+    supportingDocumentDataUrl: initial?.supportingDocumentDataUrl,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -115,7 +130,7 @@ export default function RequisitionForm({
 
   if (!requester) {
     return (
-      <div className="border border-[#FEE2E2] bg-[#FEF2F2] px-4 py-3 text-sm text-[#B91C1C]">
+      <div className="border border-error-bg bg-error-bg/50 px-4 py-3 text-sm text-error">
         You must be signed in to apply for a vehicle. Please register or log in
         first.
       </div>
@@ -228,14 +243,19 @@ export default function RequisitionForm({
       endDate: firstTripDate,
       scheduleType: "Single",
       status,
-      createdAt: new Date().toISOString(),
+      createdAt: initial?.createdAt ?? new Date().toISOString(),
       trips: builtTrips,
       ...(hasSupportingDocument
         ? {
             supportingDocumentName: details.supportingDocumentName,
             supportingDocumentDataUrl: details.supportingDocumentDataUrl,
           }
-        : {}),
+        : isResubmit
+          ? {
+              supportingDocumentName: undefined,
+              supportingDocumentDataUrl: undefined,
+            }
+          : {}),
     };
   }
 
@@ -261,7 +281,12 @@ export default function RequisitionForm({
 
     setIsSubmitting(true);
     try {
-      const finalStatus = requiresRecommender
+      // A requisition the Department/Office Head already recommended goes
+      // straight back to the Transport Office after correction; anything
+      // else follows the normal routing for its type.
+      const alreadyRecommended = Boolean(initial?.recommenderId);
+      const routeToRecommender = requiresRecommender && !alreadyRecommended;
+      const finalStatus = routeToRecommender
         ? "Pending Recommendation"
         : "Pending on Transport Office";
 
@@ -276,12 +301,12 @@ export default function RequisitionForm({
       // ApplyRequisitionPage after the requisition is added; here we only
       // handle the recommender audience, and each is stamped with that
       // user's id so useNotifications can filter per-recipient.
-      if (requiresRecommender) {
+      if (routeToRecommender) {
         const heads = findDepartmentHeadsForRequisition(requisition, users);
         for (const notification of buildRequisitionNotifications(heads, {
           requisition,
           type: "New Requisition",
-          message: `${requisition.requesterName} submitted an official requisition (${requisition.requisitionType.toLowerCase()}) awaiting your recommendation.`,
+          message: `${requisition.requesterName} ${isResubmit ? "resubmitted a corrected" : "submitted an"} official requisition (${requisition.requisitionType.toLowerCase()}) awaiting your recommendation.`,
         })) {
           addNotification(notification);
         }
@@ -292,38 +317,37 @@ export default function RequisitionForm({
   }
 
   const errorCount = Object.keys(errors).length;
-  const submitLabel = requiresRecommender
-    ? "Proceed to Recommendation"
-    : "Submit Application";
+  const submitLabel = isResubmit
+    ? "Resubmit Application"
+    : requiresRecommender
+      ? "Proceed to Recommendation"
+      : "Submit Application";
 
   return (
     <div className="mx-auto rounded-lg border border-form-rule bg-white px-5 py-6 shadow-sm sm:px-10 sm:py-9">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <img
-            src={sustLogo}
-            alt="SUST logo"
-            className="h-14 w-auto shrink-0"
-          />
-          <div>
-            <p className="text-xs text-form-muted">
-              Shahjalal University of Science and Technology · Transport Wing
-            </p>
-            <h1 className="mt-1 inline-block border-b-2 border-form-action pb-1 text-lg font-bold uppercase tracking-wide text-form-action sm:text-xl">
-              Vehicle Requisition Form
-            </h1>
-          </div>
-        </div>
-
-        <div className="text-right">
-          <p className="text-xs text-form-muted">Application No.</p>
-          <p className="text-base font-bold text-form-action">
-            {applicationNumber}
-          </p>
-        </div>
-      </header>
+      <GovFormMasthead
+        formTitle="Vehicle Requisition Form"
+        applicationNo={applicationNumber}
+      />
 
       <div className="mt-8 space-y-8">
+        {initial && initial.status === "Information Requested" ? (
+          <div
+            role="note"
+            className="rounded-md border border-form-warn-border bg-form-warn-bg px-4 py-3 text-sm text-form-warn-text"
+          >
+            <p className="font-semibold">
+              Returned for correction
+              {initial.sentBackBy ? ` by ${initial.sentBackBy}` : ""}
+            </p>
+            <p className="mt-1">
+              {initial.sendBackNote ??
+                initial.trips[0]?.rejectionRemarks ??
+                "No note was added. Please review your application and resubmit."}
+            </p>
+          </div>
+        ) : null}
+
         {errorCount > 0 ? (
           <div className="rounded-md border border-form-seal/30 bg-form-seal/5 px-4 py-3 text-sm text-form-seal">
             Please fix {errorCount} field{errorCount === 1 ? "" : "s"} below
@@ -331,11 +355,11 @@ export default function RequisitionForm({
           </div>
         ) : null}
 
-        <FormSection part="Part One" title="Requester Details">
+        <FormSection title="Requester Information">
           <Step1Requester requester={requester} />
         </FormSection>
 
-        <FormSection part="Part Two" title="Transport User">
+        <FormSection title="Transport User Information">
           <Step2TransportUser
             requester={requester}
             value={transportUser}
@@ -350,7 +374,7 @@ export default function RequisitionForm({
           />
         </FormSection>
 
-        <FormSection part="Part Three" title="Journey">
+        <FormSection title="Journey Details">
           <Step3Journey
             requisitionType={requisitionType}
             onRequisitionTypeChange={handleRequisitionTypeChange}
@@ -361,7 +385,7 @@ export default function RequisitionForm({
           />
         </FormSection>
 
-        <FormSection part="Part Four" title="Requisition Details">
+        <FormSection title="Purpose and Supporting Document">
           <Step4Details
             value={details}
             onChange={setDetails}
@@ -388,6 +412,7 @@ export default function RequisitionForm({
         ) : null}
 
         <div className={SECTION_WRAP}>
+          <h2 className={`${SECTION_TITLE} mb-3`}>Declaration</h2>
           <label className="flex items-start gap-2.5 text-sm leading-relaxed text-form-ink">
             <input
               type="checkbox"
@@ -413,14 +438,16 @@ export default function RequisitionForm({
           </button>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleSaveDraft}
-              disabled={isSubmitting}
-              className="h-10 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-ink hover:bg-form-band disabled:cursor-not-allowed"
-            >
-              Save Draft
-            </button>
+            {isResubmit ? null : (
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+                className="h-10 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-ink hover:bg-form-band disabled:cursor-not-allowed"
+              >
+                Save Draft
+              </button>
+            )}
 
             <button
               type="button"
@@ -437,19 +464,16 @@ export default function RequisitionForm({
   );
 }
 
-/** One numbered part of the form ("Part One — Requester Details"), echoing how the printed form divides its sections. */
+/** One titled section of the form, with a divider under its heading. */
 function FormSection({
-  part,
   title,
   children,
 }: {
-  part: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
     <div className={SECTION_WRAP}>
-      <p className={PART_LABEL}>{part}</p>
       <h2 className={`${SECTION_TITLE} mb-3`}>{title}</h2>
       {children}
     </div>

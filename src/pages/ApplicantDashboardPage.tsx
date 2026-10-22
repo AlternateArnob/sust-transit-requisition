@@ -6,19 +6,11 @@ import useRequisitions from "../hooks/useRequisitions";
 
 import StatCard from "../components/StatCard";
 import ApplicantHeader from "../components/ApplicantHeader";
+import Card from "../components/ui/Card";
+import PageTitle from "../components/ui/PageTitle";
+import { buttonClass } from "../components/ui/buttonStyles";
+import { ApplicationStatusBadge } from "../components/ui/StatusBadge";
 import { formatDateRange, getTripStatusCounts } from "../utils/requisitionUtils";
-
-import type { ApplicationStatus } from "../types";
-
-function statusBadgeClass(status: ApplicationStatus) {
-  if (status === "Approved") return "bg-[#DCFCE7] text-[#15803D]";
-  if (status === "Completed") return "bg-[#CBD5E1] text-[#1E293B]";
-  if (status === "Rejected") return "bg-[#FEE2E2] text-[#B91C1C]";
-  if (status === "Information Requested") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Partially Approved") return "bg-[#FEF3C7] text-[#B45309]";
-  if (status === "Draft") return "bg-[#F1F5F9] text-[#64748B]";
-  return "bg-[#DBEAFE] text-[#0F2747]";
-}
 
 /**
  * Step 9 (applicant module) — the applicant's landing page after login,
@@ -54,24 +46,19 @@ export default function ApplicantDashboardPage() {
   const recent = myRequisitions.slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface">
       <ApplicantHeader active="dashboard" />
 
       <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">
-        <div>
-          <h2 className="text-2xl font-semibold text-[#1E293B]">
-            Welcome{currentUser.fullName ? `, ${currentUser.fullName}` : ""}
-          </h2>
-          <p className="mt-1 text-sm text-[#64748B]">
-            An overview of your transport requisitions —{" "}
-            {new Date().toLocaleDateString(undefined, {
+        <PageTitle
+          title={`Welcome${currentUser.fullName ? `, ${currentUser.fullName}` : ""}`}
+          subtitle={`An overview of your transport requisitions — ${new Date().toLocaleDateString(undefined, {
               weekday: "long",
               day: "numeric",
               month: "long",
               year: "numeric",
-            })}
-          </p>
-        </div>
+            })}`}
+        />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
@@ -100,12 +87,12 @@ export default function ApplicantDashboardPage() {
         </div>
 
         {draftCount > 0 ? (
-          <div className="rounded-md border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#1E293B]">
+          <div className="rounded-md border border-border bg-white px-4 py-3 text-sm text-text">
             You have {draftCount} draft{draftCount === 1 ? "" : "s"} waiting
             to be submitted.{" "}
             <Link
               to="/my-requisitions"
-              className="font-medium text-[#0F2747] hover:underline"
+              className="font-medium text-primary hover:underline"
             >
               Finish {draftCount === 1 ? "it" : "them"}
             </Link>
@@ -115,39 +102,39 @@ export default function ApplicantDashboardPage() {
         <div className="flex flex-wrap gap-3">
           <Link
             to="/apply"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-[#0F2747] px-4 text-sm font-medium text-white hover:bg-[#334E68]"
+            className={buttonClass("primary")}
           >
             + New Requisition
           </Link>
           <Link
             to="/my-requisitions"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334E68] hover:bg-[#F8FAFC]"
+            className={buttonClass("secondary")}
           >
             View My Requisitions
           </Link>
         </div>
 
-        <div className="rounded-lg border border-[#E2E8F0] bg-white">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] px-5 py-4">
-            <p className="text-sm font-medium text-[#1E293B]">
+        <Card flush>
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <p className="text-sm font-medium text-text">
               Recent Requisitions
             </p>
 
             <Link
               to="/my-requisitions"
-              className="text-xs font-medium text-[#334E68] hover:underline"
+              className="text-xs font-medium text-secondary hover:underline"
             >
               View all
             </Link>
           </div>
 
-          <div className="divide-y divide-[#E2E8F0]">
+          <div className="divide-y divide-border">
             {recent.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm text-[#64748B]">
+              <p className="px-5 py-8 text-center text-sm text-text-muted">
                 No requisitions yet.{" "}
                 <Link
                   to="/apply"
-                  className="font-medium text-[#334E68] hover:underline"
+                  className="font-medium text-secondary hover:underline"
                 >
                   Submit your first requisition
                 </Link>
@@ -160,30 +147,24 @@ export default function ApplicantDashboardPage() {
                 >
                   <div className="min-w-0">
                     <p
-                      className="truncate text-sm font-medium text-[#1E293B]"
+                      className="truncate text-sm font-medium text-text"
                       title={requisition.purpose}
                     >
                       {requisition.purpose || "—"}
                     </p>
-                    <p className="mt-0.5 text-xs text-[#64748B]">
+                    <p className="mt-0.5 text-xs text-text-muted">
                       {formatDateRange(
                         requisition.startDate,
                         requisition.endDate,
                       )}
                     </p>
                   </div>
-                  <span
-                    className={`inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${statusBadgeClass(
-                      requisition.status,
-                    )}`}
-                  >
-                    {requisition.status}
-                  </span>
+                  <ApplicationStatusBadge status={requisition.status} />
                 </div>
               ))
             )}
           </div>
-        </div>
+        </Card>
       </main>
     </div>
   );

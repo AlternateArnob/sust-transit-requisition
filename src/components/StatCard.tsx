@@ -8,10 +8,10 @@ interface StatCardProps {
 }
 
 const ACCENT_CLASSES: Record<NonNullable<StatCardProps["accent"]>, string> = {
-  default: "text-[#0F2747]",
-  success: "text-[#15803D]",
-  warning: "text-[#B45309]",
-  error: "text-[#B91C1C]",
+  default: "text-primary",
+  success: "text-success",
+  warning: "text-warning",
+  error: "text-error",
 };
 
 export default function StatCard({
@@ -21,8 +21,8 @@ export default function StatCard({
   accent = "default",
 }: StatCardProps) {
   const content = (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white p-5 transition hover:border-[#334E68]">
-      <p className="text-sm font-medium text-[#64748B]">{label}</p>
+    <div className="rounded-lg border border-border bg-white p-5 transition hover:border-secondary">
+      <p className="text-sm font-medium text-text-muted">{label}</p>
       <p className={`mt-2 text-3xl font-semibold ${ACCENT_CLASSES[accent]}`}>
         {value}
       </p>

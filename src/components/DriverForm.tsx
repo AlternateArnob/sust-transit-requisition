@@ -4,6 +4,7 @@ import {
   type DriverDesignation,
   type Driver,
 } from "../types";
+import { buttonClass } from "./ui/buttonStyles";
 
 interface DriverFormProps {
   driver?: Driver;
@@ -54,7 +55,7 @@ export default function DriverForm({
       <div>
         <label
           htmlFor="name"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Driver Name
         </label>
@@ -66,13 +67,13 @@ export default function DriverForm({
           placeholder="Enter driver name"
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
-            px-3 text-sm text-[#1E293B]
+            border border-border
+            px-3 text-sm text-text
             outline-none
-            placeholder:text-[#64748B]
-            focus:border-[#334E68]
+            placeholder:text-text-muted
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         />
       </div>
@@ -81,7 +82,7 @@ export default function DriverForm({
       <div>
         <label
           htmlFor="designation"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Designation
         </label>
@@ -94,13 +95,13 @@ export default function DriverForm({
           }
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
+            border border-border
             bg-white px-3
-            text-sm text-[#1E293B]
+            text-sm text-text
             outline-none
-            focus:border-[#334E68]
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         >
           {DRIVER_DESIGNATIONS.map((item) => (
@@ -115,7 +116,7 @@ export default function DriverForm({
       <div>
         <label
           htmlFor="phone"
-          className="mb-1.5 block text-sm font-medium text-[#1E293B]"
+          className="mb-1.5 block text-sm font-medium text-text"
         >
           Phone
         </label>
@@ -128,28 +129,28 @@ export default function DriverForm({
           placeholder="Enter phone number"
           className="
             h-10 w-full rounded-md
-            border border-[#E2E8F0]
-            px-3 text-sm text-[#1E293B]
+            border border-border
+            px-3 text-sm text-text
             outline-none
-            placeholder:text-[#64748B]
-            focus:border-[#334E68]
+            placeholder:text-text-muted
+            focus:border-secondary
             focus:ring-1
-            focus:ring-[#334E68]
+            focus:ring-secondary
           "
         />
       </div>
 
       {/* Buttons */}
-      <div className="flex justify-end gap-3 border-t border-[#E2E8F0] pt-4">
+      <div className="flex justify-end gap-3 border-t border-border pt-4">
         <button
           type="button"
           onClick={onCancel}
           className="
             h-10 rounded-md
-            border border-[#E2E8F0]
+            border border-border
             px-4
-            text-sm font-medium text-[#334E68]
-            hover:bg-[#F8FAFC]
+            text-sm font-medium text-secondary
+            hover:bg-surface
           "
         >
           Cancel
@@ -157,12 +158,7 @@ export default function DriverForm({
 
         <button
           type="submit"
-          className="
-            h-10 rounded-md
-            bg-[#0F2747] px-4
-            text-sm font-medium text-white
-            hover:bg-[#334E68]
-          "
+          className={buttonClass("primary")}
         >
           {driver ? "Save Changes" : "Add Driver"}
         </button>
