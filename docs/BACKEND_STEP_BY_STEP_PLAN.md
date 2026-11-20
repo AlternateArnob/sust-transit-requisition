@@ -26,7 +26,7 @@
 | B. Identity | 4 – 7 | Register, OTP, login, tokens, RBAC, profile, users admin |
 | C. Reference data and fleet | 8 – 10 | Directory, drivers, vehicles, off-days, student-transport schedule |
 | D. Requisition core | 11 – 15 | Create/submit, recommender, allocation, forward, approvals, send-back/resubmit |
-| E. After approval | 16 – 18 | Slips, completion, mileage, conflicts |
+| E. After approval | 16 – 18 | Slips, completion, mileage, allocation guards |
 | F. Supporting features | 19 – 21 | Notifications, dashboards, files, audit |
 | G. Integration and release | 22 – 25 | OpenAPI, frontend cut-over, hardening, deployment |
 
@@ -129,7 +129,7 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 4. `validators.ts` — `isWithinHoldWindow` (3 h) [`validators.ts`], `parseRoute`, `isValidRoute`, `buildTripFromInput(requisitionType, tripInput)` that returns `{ route, stoppageSequence }` per §11.10 (Personal → `["Campus", destination, "Campus"]`, route text `Campus to X and Return to Campus`; others parse `routeText`, join with ` → `) [`routeUtils.ts`, `RequisitionForm.buildTrip`].
 5. `schedule.ts` — `getWeekdayFromDate` (parse `YYYY-MM-DD` as a **local calendar date**, `Sun=0`), `getOffDayForVehicleOnDate`, `getStudentTransportTimeForDate`, `isVehicleFreeAtTime`, `toMinutes` [`scheduleUtils.ts`].
 6. `vehicleEligibility.ts` — `timeRangesOverlap` (strict), `getVehicleEligibility(vehicle, trip, ctx)` returning `{eligible, blockers[], warnings[]}` with the five blockers and one warning of §11.6; `getTripsMissingVehicleAssignment`, `canForwardToAdministrator` [`allocationUtils.ts`, `vehicleUtils.ts`].
-7. `conflicts.ts` — `detectConflicts(...)` producing the four conflict types with the stable ids of §11.9 [`conflictUtils.ts`].
+7. `allocationGuards.ts` — the off-day, student-transport and vehicle-status guards of §11.9 [`fleet/utils/allocationGuards.ts`].
 8. `mileage.ts` — `isMileageEligibleRequisition` (Personal + Teacher/Officer), `getMileageColumnStatus` [`mileageUtils.ts`].
 9. `applicationNumber.ts` — `formatApplicationNumber(year, n)` → `TRS-2026-001`.
 10. `slips.ts` — `getEligibleDutySlipGroups(requisition, allocations)` (only `Approved` trips with an allocation + driver, grouped by driver, sorted by date), `isDutySlipStale`.
@@ -142,7 +142,7 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 - 3-hour rule: exactly 3 h OK, 3 h 1 min fails, end before start fails.
 - Personal route building; route text with each separator (`->`, `→`, `=>`, `>`, newline); a single stop is invalid.
 - Eligibility: each blocker individually + warning for category mismatch only.
-- Conflict detection: each type; double-booking reported once.
+- Allocation guards: each rule blocks correctly; past allocations never block.
 - Weekday of `2026-10-22` is Thursday.
 
 **Done when**
@@ -269,7 +269,7 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 3. Permanent driver assignment service (port of `useVehicleDriverAssignment`): driver exists, `Active`, not the permanent driver of **another** vehicle (`409`); moving the assignment is atomic; `permanentDriverId: null` clears it.
 4. `DELETE`: refuse with `409 VEHICLE_HAS_HISTORY` if any `allocations` **or** `allocation_history` row references it (§10.3, §12.5).
 5. `GET /vehicles` (filters `q`, `category`, `status`), `GET /vehicles/:id` (+ driver summary).
-6. After create/update of `operationalStatus` / `availableForRequisition`, call a hook `conflictService.rescanVehicle(vehicleId)` — stub it now (no-op); implemented in Step 18.
+6. On update of `operationalStatus` / `availableForRequisition` to an unavailable state, call `allocationGuardService.assertVehicleCanBecomeUnavailable(vehicleId)` — stub it now (no-op); implemented in Step 18.
 
 **Tests:** duplicate registration with different casing; invalid category; driver already assigned elsewhere; inactive driver rejected; reassigning frees the old driver; delete blocked once an allocation/history row exists (insert one directly in the test DB); the `it.todo` from Step 8.
 
@@ -286,7 +286,7 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 1. `modules/offDays/`: `GET /off-days`, `POST`, `PATCH`, `DELETE`. Validate the shape rule (One-time ⇒ `date`, no weekday; Recurring ⇒ `weekday`, no date) in Zod **and** rely on the DB `CHECK`. Vehicle must exist.
 2. `modules/transportSchedule/`: `GET /transport-schedule`, `PUT /transport-schedule/:vehicleId` (create-or-replace in a transaction: upsert `student_transport_vehicles`, delete + insert `student_transport_slots` for the weekdays supplied with valid `HH:mm`), `DELETE`. DTO `{ id, vehicleId, schedule: { Sun?: "HH:mm", … } }`.
 3. `GET /schedule/lookup?date=YYYY-MM-DD` (§12.12) combining vehicles, off-days, student-transport free-after and allocations (allocations table exists but is empty until Step 13 — query must already work).
-4. Hooks to `conflictService.rescanVehicle` (still a stub).
+4. Call `allocationGuardService.assertOffDayAllowed(...)` before saving (still a stub).
 
 **Tests:** both off-day types; invalid shape combinations → 422; schedule replace semantics (removing a weekday removes its slot); `lookup` for a date that is a recurring off-day.
 
@@ -356,7 +356,7 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 3. `GET /trips/:tripId/vehicle-options` (TIC) — for each vehicle run `getVehicleEligibility` with fresh data (allocations, off-days, schedule); return `{ vehicle, eligible, blockers, warnings }` sorted eligible first.
 4. `PUT /trips/:tripId/allocation` `{vehicleId, driverId?}` (TIC) — implement **exactly** the transactional algorithm in §11.6 (lock vehicle row `FOR UPDATE`, lock requisition, require In-Charge queue + trip not Rejected, recompute eligibility inside the transaction, blockers → `409 VEHICLE_NOT_ELIGIBLE` with `details`, insert/replace the allocation, copy date/times from the trip, `driver_id` defaults to the vehicle's permanent driver, write `allocation_history` `assigned`/`reassigned`).
 5. `DELETE /trips/:tripId/allocation` (TIC) → history `removed`.
-6. Hook `conflictService.rescanVehicle` (still stub) after allocation changes.
+6. Call `allocationGuardService.assertScheduleAllowed(...)` before saving a transport-schedule entry (still a stub).
 
 **Tests**
 - Each blocker (inactive; not available; no permanent driver; one-time and recurring off-day; overlap; student-transport) → 409 with the right text; back-to-back allowed; reassign excludes own allocation; category mismatch → warning only, assignment succeeds.
@@ -397,7 +397,7 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 **Goal:** per-trip approve / reject / reset, and send-back to In-Charge (§11.5, §12.9).
 
 **Build** (role `TransportAdministrator` only; SuperAdmin must get 403 — view-only):
-1. `POST /trips/:id/approve` — requisition in the Administrator queue (§11.5 stricter rule), trip `Pending`; **re-run eligibility/conflict check** on the trip's allocation and block with `409 VEHICLE_NOT_ELIGIBLE` if a blocking conflict exists (§12.9); set `Approved`; recompute requisition status with `computeApplicationStatus`; notify applicant `Trip Approved`.
+1. `POST /trips/:id/approve` — requisition in the Administrator queue (§11.5 stricter rule), trip `Pending`; **re-run the eligibility check** on the trip's allocation and block with `409 VEHICLE_NOT_ELIGIBLE` if the vehicle is no longer eligible (§12.9); set `Approved`; recompute requisition status with `computeApplicationStatus`; notify applicant `Trip Approved`.
 2. `POST /trips/:id/reject` `{reason, remarks?}` — trip `Rejected`; **delete its allocation** (history `released_on_reject`); recompute status; notify applicant `Trip Rejected`.
 3. `POST /trips/:id/reset-decision` — trip must be Approved/Rejected → `Pending`, clear rejection fields, **keep allocation**, recompute status; no notification.
 4. `POST /requisitions/:id/send-back-to-in-charge` `{remarks}` (remarks **required**) — status `Pending on Transport Office`, `transport_office_remarks` set, every trip → `Pending` + clear rejection fields, **delete all allocations**, notify all active TIC (`Sent Back to Transport In Charge`).
@@ -456,25 +456,21 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 
 ---
 
-## Step 18 — Conflicts
+## Step 18 — Allocation guards
 
-**Goal:** §11.9, §12.10 — computed conflicts, actions, and de-duplicated notifications.
+**Goal:** §11.9 — conflicts are prevented at the source. No Conflicts page, no `/conflicts` API, no conflict notifications.
 
-**Build** `modules/conflicts/`:
-1. `conflictService.computeAll()` loads allocations + requisitions + trips + vehicles + off-days + schedule and calls `detectConflicts`. `conflictService.rescanVehicle(vehicleId)` limits the scan to one vehicle and raises notifications for **new** conflicts only: one per active TIC and TA with `dedupe_key = conflict:<conflictId>:<recipientId>` (insert with `INSERT IGNORE`/handle `ER_DUP_ENTRY`).
-2. Replace every stub call from Steps 9, 10, 13 with the real `rescanVehicle`.
-3. `GET /conflicts` (TIC, TA, SuperAdmin) → items per §12.10.
-4. `POST /conflicts/:conflictId/reject-trip` (TIC, TA): recompute; 404 if the conflict no longer exists; reject the trip with reason `Schedule conflict`, remarks "Rejected due to a detected conflict", delete the allocation, recompute requisition status, notify the applicant (`Trip Rejected`), audit. Reassigning uses the normal allocation endpoint.
-5. Nightly job (Step 24) will call `computeAll` + notify.
+**Build** `modules/allocationGuards/`:
+1. `allocationGuardService` with `assertVehicleCanBecomeUnavailable(vehicleId)`, `assertOffDayAllowed(vehicleId, offDay)` and `assertScheduleAllowed(vehicleId, schedule)`. Each loads the vehicle's **upcoming** allocations (date >= today in `Asia/Dhaka`) using `domain/allocationGuards.ts` and throws `409` with `details.allocations` (codes in §11.9).
+2. Replace every stub call from Steps 9, 10, 13 with the real service. Run the guard and the write in one transaction with `SELECT … FOR UPDATE` on the vehicle row.
+3. Confirm the vehicle-assignment endpoint (Step 12) already enforces the four eligibility rules (status/availability, off-day, double-booking, student transport) with `409 VEHICLE_NOT_ELIGIBLE`.
 
-**Tests:** each of the four conflict types appears and clears correctly (e.g. vehicle set to `Under Maintenance` after allocation → `Vehicle Unavailable`); double-booking appears **once**; notifications created once per recipient (run the trigger twice, count rows); reject-from-conflict side effects; role checks.
+**Tests:** each of the seven rules in §11.9 blocks with the right code and lists the clashing allocations; past allocations never block; a vehicle with no upcoming allocations can become unavailable; two concurrent requests cannot both pass; role checks.
 
 **Done when**
-- [ ] No `conflictService` stubs remain (`grep -rn "stub"` returns nothing relevant).
+- [ ] No `allocationGuardService` stubs remain (`grep -rn "stub"` returns nothing relevant).
 
 ---
-
-# PHASE F — Supporting features
 
 ## Step 19 — Notifications API
 
@@ -537,7 +533,7 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 
 ## Step 23 — Frontend cut-over
 
-**Goal:** the React app runs entirely on the API (§17). Do this **module by module**, in this order, committing after each: Auth → Directory/Profile → Users → Fleet (drivers, vehicles, off-days, schedule) → Requisitions (applicant) → Recommender → Allocation/Forward/Approvals → Slips/Mileage → Conflicts → Notifications → Dashboards.
+**Goal:** the React app runs entirely on the API (§17). Do this **module by module**, in this order, committing after each: Auth → Directory/Profile → Users → Fleet (drivers, vehicles, off-days, schedule) → Requisitions (applicant) → Recommender → Allocation/Forward/Approvals → Slips/Mileage → Allocation guards → Notifications → Dashboards.
 
 **Build (in the existing frontend `src/`)**
 1. `src/api/client.ts` — `fetch` wrapper with `VITE_API_BASE_URL`, Bearer token from memory, `credentials: "include"`, §7.4 error parsing, one automatic `/auth/refresh` retry on `401`.
@@ -559,9 +555,9 @@ Estimated size: ~26 small steps. Each is meant to be a half-day to one day of fo
 **Goal:** production readiness (§8.5, §19).
 
 **Build**
-1. **Scheduled jobs** (`node-cron`, started from `server.ts`, disabled in tests): daily purge of expired OTP challenges and expired/revoked refresh tokens; nightly orphan-file cleanup; nightly conflict re-scan with notifications (dedupe protects against repeats).
+1. **Scheduled jobs** (`node-cron`, started from `server.ts`, disabled in tests): daily purge of expired OTP challenges and expired/revoked refresh tokens; nightly orphan-file cleanup.
 2. **Security review checklist** (tick each, note results in `PROGRESS.md`): rate limits on all auth routes; `helmet`; CORS exact origins; `OTP_DEV_ECHO=false` and `COOKIE_SECURE=true` in production; no secrets in git (`git log -p | grep -i secret`); `npm audit --omit=dev` clean of high/critical; upload spoofing tests; IDOR tests for every `:id` route; SQL only via Knex bindings (grep for template-string SQL).
-3. **Performance pass:** run `EXPLAIN` on the queue listing, conflict computation and notification list with ~10k requisitions generated by a seed script; confirm indexes from §10.2 are used; paginate everything unbounded.
+3. **Performance pass:** run `EXPLAIN` on the queue listing, the allocation guard queries and the notification list with ~10k requisitions generated by a seed script; confirm indexes from §10.2 are used; paginate everything unbounded.
 4. **Backups:** script `scripts/backup.sh` (`mysqldump` + `tar uploads/`) and a documented restore test.
 5. Optional `scripts/import-local-storage.ts` (§16.4) to import an exported localStorage JSON; imported users have `password_hash = NULL` and must set a password.
 

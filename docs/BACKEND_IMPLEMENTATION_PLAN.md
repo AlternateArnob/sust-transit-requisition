@@ -41,7 +41,7 @@
 - **MUST / MUST NOT** are hard requirements. **SHOULD** is a strong default. **MAY** is optional.
 - Every business rule below was taken from the real frontend code. Where the frontend has a quirk or a weakness, this plan says so and states the **backend behaviour to build** (usually the stricter, correct one).
 - The frontend is the reference for **field names and shapes**. API JSON uses **camelCase** exactly like the frontend TypeScript types (`requesterName`, `startDate`, `stoppageSequence` …). Database columns use **snake_case**. The API layer converts between the two in one place (the "mapper" of each module).
-- The single biggest change from the prototype: **the server is the source of truth and enforces every rule.** The prototype trusted the browser for everything (status changes, permissions, conflict checks). The backend MUST NOT trust the client for anything except the user's intent.
+- The single biggest change from the prototype: **the server is the source of truth and enforces every rule.** The prototype trusted the browser for everything (status changes, permissions, allocation guards). The backend MUST NOT trust the client for anything except the user's intent.
 
 ---
 
@@ -73,7 +73,7 @@ Also out of scope for the first release: payments/accounts integration (the stat
 |---|---|---|
 | `Applicant` | Student / Teacher / Officer (profile type in `applicantProfile`) | `/dashboard`, `/apply`, `/my-requisitions`, `/my-mileage`, `/profile-setup` |
 | `DepartmentHead` | Head of a department **or** of an office (`headOfDepartment` / `headOfOffice`) | `/admin/recommender…` inbox, "Recommended by me", plus can apply like an applicant |
-| `TransportInCharge` | Transport Office officer | `/admin/requisitions` (assign vehicles, forward, send back), vehicles, drivers, schedules, conflicts |
+| `TransportInCharge` | Transport Office officer | `/admin/requisitions` (assign vehicles, forward, send back), vehicles, drivers, schedules |
 | `TransportAdministrator` | Transport Office approver | `/admin/requisitions` (approve/reject each trip, slips), same management pages |
 | `SuperAdmin` | System administrator | `/admin/users` (accounts), read-only oversight of operations |
 
@@ -98,7 +98,6 @@ The frontend keeps these collections in `localStorage` (key → meaning). The ba
 | `sust-transit-confirmation-slips` | generated confirmation slips | `confirmation_slips` |
 | `sust-transit-mileage` | mileage per trip | `mileage_entries` |
 | `sust-transit-notifications` | bell notifications | `notifications` |
-| `sust-transit-conflicts` | legacy, unused (conflicts are computed) | — (computed, no table) |
 
 Pages, and the API they need, are mapped in section 17.
 
@@ -182,7 +181,6 @@ server/
 │   │   ├── transportSchedule/    # student-transport free-after times
 │   │   ├── requisitions/         # applicant + recommender + TIC + admin actions
 │   │   ├── allocations/
-│   │   ├── conflicts/
 │   │   ├── slips/                # duty + confirmation slip records
 │   │   ├── mileage/
 │   │   ├── notifications/
@@ -193,7 +191,7 @@ server/
 │   │   ├── permissions.ts        # ← src/utils/permissions.ts
 │   │   ├── requisitionStatus.ts  # computeApplicationStatus, queues  ← requisitionUtils.ts
 │   │   ├── vehicleEligibility.ts # getVehicleEligibility, timeRangesOverlap ← allocationUtils.ts
-│   │   ├── conflicts.ts          # detectConflicts ← conflictUtils.ts
+│   │   ├── allocationGuards.ts   # off-day / schedule / status guards ← fleet/utils/allocationGuards.ts
 │   │   ├── schedule.ts           # weekday, off-day, free-after ← scheduleUtils.ts
 │   │   ├── mileage.ts            # eligibility ← mileageUtils.ts
 │   │   ├── recommendation.ts     # requiresRecommendation ← authUtils.ts
@@ -427,7 +425,6 @@ Port `src/utils/permissions.ts` into `src/domain/permissions.ts` and use it in b
 | Mark trip **Completed** | — | — | ✔ | ✔ | — |
 | Record **mileage** | — | — | ✔ | ✔ | — |
 | Manage vehicles, drivers, off-days, student-transport schedule | — | — | ✔ | ✔ | ✔ |
-| View conflicts / reassign / reject-from-conflict | — | — | ✔ | ✔ | view |
 | Manage user accounts (create Transport Office accounts, edit role/active, delete other Super Admins) | — | — | — | — | ✔ |
 | View dashboards | own | inbox counts | operations | operations | operations |
 
@@ -689,7 +686,7 @@ CREATE TABLE allocations (
   trip_id         CHAR(36) NOT NULL,
   vehicle_id      CHAR(36) NOT NULL,
   driver_id       CHAR(36) NULL,
-  alloc_date      DATE NOT NULL,                      -- copy of trip date (for conflict queries)
+  alloc_date      DATE NOT NULL,                      -- copy of trip date (for guard queries)
   start_time      TIME NOT NULL,
   end_time        TIME NOT NULL,
   allocated_by    CHAR(36) NOT NULL,
@@ -778,11 +775,10 @@ CREATE TABLE notifications (
   recipient_user_id CHAR(36) NOT NULL,                -- every notification has exactly one recipient
   type              VARCHAR(60) NOT NULL,             -- see section 13 (kept as VARCHAR so new types need no migration)
   message           VARCHAR(1000) NOT NULL,
-  link_type         ENUM('requisition','conflict','user') NOT NULL,
+  link_type         ENUM('requisition','user') NOT NULL,
   link_id           VARCHAR(64) NOT NULL,
   is_read           TINYINT(1) NOT NULL DEFAULT 0,
   read_at           DATETIME(3) NULL,
-  dedupe_key        VARCHAR(190) NULL,                -- e.g. 'conflict:<conflictId>:<recipient>' to avoid repeats
   created_at        DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   UNIQUE KEY uq_notif_dedupe (dedupe_key),
   KEY ix_notif_recipient (recipient_user_id, is_read, created_at),
@@ -967,24 +963,25 @@ The frontend's "Assign Vehicle" picker should call the **eligibility endpoint** 
 - When every `Completed` trip of the requisition has an entry → requisition status `Ready for Accounts` (status is only set from `Completed`/`Approved`/`Partially Approved` states; never regress from `Ready for Accounts`).
 - Applicant's "My Mileage" shows, per requisition: `not-applicable | not-ready | awaiting | recorded(totalKm)` — compute with the same logic in the API (`mileageStatus` field on the requisition list) so the client doesn't need all entries.
 
-### 11.9 Conflict detection (port of `detectConflicts`)
+### 11.9 Allocation guards (conflict prevention)
 
-Conflicts are **computed**, never stored. For every allocation (joined with its requisition/trip/vehicle) produce, all with `severity: "Blocking"`:
+Conflicts are **prevented at the source**, not detected afterwards. There is no Conflicts page, no `/conflicts` API and no "Conflict" notification. The same four rules are enforced **on the server** (the frontend also blocks them in the UI, but the server never trusts the client). Only **today's and future** allocations count; past trips are history and never block a vehicle.
 
-| Type | Condition |
-|---|---|
-| `Vehicle Unavailable` | vehicle is not `Active`, or `available_for_requisition = 0`, while still allocated |
-| `Off-Day Conflict` | off-day exists for the vehicle on the allocation date |
-| `Vehicle Double-Booked` | two allocations same vehicle + same date + overlapping times (report each pair once — use `allocation.id < other.id`) |
-| `Student Transport Conflict` | allocation start time is before the vehicle's "free after" time that weekday |
+| Rule | Where it is enforced | Behaviour |
+|---|---|---|
+| Vehicle must be `Active` and `available_for_requisition = 1` | Assigning a vehicle to a trip (11.6) | `409 VEHICLE_NOT_ELIGIBLE` |
+| Vehicle must not be on an off-day on the trip date | Assigning a vehicle (11.6) | `409 VEHICLE_NOT_ELIGIBLE` |
+| No double-booking: same vehicle + same date + overlapping times | Assigning a vehicle (11.6) | `409 VEHICLE_NOT_ELIGIBLE` |
+| Trip must start at or after the vehicle's student-transport "free after" time that weekday | Assigning a vehicle (11.6) | `409 VEHICLE_NOT_ELIGIBLE` |
+| Setting a vehicle to `Under Maintenance` / `Out-of-Service` or `available_for_requisition = 0` | Updating the vehicle (12.x vehicles) | `409 VEHICLE_HAS_UPCOMING_ALLOCATIONS` if it has any upcoming allocation |
+| Creating or updating an off-day | Off-days API (12.11) | `409 OFFDAY_CLASHES_WITH_ALLOCATIONS` if an upcoming allocation falls on that date (one-time) or weekday (recurring) |
+| Creating or replacing a student-transport entry | Transport-schedule API (12.12) | `409 SCHEDULE_CLASHES_WITH_ALLOCATIONS` if an upcoming allocation starts before the new "free after" time on a scheduled weekday |
 
-Conflict `id` = `<type-prefix>-<allocationId>` (`unavailable-…`, `offday-…`, `double-<a>-<b>`, `student-transport-…`) — stable so notifications can dedupe.
+Every `409` above returns `details: { allocations: [{ allocationId, requisitionId, tripId, date, startTime, endTime }] }` so the client can tell the user which trips must be reassigned first. The check and the write run in **one transaction**, locking the vehicle row (`SELECT … FOR UPDATE`) so two concurrent requests cannot both pass.
 
-**Conflict actions (Transport Office staff):**
-- **Reject trip** → same as an Administrator reject with reason `Schedule conflict`, remarks "Rejected due to a detected conflict", and the allocation is removed. (The frontend lets staff do this from the Conflicts page. Backend: allow `TransportInCharge` and `TransportAdministrator`; log in audit.)
-- **Reassign vehicle** → same endpoint as assigning a vehicle (11.6), replacing the allocation.
+The pure functions live in `domain/vehicleEligibility.ts` and `domain/allocationGuards.ts` (port of the frontend's `allocationUtils.ts` and `fleet/utils/allocationGuards.ts`).
 
-**Conflict notifications.** The frontend bell currently creates "Conflict" notifications on the client. Move this to the server: after any event that can create a conflict (vehicle status/availability change, off-day created, schedule changed, allocation created/changed), run `detectConflicts` for the affected vehicle/date and, for each **new** conflict, create a `Conflict` notification for every active `TransportInCharge` and `TransportAdministrator` using `dedupe_key = conflict:<conflictId>:<recipientId>` so it fires only once.
+Not included in this version (future improvements): showing why a vehicle is hidden, and an emergency breakdown reassignment workflow.
 
 ### 11.10 The 3-hour hold limit and route rules (port of `validators.ts`, `routeUtils.ts`)
 
@@ -1101,7 +1098,7 @@ Rules:
 - `category` ∈ the 10 values; `operationalStatus` ∈ `Active | Under Maintenance | Out-of-Service`.
 - Setting `permanentDriverId`: the driver must exist, be `Active`, and not be the permanent driver of another vehicle (`409`). Changing it moves the link (old driver freed) — in one transaction (port of `useVehicleDriverAssignment`).
 - **Delete** blocked with `409 VEHICLE_HAS_HISTORY` if any allocation or `allocation_history` row references it; otherwise allowed (off-days and schedule entries cascade).
-- On update of `operationalStatus` or `availableForRequisition`, run conflict detection for that vehicle (11.9) and raise `Conflict` notifications.
+- On update of `operationalStatus` or `availableForRequisition` to an unavailable state, apply the allocation guard (11.9): `409 VEHICLE_HAS_UPCOMING_ALLOCATIONS` if the vehicle has upcoming allocations.
 - Read access note: Applicants/DepartmentHeads never call vehicle endpoints; they only get vehicle info embedded in their own requisition detail (registration + category + driver name for approved trips).
 
 ### 12.6 Drivers — `/drivers`
@@ -1248,22 +1245,15 @@ Rules per action:
 - **`DELETE /trips/:id/allocation`**: only in In-Charge queue; history `removed`.
 - **`POST /requisitions/:id/forward`**: 11.6 forward check; status → `Pending Administrator`; clears `transport_office_remarks`; notify all active **TransportAdministrators** (`Forwarded to Administrator`: "{requester}'s requisition has a vehicle assigned and is ready for your decision.").
 - **`POST /trips/:id/approve`**: requisition in Administrator queue; trip must be `Pending`; sets `Approved`, clears rejection fields; recompute requisition status (11.5); notify the applicant (`Trip Approved`: "One of your trips was approved.").
-  - The server SHOULD re-run the eligibility/conflict check on the trip's allocation at approval time and block with `409 VEHICLE_NOT_ELIGIBLE` if a blocking conflict exists (improvement; the prototype did not check).
+  - The server SHOULD re-run the eligibility check (11.9) on the trip's allocation at approval time and block with `409 VEHICLE_NOT_ELIGIBLE` if the vehicle is no longer eligible (improvement; the prototype did not check).
 - **`POST /trips/:id/reject`**: `reason` required (enum), `remarks` optional; trip → `Rejected`; **delete its allocation**; recompute status; notify applicant (`Trip Rejected`: "One of your trips was rejected — {reason}{: remarks}.").
 - **`POST /trips/:id/reset-decision`**: trip must be `Approved` or `Rejected`; → `Pending`, clear rejection fields; **allocation kept**; recompute status (can move `Approved`/`Partially Approved` back); no notification.
 - **`POST /requisitions/:id/send-back-to-in-charge`**: `remarks` required; requisition in Administrator queue; status → `Pending on Transport Office`; stores `transport_office_remarks`; every trip → `Pending` + clear rejection fields; **delete all allocations**; notify all active **TransportInCharge** (`Sent Back to Transport In Charge`, "Transport Administrator sent this requisition back: {remarks}").
 - **`POST /trips/:id/complete`**: 11.7.
 
-### 12.10 Conflicts — `/conflicts`
+### 12.10 (removed)
 
-| Method | Path | Auth | Purpose |
-|---|---|---|---|
-| GET | `/conflicts` | TIC, TA, SuperAdmin | Computed list (11.9) |
-| POST | `/conflicts/:conflictId/reject-trip` | TIC, TA | Reject the conflicting trip (Schedule conflict) |
-| (reassign) | `PUT /trips/:tripId/allocation` | TIC | Use the normal allocation endpoint |
-
-Response item: `{ id, type, severity, vehicleId, vehicleLabel, requisitionId, requesterName, tripId, date, startTime, endTime, description }`.
-`conflictId` is the stable id from 11.9; the server recomputes and 404s if it no longer exists.
+There is no `/conflicts` API. See 11.9 for the guards that replace it. Reassigning a vehicle uses `PUT /trips/:tripId/allocation`.
 
 ### 12.11 Off-days — `/vehicles/:vehicleId/off-days` and `/off-days`
 
@@ -1274,7 +1264,7 @@ Response item: `{ id, type, severity, vehicleId, vehicleLabel, requisitionId, re
 | PATCH | `/off-days/:id` | same | Update |
 | DELETE | `/off-days/:id` | same | Delete |
 
-Validation: `One-time` requires `date` and forbids `weekday`; `Recurring` requires `weekday` and forbids `date`. After create/update, run conflict detection for that vehicle and raise notifications.
+Validation: `One-time` requires `date` and forbids `weekday`; `Recurring` requires `weekday` and forbids `date`. Before create/update, apply the off-day guard (11.9): `409 OFFDAY_CLASHES_WITH_ALLOCATIONS` if an upcoming allocation falls on that date/weekday.
 
 ### 12.12 Student-transport schedule — `/transport-schedule`
 
@@ -1286,7 +1276,7 @@ Validation: `One-time` requires `date` and forbids `weekday`; `Recurring` requir
 | PUT | `/transport-schedule/:vehicleId` | TIC, TA, SuperAdmin | Create-or-replace the entry for a vehicle |
 | DELETE | `/transport-schedule/:vehicleId` | same | Remove the entry |
 
-Entry JSON `{ id, vehicleId, schedule: { Sun?: "HH:mm", Mon?: …, … } }`. A weekday missing/empty ⇒ free all day. `HH:mm` validated. After a change → conflict detection for that vehicle.
+Entry JSON `{ id, vehicleId, schedule: { Sun?: "HH:mm", Mon?: …, … } }`. A weekday missing/empty ⇒ free all day. `HH:mm` validated. Before saving, apply the student-transport guard (11.9): `409 SCHEDULE_CLASHES_WITH_ALLOCATIONS` if an upcoming allocation starts before the new free-after time.
 
 Also expose `GET /schedule/lookup?date=YYYY-MM-DD` (admin roles) used by the "Schedule Lookup" page: for a date, return each vehicle with `{ vehicleId, registrationNumber, onOffDay, offDayInfo?, studentTransportFreeAfter?, allocations: [{tripId, requisitionId, startTime, endTime}] }`.
 
@@ -1337,7 +1327,7 @@ JSON: `{ id, type, message, timestamp, linkType, linkId, recipientUserId, isRead
 | GET | `/dashboard/operations` | TIC, TA, SuperAdmin | Counts for the Transport Office dashboard |
 | GET | `/dashboard/applicant` | Applicant, DepartmentHead | Counts for the applicant dashboard |
 
-Operations: `{ totalVehicles, activeVehicles, underMaintenance, todaysAllocations: Allocation-with-context[], pendingRequisitions (in role queue), conflicts: {count, items(top 5)}, unreadNotifications, activeDrivers }`. Applicant: `{ total, byStatus: {...}, pendingMileage, recent: RequisitionDto[] (5) }`. Use "today" in `Asia/Dhaka`.
+Operations: `{ totalVehicles, activeVehicles, underMaintenance, todaysAllocations: Allocation-with-context[], pendingRequisitions (in role queue), unreadNotifications, activeDrivers }`. Applicant: `{ total, byStatus: {...}, pendingMileage, recent: RequisitionDto[] (5) }`. Use "today" in `Asia/Dhaka`.
 
 ### 12.17 Files — `/files`
 
@@ -1370,7 +1360,6 @@ All notifications have **one recipient** (`recipient_user_id`) — the prototype
 | Administrator approves a trip | applicant | `Trip Approved` | requisition / id | "One of your trips was approved." |
 | Administrator rejects a trip | applicant | `Trip Rejected` | requisition / id | "One of your trips was rejected — {reason}{: remarks}." |
 | Administrator sends back to In-Charge | all active TransportInCharge | `Sent Back to Transport In Charge` | requisition / id | "Transport Administrator sent this requisition back: {remarks}" |
-| New blocking conflict detected | all active TransportInCharge + TransportAdministrator | `Conflict` | conflict / conflictId | the conflict `description`; `dedupe_key` prevents repeats |
 | Super Admin changes role/active | the affected user | `Account Status Changed` | user / userId | "Your account was … by a Super Admin." |
 | Submission with no Department Head configured | all active SuperAdmins | `Configuration` (new type) | requisition / id | "No Department Head is configured for {department}." |
 | (optional) Mileage recorded / Ready for Accounts | applicant | `Mileage Recorded` | requisition / id | "Mileage was recorded for your trip(s)." |
@@ -1379,7 +1368,7 @@ All notifications have **one recipient** (`recipient_user_id`) — the prototype
 
 Recipient resolution helpers (port of `notificationUtils.ts`): `findDepartmentHeadsForRequisition` (role DepartmentHead, verified, scope match — also require `is_active=1` on the server), `findTransportInCharge` and `findTransportAdministrators` (verified + `is_active`).
 
-Click-through routing is the **frontend's** job (already built: applicants → `/my-requisitions?open=<id>`; DepartmentHead → `/admin/recommender/<id>` or `/my-requisitions?open=` when it is their own requisition; Transport Office → `/admin/requisitions`; conflict → `/admin/conflicts`; user → `/admin/users` or `/profile-setup`).
+Click-through routing is the **frontend's** job (already built: applicants → `/my-requisitions?open=<id>`; DepartmentHead → `/admin/recommender/<id>` or `/my-requisitions?open=` when it is their own requisition; Transport Office → `/admin/requisitions`; user → `/admin/users` or `/profile-setup`).
 
 ---
 
@@ -1462,7 +1451,7 @@ Goal: replace each `localStorage` hook with an API-backed hook **without changin
 | `…sendBackToTransportInCharge` | `POST /requisitions/:id/send-back-to-in-charge` |
 | `…completeTrip`, `markReadyForAccounts` | `POST /trips/:id/complete` (Ready-for-Accounts is automatic after mileage) |
 | `useAllocations` + `AllocationPicker` + `getVehicleEligibility` | `GET /trips/:id/vehicle-options`, `PUT/DELETE /trips/:id/allocation` |
-| `ConflictsPage` + `detectConflicts` | `GET /conflicts`, `POST /conflicts/:id/reject-trip` |
+| `fleet/utils/allocationGuards.ts` | Guards in 11.9, enforced inside the vehicle, off-day and transport-schedule endpoints |
 | `useDutySlips`, `generateDutySlipPdf` | `/requisitions/:id/duty-slips…` (data) + existing jsPDF |
 | `generateConfirmationSlip` | `/requisitions/:id/confirmation-slip` (data) + existing jsPDF |
 | `useMileageEntries`, `MyMileagePage`, `MileageEntryForm` | `/mileage…`, `POST /trips/:id/mileage` |
@@ -1507,7 +1496,7 @@ Feature-flag per module is unnecessary; do a **module-by-module cut-over** follo
 8. Administrator: approve/reject/reset recompute status (all approved / all rejected / mixed); reject deletes allocation; reset keeps it; send back resets trips + clears allocations; In-Charge cannot approve; Administrator cannot allocate; Super Admin cannot mutate.
 9. Driver slip: TIC download allowed only when approved; before approval 409/403; TIC download creates **no** slip row; Administrator regenerate supersedes the old slip; slip data uses snapshot after the vehicle is edited.
 10. Completion + mileage: complete only `Approved` trips; requisition → `Completed`; mileage only for eligible (Personal + Teacher/Officer) completed trips with allocation; second entry for a trip → 409; last entry → `Ready for Accounts`.
-11. Conflicts: each of the four types detected; conflict notification created once (dedupe); reject-from-conflict removes allocation.
+11. Allocation guards: each of the seven rules in 11.9 returns the right `409` with the clashing allocations; past allocations never block; two concurrent requests cannot both pass.
 12. Users: cannot change own role; cannot demote last SuperAdmin; DepartmentHead requires scope; deactivated user's next request → 403 and refresh tokens revoked; delete only other SuperAdmin.
 13. Vehicles: duplicate registration (case-insensitive) → 409; delete with history → 409; permanent driver exclusivity; deactivating a driver frees the vehicle.
 14. Notifications: only own; mark read; read-all; each event in section 13 creates exactly the right rows.
@@ -1531,7 +1520,7 @@ Write an `audit_logs` row for: login success/failure, logout, password change, u
 ### 19.3 Operations
 
 - **Graceful shutdown** (stop accepting, finish in-flight, close pool).
-- **Scheduled jobs** (node-cron or a separate worker): purge expired OTP challenges and revoked/expired refresh tokens daily; orphan file cleanup nightly; (optional) a nightly conflict re-scan that raises notifications for conflicts that arose from date passing etc.
+- **Scheduled jobs** (node-cron or a separate worker): purge expired OTP challenges and revoked/expired refresh tokens daily; orphan file cleanup nightly.
 - **Backups:** daily `mysqldump` of the database + the `uploads/` directory; test restore.
 - **Time zone:** DB stores UTC; "today", application-number year, and dashboard "today's allocations" use `Asia/Dhaka`.
 - **Docker:** `Dockerfile` (multi-stage: build → run with `node dist/server.js`, non-root user) and `docker-compose.yml` (api + mysql + optional mailhog).
