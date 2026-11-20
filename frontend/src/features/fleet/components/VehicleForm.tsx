@@ -1,5 +1,10 @@
 import { useState } from "react";
 
+import useAllocations from "@/features/requisitions/hooks/useAllocations";
+import {
+  describeAllocations,
+  getAllocationsBlockedByUnavailability,
+} from "@/features/fleet/utils/allocationGuards";
 import useDrivers from "@/features/fleet/hooks/useDrivers";
 
 import {
@@ -27,6 +32,7 @@ export default function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleForm
   const isEditing = Boolean(vehicle);
 
   const { drivers } = useDrivers();
+  const { allocations } = useAllocations();
 
   /*
    * Only show:
@@ -89,6 +95,19 @@ export default function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleForm
 
     if (!validate()) {
       return;
+    }
+
+    const becomesUnavailable = operationalStatus !== "Active" || !availableForRequisition;
+
+    if (vehicle && becomesUnavailable) {
+      const stranded = getAllocationsBlockedByUnavailability(vehicle.id, allocations);
+
+      if (stranded.length > 0) {
+        setSubmitError(
+          `Cannot make this vehicle unavailable — it already has ${stranded.length} upcoming allocation(s): ${describeAllocations(stranded)}. Reassign or remove those allocations first.`,
+        );
+        return;
+      }
     }
 
     const vehicleData: Vehicle = {

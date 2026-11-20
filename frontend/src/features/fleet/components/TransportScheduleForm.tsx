@@ -1,5 +1,10 @@
 import { useState } from "react";
 
+import useAllocations from "@/features/requisitions/hooks/useAllocations";
+import {
+  describeAllocations,
+  getAllocationsBlockedByStudentTransport,
+} from "@/features/fleet/utils/allocationGuards";
 import useVehicles from "@/features/fleet/hooks/useVehicles";
 import useTransportSchedule from "@/features/fleet/hooks/useTransportSchedule";
 
@@ -44,6 +49,7 @@ export default function TransportScheduleForm({
 
   const { vehicles } = useVehicles();
   const { schedules } = useTransportSchedule();
+  const { allocations } = useAllocations();
 
   const initialDays: Record<Weekday, boolean> = {
     Sun: Boolean(route?.schedule.Sun),
@@ -114,6 +120,15 @@ export default function TransportScheduleForm({
       if (days[day]) {
         schedule[day] = freeAfterTime;
       }
+    }
+
+    const stranded = getAllocationsBlockedByStudentTransport(vehicleId, schedule, allocations);
+
+    if (stranded.length > 0) {
+      setSubmitError(
+        `Cannot save this schedule — the vehicle already has ${stranded.length} upcoming allocation(s) that start before it is free: ${describeAllocations(stranded)}. Reassign or remove those allocations first.`,
+      );
+      return;
     }
 
     const entry: StudentTransportVehicle = {
