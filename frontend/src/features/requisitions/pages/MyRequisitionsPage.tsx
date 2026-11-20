@@ -1,0 +1,172 @@
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+
+import useAuth from "@/features/auth/hooks/useAuth";
+import useRequisitions from "@/features/requisitions/hooks/useRequisitions";
+import useAllocations from "@/features/requisitions/hooks/useAllocations";
+import useVehicles from "@/features/fleet/hooks/useVehicles";
+import useDrivers from "@/features/fleet/hooks/useDrivers";
+
+import Modal from "@/shared/ui/Modal";
+import ApplicantRequisitionDetail from "@/features/requisitions/components/ApplicantRequisitionDetail";
+import ApplicantHeader from "@/app/layout/ApplicantHeader";
+import DataTable from "@/shared/ui/DataTable";
+import PageTitle from "@/shared/ui/PageTitle";
+import { ApplicationStatusBadge } from "@/shared/ui/StatusBadge";
+
+import { formatDateRange } from "@/features/requisitions/utils/requisitionUtils";
+import { generateConfirmationSlip } from "@/features/slips/utils/pdf/confirmationSlip";
+
+/**
+ * Applicant-facing "My Requisitions" page (spec §6, Post-Approval).
+ *
+ * Lists only the signed-in applicant's own requisitions (matched on
+ * `requesterId`) and lets them open each one in a read-only detail view.
+ * The Download Confirmation Slip button appears once the Transport
+ * Administrator has approved at least one trip (there is no separate
+ * "Final Approved" sign-off step) — everything else
+ * (approve/reject/allocate) stays admin/recommender-only and is
+ * intentionally not reachable here.
+ */
+export default function MyRequisitionsPage() {
+  const { currentUser } = useAuth();
+  const { requisitions } = useRequisitions();
+  const { allocations } = useAllocations();
+  const { vehicles } = useVehicles();
+  const { drivers } = useDrivers();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const myRequisitions = useMemo(() => {
+    if (!currentUser) return [];
+    return requisitions
+      .filter((requisition) => requisition.requesterId === currentUser.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [requisitions, currentUser]);
+
+  // A notification's "requisition" link deep-links here as
+  // /my-requisitions?open=<id> instead of an admin route. Once the list
+  // has loaded, open that requisition's detail modal automatically, then
+  // drop the query param so refreshing/closing doesn't reopen it.
+  //
+  // The "open" id is applied while rendering (React's documented way to
+  // adjust state from changing inputs) rather than inside an effect;
+  // `handledOpenId` stops it re-applying before the param is removed.
+  const openParam = searchParams.get("open");
+  const [handledOpenId, setHandledOpenId] = useState<string | null>(null);
+  if (
+    openParam &&
+    openParam !== handledOpenId &&
+    myRequisitions.some((requisition) => requisition.id === openParam)
+  ) {
+    setHandledOpenId(openParam);
+    setSelectedId(openParam);
+  } else if (!openParam && handledOpenId) {
+    setHandledOpenId(null);
+  }
+
+  useEffect(() => {
+    if (openParam && openParam === handledOpenId) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("open");
+      setSearchParams(next, { replace: true });
+    }
+  }, [openParam, handledOpenId, searchParams, setSearchParams]);
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const selected = myRequisitions.find((requisition) => requisition.id === selectedId);
+
+  function handleDownloadConfirmationSlip() {
+    if (!selected) return;
+    generateConfirmationSlip(selected, allocations, vehicles, drivers);
+  }
+
+  return (
+    <div className="min-h-screen bg-surface">
+      <ApplicantHeader active="my-requisitions" title="My Requisitions" />
+
+      <main className="mx-auto max-w-4xl px-4 py-10">
+        <div className="mb-6">
+          <PageTitle
+            title="Your requisitions"
+            subtitle="Track the status of every vehicle requisition you've submitted, and download the confirmation slip once the Transport Administrator approves."
+          />
+        </div>
+
+        <DataTable
+          rowKey={(requisition) => requisition.id}
+          rows={myRequisitions}
+          emptyTitle="No requisitions yet"
+          emptyDescription="Use New Requisition in the top bar to submit your first one."
+          columns={[
+            {
+              header: "Application No.",
+              render: (requisition) => (
+                <span className="font-medium text-text">{requisition.id}</span>
+              ),
+            },
+            {
+              header: "Purpose",
+              render: (requisition) => (
+                <span className="block max-w-xs truncate" title={requisition.purpose}>
+                  {requisition.purpose || "—"}
+                </span>
+              ),
+            },
+            {
+              header: "Date",
+              render: (requisition) => formatDateRange(requisition.startDate, requisition.endDate),
+            },
+            {
+              header: "Status",
+              render: (requisition) => <ApplicationStatusBadge status={requisition.status} />,
+            },
+            {
+              header: "Actions",
+              align: "right",
+              render: (requisition) => (
+                <div className="flex justify-end gap-4">
+                  {requisition.status === "Information Requested" ? (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/apply?resubmit=${requisition.id}`)}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Edit and Resubmit
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(requisition.id)}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    View
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+        />
+      </main>
+
+      {selected && (
+        <Modal title={`Requisition — ${selected.id}`} onClose={() => setSelectedId(null)} wide>
+          <ApplicantRequisitionDetail
+            requisition={selected}
+            vehicles={vehicles}
+            drivers={drivers}
+            allocations={allocations}
+            requester={currentUser}
+            onDownloadConfirmationSlip={handleDownloadConfirmationSlip}
+            onEditAndResubmit={() => navigate(`/apply?resubmit=${selected.id}`)}
+          />
+        </Modal>
+      )}
+    </div>
+  );
+}

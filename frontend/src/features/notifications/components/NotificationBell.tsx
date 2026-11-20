@@ -1,0 +1,166 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import useAuth from "@/features/auth/hooks/useAuth";
+import useNotifications from "@/features/notifications/hooks/useNotifications";
+import useRequisitions from "@/features/requisitions/hooks/useRequisitions";
+
+import type { AppNotification } from "@/types";
+
+export default function NotificationBell() {
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { notifications, markAsRead, markAllAsRead, unreadCount } = useNotifications();
+  const { requisitions } = useRequisitions();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const sorted = [...notifications].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  const recent = sorted.slice(0, 8);
+
+  function handleClick(notification: AppNotification) {
+    markAsRead(notification.id);
+    setIsOpen(false);
+
+    // An Applicant has no /admin access at all, so their
+    // notifications must resolve to applicant-facing schedules instead of
+    // the admin ones below.
+    if (currentUser?.role === "Applicant") {
+      if (notification.linkType === "requisition") {
+        navigate(`/my-requisitions?open=${notification.linkId}`);
+        return;
+      }
+      if (notification.linkType === "user") {
+        navigate("/profile-setup");
+        return;
+      }
+      navigate("/dashboard");
+      return;
+    }
+
+    // DepartmentHeads go straight to the recommender detail
+    // page for requisition pings so they can act on the inbox directly.
+    // Admins land on the requisitions queue; everyone else still falls
+    // back to the requisitions list.
+    if (notification.linkType === "requisition") {
+      // A Department Head also applies for vehicles; a ping about their
+      // OWN requisition belongs in My Requisitions, not the recommender
+      // inbox.
+      const isOwnRequisition = requisitions.some(
+        (item) => item.id === notification.linkId && item.requesterId === currentUser?.id,
+      );
+      if (currentUser?.role === "DepartmentHead" && isOwnRequisition) {
+        navigate(`/my-requisitions?open=${notification.linkId}`);
+        return;
+      }
+      const target =
+        currentUser?.role === "DepartmentHead"
+          ? `/admin/recommender/${notification.linkId}`
+          : "/admin/requisitions";
+      navigate(target);
+      return;
+    }
+
+    // Account activation/deactivation/role-change pings.
+    if (notification.linkType === "user") {
+      navigate("/admin/users");
+    }
+  }
+
+  return (
+    <div className="relative" ref={panelRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="relative rounded-md p-2 text-white hover:bg-white/10"
+        aria-label="Notifications"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+
+        {unreadCount > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-error px-1 text-[10px] font-medium text-white">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-border bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <p className="text-sm font-medium text-text">Notifications</p>
+
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                onClick={markAllAsRead}
+                className="text-xs font-medium text-secondary hover:underline"
+              >
+                Mark all read
+              </button>
+            )}
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            {recent.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-text-muted">No notifications yet</p>
+            ) : (
+              recent.map((notification) => (
+                <button
+                  key={notification.id}
+                  type="button"
+                  onClick={() => handleClick(notification)}
+                  className={`block w-full border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-surface ${
+                    notification.isRead ? "" : "bg-info-bg/40"
+                  }`}
+                >
+                  <p className="text-xs font-medium text-primary">{notification.type}</p>
+                  <p className="mt-0.5 text-sm text-text">{notification.message}</p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {new Date(notification.timestamp).toLocaleString()}
+                  </p>
+                </button>
+              ))
+            )}
+          </div>
+
+          <div className="border-t border-border px-4 py-2 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                navigate(
+                  currentUser?.role === "Applicant" ? "/notifications" : "/admin/notifications",
+                );
+              }}
+              className="text-xs font-medium text-secondary hover:underline"
+            >
+              See More
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
