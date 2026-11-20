@@ -3,7 +3,7 @@
  * one text box ("Campus -> Amborkhana -> Zindabazar -> Campus") instead
  * of a list of separate stop inputs. These helpers turn that text into
  * the ordered stop list the rest of the app (Trip.stoppageSequence,
- * slips, conflict checks) already expects.
+ * slips) already expects.
  */
 
 /** Separators accepted between stops: "->", "→", "=>", "—>", ">" or a new line. */

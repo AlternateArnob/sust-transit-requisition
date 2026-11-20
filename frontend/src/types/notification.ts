@@ -2,7 +2,6 @@ export type NotificationType =
   | "New Requisition"
   | "Resubmission"
   | "Recommendation"
-  | "Conflict"
   // Types used by the requisition workflow notifications (Transport
   // In-Charge, Administrator and applicant).
   | "Forwarded to Administrator"
@@ -18,7 +17,7 @@ export interface AppNotification {
   type: NotificationType;
   message: string;
   timestamp: string;
-  linkType: "requisition" | "conflict" | "user";
+  linkType: "requisition" | "user";
   linkId: string;
   /**
    * Recipient routing. When set, this notification only shows up

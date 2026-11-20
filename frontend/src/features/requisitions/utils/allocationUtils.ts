@@ -10,9 +10,8 @@ import type {
 /**
  * Reassigning a trip's vehicle/driver used to overwrite
  * the existing `Allocation` record in place (same `id`, fields
- * mutated). That's fine today only because the two callers
- * (`RequisitionsPage.tsx`'s pre-approval "Change Vehicle", and
- * `ConflictsPage.tsx`'s conflict-resolution reassign) both act before a
+ * mutated). That's fine today only because the only caller
+ * (`RequisitionsPage.tsx`'s pre-approval "Change Vehicle") acts before a
  * confirmation slip, duty slip, or mileage entry could exist for that
  * trip — nothing historical is actually at stake yet. But FRD §25 wants
  * reassignments to create a new record referencing the old one rather

@@ -32,7 +32,10 @@ export default function useNotifications() {
     }
 
     try {
-      return JSON.parse(stored);
+      const parsed: AppNotification[] = JSON.parse(stored);
+      // Conflict notifications were removed; drop any saved ones so they
+      // don't show up as links to a page that no longer exists.
+      return parsed.filter((notification) => (notification.linkType as string) !== "conflict");
     } catch {
       return [];
     }

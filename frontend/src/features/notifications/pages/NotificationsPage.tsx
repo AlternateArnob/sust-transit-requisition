@@ -59,17 +59,14 @@ export default function NotificationsPage() {
     // Routes the same way NotificationBell.tsx does.
     if (notification.linkType === "user") {
       navigate("/admin/users");
-      return;
     }
-
-    navigate("/admin/conflicts");
   }
 
   const body = (
     <div className="space-y-6">
       <PageTitle
         title="Notifications"
-        subtitle="New requisitions and detected conflicts"
+        subtitle="New requisitions and account updates"
         actions={
           notifications.some((notification) => !notification.isRead) ? (
             <Button variant="secondary" onClick={markAllAsRead}>

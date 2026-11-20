@@ -4,52 +4,17 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "@/features/auth/hooks/useAuth";
 import useNotifications from "@/features/notifications/hooks/useNotifications";
 import useRequisitions from "@/features/requisitions/hooks/useRequisitions";
-import useAllocations from "@/features/requisitions/hooks/useAllocations";
-import useVehicles from "@/features/fleet/hooks/useVehicles";
-import useOffDays from "@/features/fleet/hooks/useOffDays";
-import useTransportSchedule from "@/features/fleet/hooks/useTransportSchedule";
 
-import { detectConflicts } from "@/features/conflicts/utils/conflictUtils";
 import type { AppNotification } from "@/types";
 
 export default function NotificationBell() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { notifications, addNotification, markAsRead, markAllAsRead, unreadCount } =
-    useNotifications();
+  const { notifications, markAsRead, markAllAsRead, unreadCount } = useNotifications();
   const { requisitions } = useRequisitions();
-  const { allocations } = useAllocations();
-  const { vehicles } = useVehicles();
-  const { offDays } = useOffDays();
-  const { schedules } = useTransportSchedule();
 
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-
-  // Reconcile detected conflicts against already-notified ones on every render cycle
-  useEffect(() => {
-    const conflicts = detectConflicts(allocations, requisitions, vehicles, offDays, schedules);
-    const notifiedConflictIds = new Set(
-      notifications
-        .filter((notification) => notification.linkType === "conflict")
-        .map((notification) => notification.linkId),
-    );
-
-    conflicts.forEach((conflict) => {
-      if (!notifiedConflictIds.has(conflict.id)) {
-        addNotification({
-          id: crypto.randomUUID(),
-          type: "Conflict",
-          message: conflict.description,
-          timestamp: new Date().toISOString(),
-          linkType: "conflict",
-          linkId: conflict.id,
-          isRead: false,
-        });
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allocations, requisitions, vehicles, offDays, schedules]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -111,10 +76,7 @@ export default function NotificationBell() {
     // Account activation/deactivation/role-change pings.
     if (notification.linkType === "user") {
       navigate("/admin/users");
-      return;
     }
-
-    navigate("/admin/conflicts");
   }
 
   return (

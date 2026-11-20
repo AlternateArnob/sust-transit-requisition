@@ -22,7 +22,7 @@ import {
  * + a recent-activity panel) but scoped to just this applicant's own
  * requisitions (same `requesterId` filter MyRequisitionsPage.tsx uses)
  * and without any of the Transport Office-only concerns (vehicles,
- * drivers, conflicts) that page also covers.
+ * drivers) that page also covers.
  */
 export default function ApplicantDashboardPage() {
   const { currentUser } = useAuth();

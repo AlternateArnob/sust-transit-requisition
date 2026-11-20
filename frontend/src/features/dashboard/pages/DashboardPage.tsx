@@ -7,7 +7,7 @@ import TransportInChargeDashboard from "@/features/dashboard/components/Transpor
 
 /**
  * This used to be one dashboard computing
- * vehicle/driver/requisition/conflict stats unconditionally for every
+ * vehicle/driver/requisition stats unconditionally for every
  * role. Now branches by role: each one only computes and shows what
  * that role can actually act on, rather than e.g. running vehicle/
  * driver queries for a Super Admin who can no longer see vehicles or
