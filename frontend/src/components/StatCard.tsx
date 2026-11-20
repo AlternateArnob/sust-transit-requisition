@@ -14,18 +14,11 @@ const ACCENT_CLASSES: Record<NonNullable<StatCardProps["accent"]>, string> = {
   error: "text-error",
 };
 
-export default function StatCard({
-  label,
-  value,
-  href,
-  accent = "default",
-}: StatCardProps) {
+export default function StatCard({ label, value, href, accent = "default" }: StatCardProps) {
   const content = (
     <div className="rounded-lg border border-border bg-white p-5 transition hover:border-secondary">
       <p className="text-sm font-medium text-text-muted">{label}</p>
-      <p className={`mt-2 text-3xl font-semibold ${ACCENT_CLASSES[accent]}`}>
-        {value}
-      </p>
+      <p className={`mt-2 text-3xl font-semibold ${ACCENT_CLASSES[accent]}`}>{value}</p>
     </div>
   );
 

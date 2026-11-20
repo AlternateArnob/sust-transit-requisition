@@ -2,9 +2,7 @@ import { useMemo, useState } from "react";
 
 import GovFormMasthead from "./application/GovFormMasthead";
 import Step1Requester from "./application/Step1Requester";
-import Step2TransportUser, {
-  type TransportUserDraft,
-} from "./application/Step2TransportUser";
+import Step2TransportUser, { type TransportUserDraft } from "./application/Step2TransportUser";
 import Step3Journey from "./application/Step3Journey";
 import Step4Details, { type DetailsDraft } from "./application/Step4Details";
 import { ERROR_TEXT, SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
@@ -49,11 +47,7 @@ interface RequisitionFormProps {
  * previous implementation is intentionally removed; that path was the
  * admin-only prototype and does not model this user journey.
  */
-export default function RequisitionForm({
-  onSubmit,
-  onCancel,
-  initial,
-}: RequisitionFormProps) {
+export default function RequisitionForm({ onSubmit, onCancel, initial }: RequisitionFormProps) {
   const isResubmit = Boolean(initial);
   const { currentUser } = useAuth();
   const { addNotification } = useNotifications();
@@ -63,9 +57,7 @@ export default function RequisitionForm({
   // Shown in the form header and used as the requisition's id on submit.
   // Computed once on mount so it doesn't change while the form is open.
   const [applicationNumber] = useState(
-    () =>
-      initial?.id ??
-      generateApplicationNumber(existingRequisitions.map((item) => item.id)),
+    () => initial?.id ?? generateApplicationNumber(existingRequisitions.map((item) => item.id)),
   );
 
   const [sameAsRequester, setSameAsRequester] = useState(true);
@@ -78,9 +70,7 @@ export default function RequisitionForm({
   const [requisitionType, setRequisitionType] = useState<RequisitionType>(
     () =>
       initial?.requisitionType ??
-      (currentUser?.applicantProfile === "Student"
-        ? "Departmental/Official"
-        : "Personal"),
+      (currentUser?.applicantProfile === "Student" ? "Departmental/Official" : "Personal"),
   );
   const [trips, setTrips] = useState<TripDraft[]>(() =>
     initial && initial.trips.length > 0
@@ -119,20 +109,14 @@ export default function RequisitionForm({
 
   const requester = currentUser;
   const requiresRecommender = useMemo(
-    () =>
-      requiresRecommendation(
-        requester?.applicantProfile,
-        requisitionType,
-        requester?.role,
-      ),
+    () => requiresRecommendation(requester?.applicantProfile, requisitionType, requester?.role),
     [requester?.applicantProfile, requester?.role, requisitionType],
   );
 
   if (!requester) {
     return (
       <div className="border border-error-bg bg-error-bg/50 px-4 py-3 text-sm text-error">
-        You must be signed in to apply for a vehicle. Please register or log in
-        first.
+        You must be signed in to apply for a vehicle. Please register or log in first.
       </div>
     );
   }
@@ -171,13 +155,8 @@ export default function RequisitionForm({
       // Step 7 — 3-hour vehicle-hold limit is a hard block, not a
       // dismissible warning (folded into this step's validation per the
       // fix plan's Step 5.6).
-      if (
-        trip.startTime &&
-        trip.endTime &&
-        !isWithinHoldWindow(trip.startTime, trip.endTime)
-      ) {
-        next[`holdLimit-${trip.id}`] =
-          "This trip exceeds the 3-hour vehicle-hold limit.";
+      if (trip.startTime && trip.endTime && !isWithinHoldWindow(trip.startTime, trip.endTime)) {
+        next[`holdLimit-${trip.id}`] = "This trip exceeds the 3-hour vehicle-hold limit.";
       }
     }
 
@@ -325,10 +304,7 @@ export default function RequisitionForm({
 
   return (
     <div className="mx-auto rounded-lg border border-form-rule bg-white px-5 py-6 shadow-sm sm:px-10 sm:py-9">
-      <GovFormMasthead
-        formTitle="Vehicle Requisition Form"
-        applicationNo={applicationNumber}
-      />
+      <GovFormMasthead formTitle="Vehicle Requisition Form" applicationNo={applicationNumber} />
 
       <div className="mt-8 space-y-8">
         {initial && initial.status === "Information Requested" ? (
@@ -350,8 +326,7 @@ export default function RequisitionForm({
 
         {errorCount > 0 ? (
           <div className="rounded-md border border-form-seal/30 bg-form-seal/5 px-4 py-3 text-sm text-form-seal">
-            Please fix {errorCount} field{errorCount === 1 ? "" : "s"} below
-            before submitting.
+            Please fix {errorCount} field{errorCount === 1 ? "" : "s"} below before submitting.
           </div>
         ) : null}
 
@@ -386,11 +361,7 @@ export default function RequisitionForm({
         </FormSection>
 
         <FormSection title="Purpose and Supporting Document">
-          <Step4Details
-            value={details}
-            onChange={setDetails}
-            errors={{ reason: errors.reason }}
-          />
+          <Step4Details value={details} onChange={setDetails} errors={{ reason: errors.reason }} />
         </FormSection>
 
         {requiresRecommender ? (
@@ -405,8 +376,8 @@ export default function RequisitionForm({
               !
             </span>
             <p>
-              This requisition type requires your Department/Office Head to
-              recommend it before Admin can review it.
+              This requisition type requires your Department/Office Head to recommend it before
+              Admin can review it.
             </p>
           </div>
         ) : null}
@@ -420,12 +391,10 @@ export default function RequisitionForm({
               onChange={(event) => setDeclarationConfirmed(event.target.checked)}
               className="mt-0.5 h-4 w-4 rounded border-form-rule text-primary focus:ring-primary"
             />
-            I confirm the information above is accurate, and I accept
-            responsibility for the vehicle requested.
+            I confirm the information above is accurate, and I accept responsibility for the vehicle
+            requested.
           </label>
-          {errors.declaration ? (
-            <p className={`${ERROR_TEXT} ml-6`}>{errors.declaration}</p>
-          ) : null}
+          {errors.declaration ? <p className={`${ERROR_TEXT} ml-6`}>{errors.declaration}</p> : null}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-form-rule pt-5">
@@ -465,13 +434,7 @@ export default function RequisitionForm({
 }
 
 /** One titled section of the form, with a divider under its heading. */
-function FormSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className={SECTION_WRAP}>
       <h2 className={`${SECTION_TITLE} mb-3`}>{title}</h2>

@@ -33,15 +33,13 @@ export default function ProfileSetupPage() {
 
   const [fullName, setFullName] = useState(currentUser?.fullName ?? "");
   const [mobile, setMobile] = useState(currentUser?.mobile ?? "");
-  const [applicantProfile, setApplicantProfile] = useState<
-    ApplicantProfile | ""
-  >(currentUser?.applicantProfile ?? "");
+  const [applicantProfile, setApplicantProfile] = useState<ApplicantProfile | "">(
+    currentUser?.applicantProfile ?? "",
+  );
   const [department, setDepartment] = useState(currentUser?.department ?? "");
   const [office, setOffice] = useState(currentUser?.office ?? "");
   const [designation, setDesignation] = useState(currentUser?.designation ?? "");
-  const [studentRegNumber, setStudentRegNumber] = useState(
-    currentUser?.studentRegNumber ?? "",
-  );
+  const [studentRegNumber, setStudentRegNumber] = useState(currentUser?.studentRegNumber ?? "");
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | undefined>(
     currentUser?.signatureDataUrl,
   );
@@ -64,8 +62,7 @@ export default function ProfileSetupPage() {
   }, [isAuthenticated, currentUser, navigate]);
 
   const requiredFields = useMemo(
-    () =>
-      applicantProfile ? requiresProfileFields(applicantProfile) : [],
+    () => (applicantProfile ? requiresProfileFields(applicantProfile) : []),
     [applicantProfile],
   );
 
@@ -92,8 +89,7 @@ export default function ProfileSetupPage() {
 
     if (applicantProfile === "Student") {
       if (!department.trim()) next.department = "Department is required.";
-      if (!studentRegNumber.trim())
-        next.studentRegNumber = "Registration number is required.";
+      if (!studentRegNumber.trim()) next.studentRegNumber = "Registration number is required.";
     }
     if (applicantProfile === "Teacher") {
       if (!department.trim()) next.department = "Department is required.";
@@ -182,8 +178,7 @@ export default function ProfileSetupPage() {
               <SustLogo heightClass="h-14" />
               <div>
                 <p className="text-xs text-form-muted">
-                  Shahjalal University of Science and Technology · Transport
-                  Wing
+                  Shahjalal University of Science and Technology · Transport Wing
                 </p>
                 <h1 className="mt-1 inline-block border-b-2 border-form-action pb-1 text-lg font-bold uppercase tracking-wide text-form-action sm:text-xl">
                   Applicant Profile
@@ -193,242 +188,218 @@ export default function ProfileSetupPage() {
 
             <div className="text-right">
               <p className="text-xs text-form-muted">Account</p>
-              <p className="text-sm font-bold text-form-action">
-                {currentUser.email}
-              </p>
+              <p className="text-sm font-bold text-form-action">{currentUser.email}</p>
             </div>
           </header>
 
           <p className="mt-5 text-sm text-form-muted">
-            Update your details below at any time — this information is
-            shown on your requisitions.
+            Update your details below at any time — this information is shown on your requisitions.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-8">
             <ProfileSection title="Applicant Type">
               <div className="flex flex-col gap-4">
-            <ProfileField
-              label="Applicant profile"
-              required
-              error={errors.applicantProfile}
-            >
-              <select
-                value={applicantProfile}
-                onChange={(event) =>
-                  setApplicantProfile(event.target.value as ApplicantProfile)
-                }
-                className={inputClass()}
-              >
-                <option value="">Select…</option>
-                {APPLICANT_PROFILES.map((profile) => (
-                  <option key={profile} value={profile}>
-                    {profile}
-                  </option>
-                ))}
-              </select>
-            </ProfileField>
-
+                <ProfileField label="Applicant profile" required error={errors.applicantProfile}>
+                  <select
+                    value={applicantProfile}
+                    onChange={(event) =>
+                      setApplicantProfile(event.target.value as ApplicantProfile)
+                    }
+                    className={inputClass()}
+                  >
+                    <option value="">Select…</option>
+                    {APPLICANT_PROFILES.map((profile) => (
+                      <option key={profile} value={profile}>
+                        {profile}
+                      </option>
+                    ))}
+                  </select>
+                </ProfileField>
               </div>
             </ProfileSection>
 
             <ProfileSection title="Personal and Affiliation Details">
               <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <ProfileField
-                label="Full name"
-                required
-                error={errors.fullName}
-              >
-                <input
-                  value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
-                  className={inputClass(!!errors.fullName)}
-                />
-              </ProfileField>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <ProfileField label="Full name" required error={errors.fullName}>
+                    <input
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      className={inputClass(!!errors.fullName)}
+                    />
+                  </ProfileField>
 
-              <ProfileField
-                label="Mobile"
-                required
-                error={errors.mobile}
-              >
-                <input
-                  type="tel"
-                  value={mobile}
-                  onChange={(event) => setMobile(event.target.value)}
-                  className={inputClass(!!errors.mobile)}
-                />
-              </ProfileField>
-            </div>
+                  <ProfileField label="Mobile" required error={errors.mobile}>
+                    <input
+                      type="tel"
+                      value={mobile}
+                      onChange={(event) => setMobile(event.target.value)}
+                      className={inputClass(!!errors.mobile)}
+                    />
+                  </ProfileField>
+                </div>
 
-            {applicantProfile === "Student" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <ProfileField
-                  label="Department"
-                  required
-                  locked={isLocked("department")}
-                  error={errors.department}
-                >
-                  <select
-                    value={department}
-                    onChange={(event) => setDepartment(event.target.value)}
-                    disabled={lockActive && isLocked("department")}
-                    className={inputClass(!!errors.department)}
-                  >
-                    <option value="">Select department…</option>
-                    {DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
-                      </option>
-                    ))}
-                  </select>
-                </ProfileField>
-                <ProfileField
-                  label="Student registration number"
-                  required
-                  locked={isLocked("studentRegNumber")}
-                  error={errors.studentRegNumber}
-                >
-                  <input
-                    value={studentRegNumber}
-                    onChange={(event) =>
-                      setStudentRegNumber(event.target.value)
-                    }
-                    disabled={lockActive && isLocked("studentRegNumber")}
-                    className={inputClass(!!errors.studentRegNumber)}
-                  />
-                </ProfileField>
-              </div>
-            ) : null}
+                {applicantProfile === "Student" ? (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <ProfileField
+                      label="Department"
+                      required
+                      locked={isLocked("department")}
+                      error={errors.department}
+                    >
+                      <select
+                        value={department}
+                        onChange={(event) => setDepartment(event.target.value)}
+                        disabled={lockActive && isLocked("department")}
+                        className={inputClass(!!errors.department)}
+                      >
+                        <option value="">Select department…</option>
+                        {DEPARTMENTS.map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
+                      </select>
+                    </ProfileField>
+                    <ProfileField
+                      label="Student registration number"
+                      required
+                      locked={isLocked("studentRegNumber")}
+                      error={errors.studentRegNumber}
+                    >
+                      <input
+                        value={studentRegNumber}
+                        onChange={(event) => setStudentRegNumber(event.target.value)}
+                        disabled={lockActive && isLocked("studentRegNumber")}
+                        className={inputClass(!!errors.studentRegNumber)}
+                      />
+                    </ProfileField>
+                  </div>
+                ) : null}
 
-            {applicantProfile === "Teacher" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <ProfileField
-                  label="Department"
-                  required
-                  locked={isLocked("department")}
-                  error={errors.department}
-                >
-                  <select
-                    value={department}
-                    onChange={(event) => setDepartment(event.target.value)}
-                    disabled={lockActive && isLocked("department")}
-                    className={inputClass(!!errors.department)}
-                  >
-                    <option value="">Select department…</option>
-                    {DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
-                      </option>
-                    ))}
-                  </select>
-                </ProfileField>
-                <ProfileField
-                  label="Designation"
-                  required
-                  locked={isLocked("designation")}
-                  error={errors.designation}
-                >
-                  <input
-                    value={designation}
-                    onChange={(event) => setDesignation(event.target.value)}
-                    disabled={lockActive && isLocked("designation")}
-                    className={inputClass(!!errors.designation)}
-                  />
-                </ProfileField>
-              </div>
-            ) : null}
+                {applicantProfile === "Teacher" ? (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <ProfileField
+                      label="Department"
+                      required
+                      locked={isLocked("department")}
+                      error={errors.department}
+                    >
+                      <select
+                        value={department}
+                        onChange={(event) => setDepartment(event.target.value)}
+                        disabled={lockActive && isLocked("department")}
+                        className={inputClass(!!errors.department)}
+                      >
+                        <option value="">Select department…</option>
+                        {DEPARTMENTS.map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
+                      </select>
+                    </ProfileField>
+                    <ProfileField
+                      label="Designation"
+                      required
+                      locked={isLocked("designation")}
+                      error={errors.designation}
+                    >
+                      <input
+                        value={designation}
+                        onChange={(event) => setDesignation(event.target.value)}
+                        disabled={lockActive && isLocked("designation")}
+                        className={inputClass(!!errors.designation)}
+                      />
+                    </ProfileField>
+                  </div>
+                ) : null}
 
-            {applicantProfile === "Officer" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <ProfileField
-                  label="Office"
-                  required
-                  locked={isLocked("office")}
-                  error={errors.office}
-                >
-                  <select
-                    value={office}
-                    onChange={(event) => setOffice(event.target.value)}
-                    disabled={lockActive && isLocked("office")}
-                    className={inputClass(!!errors.office)}
-                  >
-                    <option value="">Select office…</option>
-                    {OFFICES.map((off) => (
-                      <option key={off} value={off}>
-                        {off}
-                      </option>
-                    ))}
-                  </select>
-                </ProfileField>
-                <ProfileField
-                  label="Designation"
-                  required
-                  locked={isLocked("designation")}
-                  error={errors.designation}
-                >
-                  <input
-                    value={designation}
-                    onChange={(event) => setDesignation(event.target.value)}
-                    disabled={lockActive && isLocked("designation")}
-                    className={inputClass(!!errors.designation)}
-                  />
-                </ProfileField>
-              </div>
-            ) : null}
-
+                {applicantProfile === "Officer" ? (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <ProfileField
+                      label="Office"
+                      required
+                      locked={isLocked("office")}
+                      error={errors.office}
+                    >
+                      <select
+                        value={office}
+                        onChange={(event) => setOffice(event.target.value)}
+                        disabled={lockActive && isLocked("office")}
+                        className={inputClass(!!errors.office)}
+                      >
+                        <option value="">Select office…</option>
+                        {OFFICES.map((off) => (
+                          <option key={off} value={off}>
+                            {off}
+                          </option>
+                        ))}
+                      </select>
+                    </ProfileField>
+                    <ProfileField
+                      label="Designation"
+                      required
+                      locked={isLocked("designation")}
+                      error={errors.designation}
+                    >
+                      <input
+                        value={designation}
+                        onChange={(event) => setDesignation(event.target.value)}
+                        disabled={lockActive && isLocked("designation")}
+                        className={inputClass(!!errors.designation)}
+                      />
+                    </ProfileField>
+                  </div>
+                ) : null}
               </div>
             </ProfileSection>
 
             <ProfileSection title="Signature">
-            <ProfileField
-              label="Signature"
-              error={errors.signature}
-              helperText="PNG or JPG, ideally on a light background."
-            >
-              <SignatureUpload
-                value={signatureDataUrl}
-                onChange={setSignatureDataUrl}
-              />
-            </ProfileField>
-
+              <ProfileField
+                label="Signature"
+                error={errors.signature}
+                helperText="PNG or JPG, ideally on a light background."
+              >
+                <SignatureUpload value={signatureDataUrl} onChange={setSignatureDataUrl} />
+              </ProfileField>
             </ProfileSection>
 
             <ProfileSection title="Account Security">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <ProfileField
-                label={hasExistingPassword ? "New password" : "Password"}
-                required={!hasExistingPassword}
-                error={errors.password}
-                helperText={
-                  hasExistingPassword
-                    ? "Leave blank to keep your current password."
-                    : `At least ${MIN_PASSWORD_LENGTH} characters. You'll use this with your email to log in.`
-                }
-              >
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className={inputClass(!!errors.password)}
-                />
-              </ProfileField>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <ProfileField
+                  label={hasExistingPassword ? "New password" : "Password"}
+                  required={!hasExistingPassword}
+                  error={errors.password}
+                  helperText={
+                    hasExistingPassword
+                      ? "Leave blank to keep your current password."
+                      : `At least ${MIN_PASSWORD_LENGTH} characters. You'll use this with your email to log in.`
+                  }
+                >
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className={inputClass(!!errors.password)}
+                  />
+                </ProfileField>
 
-              <ProfileField
-                label="Confirm password"
-                required={!hasExistingPassword}
-                error={errors.confirmPassword}
-              >
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  className={inputClass(!!errors.confirmPassword)}
-                />
-              </ProfileField>
-            </div>
-
+                <ProfileField
+                  label="Confirm password"
+                  required={!hasExistingPassword}
+                  error={errors.confirmPassword}
+                >
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    className={inputClass(!!errors.confirmPassword)}
+                  />
+                </ProfileField>
+              </div>
             </ProfileSection>
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-form-rule pt-5">
@@ -454,13 +425,7 @@ export default function ProfileSetupPage() {
 }
 
 /** One titled section of the profile form, matching the requisition form. */
-function ProfileSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function ProfileSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="pt-1">
       <h2 className={`${SECTION_TITLE} mb-4`}>{title}</h2>

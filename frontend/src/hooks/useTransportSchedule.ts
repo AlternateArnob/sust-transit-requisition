@@ -1,8 +1,5 @@
 import useLocalStorageCollection from "./useLocalStorageCollection";
-import type {
-  StudentTransportVehicle,
-  StudentTransportSchedule,
-} from "../types";
+import type { StudentTransportVehicle, StudentTransportSchedule } from "../types";
 import { STORAGE_KEYS } from "../data/storageKeys";
 
 // Storage key intentionally left as the pre-Phase-3 name — renaming it
@@ -60,13 +57,12 @@ function migrate(
 }
 
 export default function useTransportSchedule() {
-  const { items, add, update, remove } =
-    useLocalStorageCollection<
-      StudentTransportVehicle & {
-        freeAfterTime?: string;
-        schedule?: StudentTransportSchedule;
-      }
-    >(STORAGE_KEY);
+  const { items, add, update, remove } = useLocalStorageCollection<
+    StudentTransportVehicle & {
+      freeAfterTime?: string;
+      schedule?: StudentTransportSchedule;
+    }
+  >(STORAGE_KEY);
 
   const schedules = items.map(migrate);
 

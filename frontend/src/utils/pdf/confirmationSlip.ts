@@ -31,9 +31,7 @@ export function generateConfirmationSlip(
     ["Date Range", `${requisition.startDate} to ${requisition.endDate}`],
   ];
 
-  const passengerGroups = [
-    ...new Set(requisition.trips.flatMap((trip) => trip.passengerGroups)),
-  ];
+  const passengerGroups = [...new Set(requisition.trips.flatMap((trip) => trip.passengerGroups))];
 
   if (passengerGroups.length > 0) {
     infoLines.push(["Target Passenger Group(s)", passengerGroups.join(", ")]);
@@ -56,9 +54,7 @@ export function generateConfirmationSlip(
     return [
       trip.date,
       `${trip.startTime}–${trip.endTime}`,
-      vehicle
-        ? `${vehicle.registrationNumber}\n${vehicle.category}`
-        : "Not allocated",
+      vehicle ? `${vehicle.registrationNumber}\n${vehicle.category}` : "Not allocated",
       assignedDriver ? `${assignedDriver.name}\n${assignedDriver.phone ?? ""}` : "—",
       trip.stoppageSequence.join(" -> ") || trip.route,
       trip.status === "Rejected"

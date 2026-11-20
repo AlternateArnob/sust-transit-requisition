@@ -48,13 +48,7 @@ export default function RequireAuth({
   }, [currentUser, isActive, logout]);
 
   if (!isAuthenticated || !currentUser) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: location.pathname + location.search }}
-      />
-    );
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   }
 
   if (!isActive) {
@@ -66,8 +60,7 @@ export default function RequireAuth({
         to="/login"
         replace
         state={{
-          message:
-            "This account has been deactivated. Contact a Super Admin for access.",
+          message: "This account has been deactivated. Contact a Super Admin for access.",
         }}
       />
     );
@@ -78,12 +71,10 @@ export default function RequireAuth({
       return (
         <div className="flex min-h-screen items-center justify-center bg-surface p-6">
           <div className="max-w-md rounded-lg border border-border bg-white p-6 text-center">
-            <h2 className="text-lg font-semibold text-text">
-              Verify your account to continue
-            </h2>
+            <h2 className="text-lg font-semibold text-text">Verify your account to continue</h2>
             <p className="mt-2 text-sm text-text-muted">
-              Your account is not yet verified. Complete the OTP step to
-              unlock requisition submissions.
+              Your account is not yet verified. Complete the OTP step to unlock requisition
+              submissions.
             </p>
             <Link
               to="/otp"
@@ -96,9 +87,7 @@ export default function RequireAuth({
         </div>
       );
     }
-    return (
-      <Navigate to="/otp" replace state={{ email: currentUser.email }} />
-    );
+    return <Navigate to="/otp" replace state={{ email: currentUser.email }} />;
   }
 
   if (roles && !roles.includes(currentUser.role)) {

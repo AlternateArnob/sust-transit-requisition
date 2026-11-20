@@ -23,11 +23,7 @@ interface FormErrors {
   operationalStatus?: string;
 }
 
-export default function VehicleForm({
-  vehicle,
-  onSubmit,
-  onCancel,
-}: VehicleFormProps) {
+export default function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
   const isEditing = Boolean(vehicle);
 
   const { drivers } = useDrivers();
@@ -44,9 +40,7 @@ export default function VehicleForm({
       (!member.permanentVehicleId || member.permanentVehicleId === vehicle?.id),
   );
 
-  const [registrationNumber, setRegistrationNumber] = useState(
-    vehicle?.registrationNumber ?? "",
-  );
+  const [registrationNumber, setRegistrationNumber] = useState(vehicle?.registrationNumber ?? "");
 
   const [category, setCategory] = useState<VehicleCategory>(
     vehicle?.category ?? VEHICLE_CATEGORIES[0],
@@ -58,10 +52,7 @@ export default function VehicleForm({
     vehicle?.operationalStatus ?? "Active",
   );
 
-
-  const [permanentDriverId, setPermanentDriverId] = useState(
-    vehicle?.permanentDriverId ?? "",
-  );
+  const [permanentDriverId, setPermanentDriverId] = useState(vehicle?.permanentDriverId ?? "");
 
   const [availableForRequisition, setAvailableForRequisition] = useState(
     vehicle?.availableForRequisition ?? true,
@@ -70,7 +61,6 @@ export default function VehicleForm({
   const [errors, setErrors] = useState<FormErrors>({});
 
   const [submitError, setSubmitError] = useState("");
-
 
   function validate(): boolean {
     const newErrors: FormErrors = {};
@@ -163,9 +153,7 @@ export default function VehicleForm({
         />
 
         {errors.registrationNumber && (
-          <p className="mt-1 text-xs text-error">
-            {errors.registrationNumber}
-          </p>
+          <p className="mt-1 text-xs text-error">{errors.registrationNumber}</p>
         )}
       </div>
 
@@ -185,9 +173,7 @@ export default function VehicleForm({
         <select
           id="category"
           value={category}
-          onChange={(event) =>
-            setCategory(event.target.value as VehicleCategory)
-          }
+          onChange={(event) => setCategory(event.target.value as VehicleCategory)}
           className="
             h-10 w-full rounded-md
             border border-border
@@ -206,9 +192,7 @@ export default function VehicleForm({
           ))}
         </select>
 
-        {errors.category && (
-          <p className="mt-1 text-xs text-error">{errors.category}</p>
-        )}
+        {errors.category && <p className="mt-1 text-xs text-error">{errors.category}</p>}
       </div>
 
       {/* Fuel */}
@@ -260,9 +244,7 @@ export default function VehicleForm({
         <select
           id="operationalStatus"
           value={operationalStatus}
-          onChange={(event) =>
-            setOperationalStatus(event.target.value as VehicleStatus)
-          }
+          onChange={(event) => setOperationalStatus(event.target.value as VehicleStatus)}
           className="
             h-10 w-full rounded-md
             border border-border
@@ -282,9 +264,7 @@ export default function VehicleForm({
         </select>
 
         {errors.operationalStatus && (
-          <p className="mt-1 text-xs text-error">
-            {errors.operationalStatus}
-          </p>
+          <p className="mt-1 text-xs text-error">{errors.operationalStatus}</p>
         )}
       </div>
 
@@ -393,18 +373,11 @@ export default function VehicleForm({
         pt-4
       "
       >
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className={buttonClass("primary")}
-        >
+        <button type="submit" className={buttonClass("primary")}>
           {isEditing ? "Save Changes" : "Add Vehicle"}
         </button>
       </div>

@@ -43,8 +43,7 @@ export function computeApplicationStatus(
  *  state and the (rare) case a Transport Administrator sent one back. */
 export function isInTransportInChargeQueue(requisition: Requisition): boolean {
   return (
-    requisition.status === "Recommended" ||
-    requisition.status === "Pending on Transport Office"
+    requisition.status === "Recommended" || requisition.status === "Pending on Transport Office"
   );
 }
 
@@ -52,20 +51,14 @@ export function isInTransportInChargeQueue(requisition: Requisition): boolean {
  *  approve/reject decision (FRD §19). "Partially Approved" stays here
  *  too so remaining Pending trips on an already-partly-decided
  *  application are still reachable. */
-export function isInTransportAdministratorQueue(
-  requisition: Requisition,
-): boolean {
+export function isInTransportAdministratorQueue(requisition: Requisition): boolean {
   return (
-    requisition.status === "Pending Administrator" ||
-    requisition.status === "Partially Approved"
+    requisition.status === "Pending Administrator" || requisition.status === "Partially Approved"
   );
 }
 
 export function isInActiveQueue(requisition: Requisition): boolean {
-  return (
-    isInTransportInChargeQueue(requisition) ||
-    isInTransportAdministratorQueue(requisition)
-  );
+  return isInTransportInChargeQueue(requisition) || isInTransportAdministratorQueue(requisition);
 }
 
 export function getTripStatusCounts(trips: Trip[]) {
@@ -96,10 +89,7 @@ export function requisitionTypeBadgeClass(type: Requisition["requisitionType"]) 
  * requisition id itself, so the number shown on the form is the same one
  * the applicant and the Transport Office see everywhere afterwards.
  */
-export function generateApplicationNumber(
-  existingIds: string[],
-  now: Date = new Date(),
-): string {
+export function generateApplicationNumber(existingIds: string[], now: Date = new Date()): string {
   const year = now.getFullYear();
   const pattern = new RegExp(`^TRS-${year}-(\\d+)$`);
   let highest = 0;

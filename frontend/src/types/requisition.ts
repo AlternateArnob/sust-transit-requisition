@@ -3,11 +3,7 @@ import type { ApplicantProfile } from "./user";
 
 export type RequisitionType = "Personal" | "Departmental/Official" | "Club";
 
-export const REQUISITION_TYPES: RequisitionType[] = [
-  "Personal",
-  "Departmental/Official",
-  "Club",
-];
+export const REQUISITION_TYPES: RequisitionType[] = ["Personal", "Departmental/Official", "Club"];
 
 /**
  * Phase 1 (admin module) — the flat "Pending Approval" stage is now two
@@ -51,10 +47,7 @@ export type TripStatus = "Pending" | "Approved" | "Rejected" | "Completed";
 export type ScheduleType = "Single" | "Recurring";
 
 export type RejectionReason =
-  | "Vehicle unavailable"
-  | "Driver unavailable"
-  | "Schedule conflict"
-  | "Other";
+  "Vehicle unavailable" | "Driver unavailable" | "Schedule conflict" | "Other";
 
 export const REJECTION_REASONS: RejectionReason[] = [
   "Vehicle unavailable",

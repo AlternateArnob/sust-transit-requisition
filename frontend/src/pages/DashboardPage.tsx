@@ -52,30 +52,33 @@ export default function DashboardPage() {
 
 function DashboardHeader({ subtitle }: { subtitle: string }) {
   return (
-    <PageTitle title="Dashboard" subtitle={<>{subtitle} —{" "}
-        {new Date().toLocaleDateString(undefined, {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}</>} />
+    <PageTitle
+      title="Dashboard"
+      subtitle={
+        <>
+          {subtitle} —{" "}
+          {new Date().toLocaleDateString(undefined, {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </>
+      }
+    />
   );
 }
 
 function SuperAdminDashboard() {
   const { users } = useUsers();
 
-  const transportOfficeUsers = users.filter((user) =>
-    ADMIN_ROLES.includes(user.role as AdminRole),
-  );
+  const transportOfficeUsers = users.filter((user) => ADMIN_ROLES.includes(user.role as AdminRole));
 
   function countByRole(role: AdminRole): number {
     return transportOfficeUsers.filter((user) => user.role === role).length;
   }
 
-  const deactivatedCount = transportOfficeUsers.filter(
-    (user) => user.isActive === false,
-  ).length;
+  const deactivatedCount = transportOfficeUsers.filter((user) => user.isActive === false).length;
 
   return (
     <div className="space-y-6">
@@ -97,11 +100,7 @@ function SuperAdminDashboard() {
           value={countByRole("TransportAdministrator")}
           href="/admin/users"
         />
-        <StatCard
-          label="Super Admin"
-          value={countByRole("SuperAdmin")}
-          href="/admin/users"
-        />
+        <StatCard label="Super Admin" value={countByRole("SuperAdmin")} href="/admin/users" />
         <StatCard
           label="Deactivated Accounts"
           value={deactivatedCount}
@@ -124,31 +123,19 @@ function TransportAdministratorDashboard() {
 
   const today = todayString();
 
-  const todaysAllocations = allocations.filter(
-    (allocation) => allocation.date === today,
-  );
+  const todaysAllocations = allocations.filter((allocation) => allocation.date === today);
 
   const pendingRequisitions = requisitions.filter(isInActiveQueue).length;
 
-  const conflicts = detectConflicts(
-    allocations,
-    requisitions,
-    vehicles,
-    offDays,
-    schedules,
-  );
-  const blockingConflicts = conflicts.filter(
-    (conflict) => conflict.severity === "Blocking",
-  ).length;
+  const conflicts = detectConflicts(allocations, requisitions, vehicles, offDays, schedules);
+  const blockingConflicts = conflicts.filter((conflict) => conflict.severity === "Blocking").length;
 
   // Still needed for display only (labeling allocations below) — TA no
   // longer manages vehicles/drivers, but still sees which ones are tied
   // to the requisitions they're approving/completing.
   function getVehicleLabel(vehicleId: string) {
     const vehicle = vehicles.find((item) => item.id === vehicleId);
-    return vehicle
-      ? `${vehicle.registrationNumber} (${vehicle.category})`
-      : "Unknown Vehicle";
+    return vehicle ? `${vehicle.registrationNumber} (${vehicle.category})` : "Unknown Vehicle";
   }
 
   function getDriverName(driverId?: string) {
@@ -156,9 +143,7 @@ function TransportAdministratorDashboard() {
       return "No driver";
     }
 
-    return (
-      drivers.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
-    );
+    return drivers.find((member) => member.id === driverId)?.name ?? "Unknown Driver";
   }
 
   return (
@@ -183,19 +168,13 @@ function TransportAdministratorDashboard() {
           href="/admin/conflicts"
           accent={blockingConflicts > 0 ? "error" : "default"}
         />
-        <StatCard
-          label="Unread Notifications"
-          value={unreadCount}
-          href="/admin/notifications"
-        />
+        <StatCard label="Unread Notifications" value={unreadCount} href="/admin/notifications" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-lg border border-border bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <p className="text-sm font-medium text-text">
-              Today's Allocations
-            </p>
+            <p className="text-sm font-medium text-text">Today's Allocations</p>
 
             <Link
               to="/admin/requisitions"
@@ -229,9 +208,7 @@ function TransportAdministratorDashboard() {
 
         <div className="rounded-lg border border-border bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <p className="text-sm font-medium text-text">
-              Active Conflicts
-            </p>
+            <p className="text-sm font-medium text-text">Active Conflicts</p>
 
             <Link
               to="/admin/conflicts"
@@ -260,14 +237,10 @@ function TransportAdministratorDashboard() {
                       {conflict.severity}
                     </span>
 
-                    <p className="text-sm font-medium text-text">
-                      {conflict.type}
-                    </p>
+                    <p className="text-sm font-medium text-text">{conflict.type}</p>
                   </div>
 
-                  <p className="mt-1 text-xs text-text-muted">
-                    {conflict.description}
-                  </p>
+                  <p className="mt-1 text-xs text-text-muted">{conflict.description}</p>
                 </div>
               ))
             )}
@@ -301,32 +274,18 @@ function TransportInChargeDashboard() {
     (vehicle) => vehicle.operationalStatus === "Under Maintenance",
   ).length;
 
-  const todaysAllocations = allocations.filter(
-    (allocation) => allocation.date === today,
-  );
+  const todaysAllocations = allocations.filter((allocation) => allocation.date === today);
 
   const pendingRequisitions = requisitions.filter(isInActiveQueue).length;
 
-  const conflicts = detectConflicts(
-    allocations,
-    requisitions,
-    vehicles,
-    offDays,
-    schedules,
-  );
-  const blockingConflicts = conflicts.filter(
-    (conflict) => conflict.severity === "Blocking",
-  ).length;
+  const conflicts = detectConflicts(allocations, requisitions, vehicles, offDays, schedules);
+  const blockingConflicts = conflicts.filter((conflict) => conflict.severity === "Blocking").length;
 
-  const activeDrivers = drivers.filter(
-    (member) => member.status === "Active",
-  ).length;
+  const activeDrivers = drivers.filter((member) => member.status === "Active").length;
 
   function getVehicleLabel(vehicleId: string) {
     const vehicle = vehicles.find((item) => item.id === vehicleId);
-    return vehicle
-      ? `${vehicle.registrationNumber} (${vehicle.category})`
-      : "Unknown Vehicle";
+    return vehicle ? `${vehicle.registrationNumber} (${vehicle.category})` : "Unknown Vehicle";
   }
 
   function getDriverName(driverId?: string) {
@@ -334,9 +293,7 @@ function TransportInChargeDashboard() {
       return "No driver";
     }
 
-    return (
-      drivers.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
-    );
+    return drivers.find((member) => member.id === driverId)?.name ?? "Unknown Driver";
   }
 
   return (
@@ -345,11 +302,7 @@ function TransportInChargeDashboard() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Total Vehicle"
-          value={vehicles.length}
-          href="/admin/vehicle"
-        />
+        <StatCard label="Total Vehicle" value={vehicles.length} href="/admin/vehicle" />
         <StatCard
           label="Active Vehicles"
           value={activeVehicles}
@@ -379,16 +332,8 @@ function TransportInChargeDashboard() {
           href="/admin/conflicts"
           accent={blockingConflicts > 0 ? "error" : "default"}
         />
-        <StatCard
-          label="Unread Notifications"
-          value={unreadCount}
-          href="/admin/notifications"
-        />
-        <StatCard
-          label="Active Drivers"
-          value={activeDrivers}
-          href="/admin/driver"
-        />
+        <StatCard label="Unread Notifications" value={unreadCount} href="/admin/notifications" />
+        <StatCard label="Active Drivers" value={activeDrivers} href="/admin/driver" />
       </div>
 
       {/* Detail panels */}
@@ -396,9 +341,7 @@ function TransportInChargeDashboard() {
         {/* Today's Allocations */}
         <div className="rounded-lg border border-border bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <p className="text-sm font-medium text-text">
-              Today's Allocations
-            </p>
+            <p className="text-sm font-medium text-text">Today's Allocations</p>
 
             <Link
               to="/admin/requisitions"
@@ -433,9 +376,7 @@ function TransportInChargeDashboard() {
         {/* Conflicts */}
         <div className="rounded-lg border border-border bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <p className="text-sm font-medium text-text">
-              Active Conflicts
-            </p>
+            <p className="text-sm font-medium text-text">Active Conflicts</p>
 
             <Link
               to="/admin/conflicts"
@@ -464,14 +405,10 @@ function TransportInChargeDashboard() {
                       {conflict.severity}
                     </span>
 
-                    <p className="text-sm font-medium text-text">
-                      {conflict.type}
-                    </p>
+                    <p className="text-sm font-medium text-text">{conflict.type}</p>
                   </div>
 
-                  <p className="mt-1 text-xs text-text-muted">
-                    {conflict.description}
-                  </p>
+                  <p className="mt-1 text-xs text-text-muted">{conflict.description}</p>
                 </div>
               ))
             )}

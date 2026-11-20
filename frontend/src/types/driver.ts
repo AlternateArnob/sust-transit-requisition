@@ -1,9 +1,5 @@
 export type DriverDesignation =
-  | "Supervisor Driver"
-  | "Senior Driver"
-  | "Driver"
-  | "Driver (Grade-1)"
-  | "Driver (Outsourced)";
+  "Supervisor Driver" | "Senior Driver" | "Driver" | "Driver (Grade-1)" | "Driver (Outsourced)";
 
 export type DriverStatus = "Active" | "Inactive";
 

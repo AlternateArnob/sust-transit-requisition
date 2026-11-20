@@ -46,14 +46,11 @@ export default function useNotifications() {
     if (!currentUser) return [];
     const userId = currentUser.id;
     return notifications.filter(
-      (notification) =>
-        !notification.recipientUserId || notification.recipientUserId === userId,
+      (notification) => !notification.recipientUserId || notification.recipientUserId === userId,
     );
   }, [notifications, currentUser]);
 
-  const unreadCount = visibleNotifications.filter(
-    (notification) => !notification.isRead,
-  ).length;
+  const unreadCount = visibleNotifications.filter((notification) => !notification.isRead).length;
 
   /**
    * Phase 5 — for DepartmentHeads only: count of `requisition`-linked
@@ -68,8 +65,7 @@ export default function useNotifications() {
     (notification) =>
       !notification.isRead &&
       notification.linkType === "requisition" &&
-      (notification.type === "New Requisition" ||
-        notification.type === "Resubmission"),
+      (notification.type === "New Requisition" || notification.type === "Resubmission"),
   ).length;
 
   function addNotification(notification: AppNotification) {
@@ -79,9 +75,7 @@ export default function useNotifications() {
   function markAsRead(notificationId: string) {
     setNotifications((current) =>
       current.map((notification) =>
-        notification.id === notificationId
-          ? { ...notification, isRead: true }
-          : notification,
+        notification.id === notificationId ? { ...notification, isRead: true } : notification,
       ),
     );
   }
@@ -92,10 +86,7 @@ export default function useNotifications() {
     setNotifications((current) =>
       current.map((notification) => {
         // Don't touch notifications addressed to someone else.
-        if (
-          notification.recipientUserId &&
-          notification.recipientUserId !== userId
-        ) {
+        if (notification.recipientUserId && notification.recipientUserId !== userId) {
           return notification;
         }
         return { ...notification, isRead: true };

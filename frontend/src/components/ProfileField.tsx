@@ -41,13 +41,9 @@ export default function ProfileField({
 
       {children}
 
-      {helperText && !error ? (
-        <span className="text-xs text-text-muted">{helperText}</span>
-      ) : null}
+      {helperText && !error ? <span className="text-xs text-text-muted">{helperText}</span> : null}
 
-      {error ? (
-        <span className="text-xs text-error">{error}</span>
-      ) : null}
+      {error ? <span className="text-xs text-error">{error}</span> : null}
     </label>
   );
 }

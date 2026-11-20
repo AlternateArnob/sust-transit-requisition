@@ -22,7 +22,13 @@ interface AuthShellProps {
  * verifying (so they land here), a Log out button is shown top-right so
  * they are never stuck without a way out.
  */
-export default function AuthShell({ title, subtitle, children, footer, showLogout = false }: AuthShellProps) {
+export default function AuthShell({
+  title,
+  subtitle,
+  children,
+  footer,
+  showLogout = false,
+}: AuthShellProps) {
   const { isAuthenticated } = useAuth();
 
   return (
@@ -43,9 +49,7 @@ export default function AuthShell({ title, subtitle, children, footer, showLogou
             <h1 className="mt-2 inline-block border-b-2 border-form-action pb-1 text-lg font-bold uppercase tracking-wide text-form-action">
               {title}
             </h1>
-            {subtitle ? (
-              <p className="mt-3 text-sm text-form-muted">{subtitle}</p>
-            ) : null}
+            {subtitle ? <p className="mt-3 text-sm text-form-muted">{subtitle}</p> : null}
           </div>
 
           <div className="mt-7">{children}</div>

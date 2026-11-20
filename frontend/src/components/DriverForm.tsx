@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  DRIVER_DESIGNATIONS,
-  type DriverDesignation,
-  type Driver,
-} from "../types";
+import { DRIVER_DESIGNATIONS, type DriverDesignation, type Driver } from "../types";
 import { buttonClass } from "./ui/buttonStyles";
 
 interface DriverFormProps {
@@ -12,11 +8,7 @@ interface DriverFormProps {
   onCancel: () => void;
 }
 
-export default function DriverForm({
-  driver,
-  onSubmit,
-  onCancel,
-}: DriverFormProps) {
+export default function DriverForm({ driver, onSubmit, onCancel }: DriverFormProps) {
   const [name, setName] = useState(driver?.name ?? "");
 
   const [designation, setDesignation] = useState<DriverDesignation>(
@@ -53,10 +45,7 @@ export default function DriverForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Name */}
       <div>
-        <label
-          htmlFor="name"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-text">
           Driver Name
         </label>
 
@@ -80,19 +69,14 @@ export default function DriverForm({
 
       {/* Designation */}
       <div>
-        <label
-          htmlFor="designation"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="designation" className="mb-1.5 block text-sm font-medium text-text">
           Designation
         </label>
 
         <select
           id="designation"
           value={designation}
-          onChange={(event) =>
-            setDesignation(event.target.value as DriverDesignation)
-          }
+          onChange={(event) => setDesignation(event.target.value as DriverDesignation)}
           className="
             h-10 w-full rounded-md
             border border-border
@@ -114,10 +98,7 @@ export default function DriverForm({
 
       {/* Phone */}
       <div>
-        <label
-          htmlFor="phone"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-text">
           Phone
         </label>
 
@@ -156,10 +137,7 @@ export default function DriverForm({
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className={buttonClass("primary")}
-        >
+        <button type="submit" className={buttonClass("primary")}>
           {driver ? "Save Changes" : "Add Driver"}
         </button>
       </div>

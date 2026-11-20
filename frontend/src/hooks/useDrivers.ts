@@ -5,8 +5,7 @@ import { STORAGE_KEYS } from "../data/storageKeys";
 const STORAGE_KEY = STORAGE_KEYS.driver;
 
 export default function useDrivers() {
-  const { items, add, update, remove } =
-    useLocalStorageCollection<Driver>(STORAGE_KEY);
+  const { items, add, update, remove } = useLocalStorageCollection<Driver>(STORAGE_KEY);
 
   function deactivateDriver(id: string) {
     const member = items.find((item) => item.id === id);

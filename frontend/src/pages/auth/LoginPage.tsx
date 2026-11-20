@@ -43,9 +43,7 @@ export default function LoginPage() {
     // deactivated account must never reach that, regardless of whether
     // it's verified or has a password yet.
     if (user.isActive === false) {
-      setError(
-        "This account has been deactivated. Contact a Super Admin for access.",
-      );
+      setError("This account has been deactivated. Contact a Super Admin for access.");
       return;
     }
 

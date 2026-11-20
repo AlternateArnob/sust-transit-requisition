@@ -10,10 +10,7 @@ import Modal from "../components/Modal";
 import VehicleForm from "../components/VehicleForm";
 
 import type { Vehicle } from "../types";
-import {
-  isDuplicateRegistration,
-  hasAllocationHistory,
-} from "../utils/vehicleUtils";
+import { isDuplicateRegistration, hasAllocationHistory } from "../utils/vehicleUtils";
 import { buttonClass } from "../components/ui/buttonStyles";
 import PageTitle from "../components/ui/PageTitle";
 
@@ -35,9 +32,7 @@ export default function VehiclePage() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
 
   const filteredVehicles = vehicles.filter((vehicle) => {
-    const matchesSearch = vehicle.registrationNumber
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchesSearch = vehicle.registrationNumber.toLowerCase().includes(search.toLowerCase());
 
     const matchesCategory = category === "" || vehicle.category === category;
 
@@ -59,16 +54,8 @@ export default function VehiclePage() {
   function handleVehicleSubmit(vehicle: Vehicle) {
     const oldVehicle = vehicles.find((item) => item.id === vehicle.id);
 
-    if (
-      isDuplicateRegistration(
-        vehicles,
-        vehicle.registrationNumber,
-        vehicle.id,
-      )
-    ) {
-      throw new Error(
-        `Registration number "${vehicle.registrationNumber}" is already registered.`,
-      );
+    if (isDuplicateRegistration(vehicles, vehicle.registrationNumber, vehicle.id)) {
+      throw new Error(`Registration number "${vehicle.registrationNumber}" is already registered.`);
     }
 
     // Single source of truth for the FRD §13 assignment rules (one
@@ -128,7 +115,10 @@ export default function VehiclePage() {
         justify-between
       "
       >
-        <PageTitle title="Vehicle Management" subtitle={<>Manage university transport vehicles ({vehicles.length} vehicles)</>} />
+        <PageTitle
+          title="Vehicle Management"
+          subtitle={<>Manage university transport vehicles ({vehicles.length} vehicles)</>}
+        />
 
         <button
           type="button"
@@ -353,9 +343,7 @@ export default function VehiclePage() {
                     <td className="px-4 py-3">
                       <span
                         className={
-                          vehicle.availableForRequisition
-                            ? "text-success"
-                            : "text-text-muted"
+                          vehicle.availableForRequisition ? "text-success" : "text-text-muted"
                         }
                       >
                         {vehicle.availableForRequisition ? "Yes" : "No"}
@@ -412,10 +400,7 @@ export default function VehiclePage() {
       {/* Add Vehicle Modal */}
       {isAddModalOpen && (
         <Modal title="Add Vehicle" onClose={() => setIsAddModalOpen(false)}>
-          <VehicleForm
-            onSubmit={handleVehicleSubmit}
-            onCancel={() => setIsAddModalOpen(false)}
-          />
+          <VehicleForm onSubmit={handleVehicleSubmit} onCancel={() => setIsAddModalOpen(false)} />
         </Modal>
       )}
 

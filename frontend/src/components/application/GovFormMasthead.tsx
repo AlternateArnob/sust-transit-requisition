@@ -36,9 +36,7 @@ export default function GovFormMasthead({
       {applicationNo ? (
         <div className="text-right">
           <p className="text-xs text-form-muted">Application No.</p>
-          <p className="text-base font-bold text-form-action">
-            {applicationNo}
-          </p>
+          <p className="text-base font-bold text-form-action">{applicationNo}</p>
         </div>
       ) : referenceLabel ? (
         <p className="text-xs text-form-muted">{referenceLabel}</p>

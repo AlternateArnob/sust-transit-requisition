@@ -57,10 +57,7 @@ export function getDutySlipHistory(
   dutySlips: DutySlip[],
 ): DutySlip[] {
   return [...dutySlips]
-    .filter(
-      (slip) =>
-        slip.requisitionId === requisitionId && slip.driverId === driverId,
-    )
+    .filter((slip) => slip.requisitionId === requisitionId && slip.driverId === driverId)
     .sort((a, b) => b.generatedAt.localeCompare(a.generatedAt));
 }
 
@@ -78,11 +75,7 @@ export function isDutySlipSuperseded(
   requisitionId: string,
   dutySlips: DutySlip[],
 ): boolean {
-  const latest = getLatestSlipForDriver(
-    requisitionId,
-    slip.driverId,
-    dutySlips,
-  );
+  const latest = getLatestSlipForDriver(requisitionId, slip.driverId, dutySlips);
   return latest ? latest.id !== slip.id : false;
 }
 
@@ -96,14 +89,9 @@ export function isDutySlipSuperseded(
  * exact scenario FR-21 opens with. This flags that gap on the current
  * slip only; it never affects which slip counts as "Superseded."
  */
-export function hasStaleVehicleAssignment(
-  slip: DutySlip,
-  allocations: Allocation[],
-): boolean {
+export function hasStaleVehicleAssignment(slip: DutySlip, allocations: Allocation[]): boolean {
   return slip.trips.some((snapshot) => {
-    const current = allocations.find(
-      (item) => item.tripId === snapshot.tripId,
-    );
+    const current = allocations.find((item) => item.tripId === snapshot.tripId);
     return !current || current.vehicleId !== snapshot.vehicleId;
   });
 }

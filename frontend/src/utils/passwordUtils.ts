@@ -30,10 +30,7 @@ export function hashPassword(password: string): string {
   return `${(hash1 >>> 0).toString(16)}${(hash2 >>> 0).toString(16)}`;
 }
 
-export function verifyPassword(
-  password: string,
-  passwordHash: string | undefined,
-): boolean {
+export function verifyPassword(password: string, passwordHash: string | undefined): boolean {
   if (!passwordHash) return false;
   return hashPassword(password) === passwordHash;
 }

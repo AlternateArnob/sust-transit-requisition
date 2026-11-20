@@ -77,9 +77,7 @@ export function canForwardToAdministrator(
   requisition: Requisition,
   allocations: Allocation[],
 ): boolean {
-  return (
-    getTripsMissingVehicleAssignment(requisition, allocations).length === 0
-  );
+  return getTripsMissingVehicleAssignment(requisition, allocations).length === 0;
 }
 
 function toMinutes(time: string): number {
@@ -93,9 +91,7 @@ export function timeRangesOverlap(
   bStart: string,
   bEnd: string,
 ): boolean {
-  return (
-    toMinutes(aStart) < toMinutes(bEnd) && toMinutes(bStart) < toMinutes(aEnd)
-  );
+  return toMinutes(aStart) < toMinutes(bEnd) && toMinutes(bStart) < toMinutes(aEnd);
 }
 
 export interface VehicleEligibility {
@@ -130,11 +126,7 @@ export function getVehicleEligibility(
     blockers.push("No permanent driver assigned to this vehicle");
   }
 
-  const offDay = getOffDayForVehicleOnDate(
-    vehicle.id,
-    trip.date,
-    context.offDays,
-  );
+  const offDay = getOffDayForVehicleOnDate(vehicle.id, trip.date, context.offDays);
 
   if (offDay) {
     blockers.push(
@@ -149,12 +141,7 @@ export function getVehicleEligibility(
       allocation.id !== context.excludeAllocationId &&
       allocation.vehicleId === vehicle.id &&
       allocation.date === trip.date &&
-      timeRangesOverlap(
-        allocation.startTime,
-        allocation.endTime,
-        trip.startTime,
-        trip.endTime,
-      ),
+      timeRangesOverlap(allocation.startTime, allocation.endTime, trip.startTime, trip.endTime),
   );
 
   if (conflictingAllocation) {
@@ -162,9 +149,7 @@ export function getVehicleEligibility(
   }
 
   if (trip.vehicleCategory !== "Any" && vehicle.category !== trip.vehicleCategory) {
-    warnings.push(
-      `Category mismatch — requisition asked for ${trip.vehicleCategory}`,
-    );
+    warnings.push(`Category mismatch — requisition asked for ${trip.vehicleCategory}`);
   }
 
   const studentTransportTime = getStudentTransportTimeForDate(

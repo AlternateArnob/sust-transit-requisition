@@ -11,10 +11,7 @@ import Card from "../components/ui/Card";
 import DataTable from "../components/DataTable";
 import PageTitle from "../components/ui/PageTitle";
 
-import {
-  getRecordedMileageTrips,
-  isMileageEligibleRequisition,
-} from "../utils/mileageUtils";
+import { getRecordedMileageTrips, isMileageEligibleRequisition } from "../utils/mileageUtils";
 
 /**
  * Phase 7 — applicant-facing mileage log (spec §7).
@@ -49,10 +46,7 @@ export default function MyMileagePage() {
     return <Navigate to="/login" replace />;
   }
 
-  const totalKm = myPersonalTrips.reduce(
-    (sum, item) => sum + item.entry.distanceKm,
-    0,
-  );
+  const totalKm = myPersonalTrips.reduce((sum, item) => sum + item.entry.distanceKm, 0);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -70,9 +64,7 @@ export default function MyMileagePage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
             Total kilometres travelled
           </p>
-          <p className="mt-2 text-3xl font-semibold text-text">
-            {totalKm.toLocaleString()} km
-          </p>
+          <p className="mt-2 text-3xl font-semibold text-text">{totalKm.toLocaleString()} km</p>
           <p className="mt-1 text-xs text-text-muted">
             Across {myPersonalTrips.length} recorded personal trip
             {myPersonalTrips.length === 1 ? "" : "s"}
@@ -100,20 +92,14 @@ export default function MyMileagePage() {
             {
               header: "Vehicle",
               render: ({ allocation }) => {
-                const vehicle = vehicles.find(
-                  (item) => item.id === allocation.vehicleId,
-                );
-                return vehicle
-                  ? `${vehicle.registrationNumber} (${vehicle.category})`
-                  : "—";
+                const vehicle = vehicles.find((item) => item.id === allocation.vehicleId);
+                return vehicle ? `${vehicle.registrationNumber} (${vehicle.category})` : "—";
               },
             },
             {
               header: "Distance",
               align: "right",
-              render: ({ entry }) => (
-                <span className="font-medium">{entry.distanceKm} km</span>
-              ),
+              render: ({ entry }) => <span className="font-medium">{entry.distanceKm} km</span>,
             },
           ]}
         />

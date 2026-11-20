@@ -5,15 +5,7 @@ import type {
   StudentTransportSchedule,
 } from "../types";
 
-const WEEKDAY_INDEX: Weekday[] = [
-  "Sun",
-  "Mon",
-  "Tue",
-  "Wed",
-  "Thu",
-  "Fri",
-  "Sat",
-];
+const WEEKDAY_INDEX: Weekday[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function getWeekdayFromDate(dateString: string): Weekday {
   const date = new Date(`${dateString}T00:00:00`);
@@ -94,11 +86,7 @@ export function isVehicleFreeAtTime(
   requestedTime: string,
   schedules: StudentTransportVehicle[],
 ): boolean {
-  const freeAfter = getStudentTransportTimeForDate(
-    vehicleId,
-    dateString,
-    schedules,
-  );
+  const freeAfter = getStudentTransportTimeForDate(vehicleId, dateString, schedules);
 
   if (!freeAfter) {
     return true;
@@ -139,9 +127,7 @@ export function getWeekdayFull(weekday: Weekday): string {
  * Returns the scheduled weekdays as Weekday[] in Sun..Sat order.
  * Days that have no schedule entry are excluded.
  */
-export function getScheduledDays(
-  schedule: StudentTransportSchedule,
-): Weekday[] {
+export function getScheduledDays(schedule: StudentTransportSchedule): Weekday[] {
   return WEEKDAY_INDEX.filter((day) => Boolean(schedule[day]));
 }
 
@@ -151,9 +137,7 @@ export function getScheduledDays(
  *
  * Falls back to "—" when no days are scheduled.
  */
-export function formatScheduledDays(
-  schedule: StudentTransportSchedule,
-): string {
+export function formatScheduledDays(schedule: StudentTransportSchedule): string {
   const days = getScheduledDays(schedule);
 
   if (days.length === 0) {
@@ -170,8 +154,7 @@ export function formatScheduledDays(
 
   for (let i = 0; i < days.length; i++) {
     const prevIndex = WEEKDAY_INDEX.indexOf(days[i]);
-    const nextIndex =
-      i + 1 < days.length ? WEEKDAY_INDEX.indexOf(days[i + 1]) : -1;
+    const nextIndex = i + 1 < days.length ? WEEKDAY_INDEX.indexOf(days[i + 1]) : -1;
     const isContiguous = nextIndex === prevIndex + 1;
 
     const runEnd = isContiguous ? i + 1 : i;
@@ -195,11 +178,7 @@ export function formatScheduledDays(
     const common = findCommonSuffix(firstFull, lastFull);
 
     if (common.length > 0) {
-      return (
-        firstFull.slice(0, firstFull.length - common.length) +
-        "–" +
-        days[bestEnd]
-      );
+      return firstFull.slice(0, firstFull.length - common.length) + "–" + days[bestEnd];
     }
   }
 
@@ -209,11 +188,7 @@ export function formatScheduledDays(
 function findCommonSuffix(a: string, b: string): string {
   let i = 0;
 
-  while (
-    i < a.length &&
-    i < b.length &&
-    a[a.length - 1 - i] === b[b.length - 1 - i]
-  ) {
+  while (i < a.length && i < b.length && a[a.length - 1 - i] === b[b.length - 1 - i]) {
     i++;
   }
 

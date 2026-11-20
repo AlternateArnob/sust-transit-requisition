@@ -15,17 +15,12 @@ interface MileageEntryFormProps {
   onCancel: () => void;
 }
 
-export default function MileageEntryForm({
-  trips,
-  onSubmit,
-  onCancel,
-}: MileageEntryFormProps) {
+export default function MileageEntryForm({ trips, onSubmit, onCancel }: MileageEntryFormProps) {
   const [selectedTripId, setSelectedTripId] = useState(trips[0]?.id ?? "");
   const [distanceKm, setDistanceKm] = useState("");
   const [error, setError] = useState("");
 
-  const selectedTrip =
-    trips.find((trip) => trip.id === selectedTripId) ?? trips[0];
+  const selectedTrip = trips.find((trip) => trip.id === selectedTripId) ?? trips[0];
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,10 +42,7 @@ export default function MileageEntryForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       {trips.length > 1 && (
         <div>
-          <label
-            htmlFor="mileageTrip"
-            className="mb-1.5 block text-sm font-medium text-text"
-          >
+          <label htmlFor="mileageTrip" className="mb-1.5 block text-sm font-medium text-text">
             Trip
           </label>
 
@@ -72,8 +64,7 @@ export default function MileageEntryForm({
       {selectedTrip && (
         <div className="rounded-md border border-border bg-surface p-3 text-sm text-text">
           <p className="font-medium">
-            {selectedTrip.date} · {selectedTrip.startTime}–
-            {selectedTrip.endTime}
+            {selectedTrip.date} · {selectedTrip.startTime}–{selectedTrip.endTime}
           </p>
 
           <p className="mt-1 text-text-muted">{selectedTrip.route}</p>
@@ -81,10 +72,7 @@ export default function MileageEntryForm({
       )}
 
       <div>
-        <label
-          htmlFor="distanceKm"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="distanceKm" className="mb-1.5 block text-sm font-medium text-text">
           Total Distance Travelled (km)
         </label>
 
@@ -102,23 +90,16 @@ export default function MileageEntryForm({
       </div>
 
       <p className="text-xs text-text-muted">
-        Billing rate is calculated separately by the Accounts Department — only
-        distance is recorded here.
+        Billing rate is calculated separately by the Accounts Department — only distance is recorded
+        here.
       </p>
 
       <div className="flex justify-end gap-3 border-t border-border pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className={buttonClass("primary")}
-        >
+        <button type="submit" className={buttonClass("primary")}>
           Record Mileage
         </button>
       </div>

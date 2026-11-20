@@ -75,8 +75,7 @@ function writeUsers(users: UserAccount[]): void {
 
 function ensureSeedAdminAccounts(users: UserAccount[]): UserAccount[] {
   const missing = SEED_ACCOUNTS.filter(
-    (seed) =>
-      !users.some((user) => user.email.toLowerCase() === seed.email),
+    (seed) => !users.some((user) => user.email.toLowerCase() === seed.email),
   );
   if (missing.length === 0) return users;
 
@@ -98,9 +97,7 @@ function ensureSeedAdminAccounts(users: UserAccount[]): UserAccount[] {
 }
 
 export default function useUsers() {
-  const [users, setUsers] = useState<UserAccount[]>(() =>
-    ensureSeedAdminAccounts(readUsers()),
-  );
+  const [users, setUsers] = useState<UserAccount[]>(() => ensureSeedAdminAccounts(readUsers()));
 
   useEffect(() => {
     writeUsers(users);
@@ -111,9 +108,7 @@ export default function useUsers() {
   }, []);
 
   const update = useCallback((id: string, patch: Partial<UserAccount>) => {
-    setUsers((current) =>
-      current.map((user) => (user.id === id ? { ...user, ...patch } : user)),
-    );
+    setUsers((current) => current.map((user) => (user.id === id ? { ...user, ...patch } : user)));
   }, []);
 
   const remove = useCallback((id: string) => {
@@ -128,16 +123,11 @@ export default function useUsers() {
     [users],
   );
 
-  const findById = useCallback(
-    (id: string) => users.find((user) => user.id === id),
-    [users],
-  );
+  const findById = useCallback((id: string) => users.find((user) => user.id === id), [users]);
 
   const markVerified = useCallback((id: string) => {
     setUsers((current) =>
-      current.map((user) =>
-        user.id === id ? { ...user, isVerified: true } : user,
-      ),
+      current.map((user) => (user.id === id ? { ...user, isVerified: true } : user)),
     );
   }, []);
 

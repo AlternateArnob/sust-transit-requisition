@@ -1,18 +1,10 @@
-import type {
-  ApplicantProfile,
-  RequisitionType,
-  UserAccount,
-  UserRole,
-} from "../types";
+import type { ApplicantProfile, RequisitionType, UserAccount, UserRole } from "../types";
 
 /**
  * Acceptable email domains for SUST accounts. Centralised so the rule is
  * easy to update if a new domain is added (e.g. faculty.sust.edu).
  */
-export const SUST_EMAIL_DOMAINS: ReadonlyArray<string> = [
-  "sust.edu",
-  "student.sust.edu",
-];
+export const SUST_EMAIL_DOMAINS: ReadonlyArray<string> = ["sust.edu", "student.sust.edu"];
 
 export function isSustEmail(email: string): boolean {
   const trimmed = email.trim().toLowerCase();
@@ -20,9 +12,7 @@ export function isSustEmail(email: string): boolean {
     return false;
   }
   const [, domain = ""] = trimmed.split("@");
-  return SUST_EMAIL_DOMAINS.some(
-    (allowed) => domain === allowed || domain.endsWith(`.${allowed}`),
-  );
+  return SUST_EMAIL_DOMAINS.some((allowed) => domain === allowed || domain.endsWith(`.${allowed}`));
 }
 
 /**
@@ -53,9 +43,7 @@ export function requiresRecommendation(
  * Profile-locked fields per spec. Editing these after registration
  * requires admin action.
  */
-export function requiresProfileFields(
-  profile: ApplicantProfile,
-): ReadonlyArray<keyof UserAccount> {
+export function requiresProfileFields(profile: ApplicantProfile): ReadonlyArray<keyof UserAccount> {
   switch (profile) {
     case "Student":
       return ["department", "studentRegNumber"];

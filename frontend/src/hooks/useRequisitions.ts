@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import type {
-  Requisition,
-  RejectionReason,
-  Trip,
-  ApplicationStatus,
-} from "../types";
+import type { Requisition, RejectionReason, Trip, ApplicationStatus } from "../types";
 import { computeApplicationStatus } from "../utils/requisitionUtils";
 import { STORAGE_KEYS } from "../data/storageKeys";
 
@@ -131,15 +126,10 @@ export default function useRequisitions() {
    * caller (see RequisitionsPage — allocations live in a separate
    * hook/collection, so this function only owns the requisition side).
    */
-  function sendBackToTransportInCharge(
-    requisitionId: string,
-    remarks: string,
-  ) {
+  function sendBackToTransportInCharge(requisitionId: string, remarks: string) {
     const trimmedRemarks = remarks.trim();
     if (!trimmedRemarks) {
-      throw new Error(
-        "sendBackToTransportInCharge requires a non-empty remarks string.",
-      );
+      throw new Error("sendBackToTransportInCharge requires a non-empty remarks string.");
     }
 
     setRequisitions((current) =>
@@ -149,14 +139,12 @@ export default function useRequisitions() {
               ...requisition,
               status: "Pending on Transport Office" as const,
               transportOfficeRemarks: trimmedRemarks,
-              trips: requisition.trips.map(
-                (trip): Trip => ({
-                  ...trip,
-                  status: "Pending" as const,
-                  rejectionReason: undefined,
-                  rejectionRemarks: undefined,
-                }),
-              ),
+              trips: requisition.trips.map((trip): Trip => ({
+                ...trip,
+                status: "Pending" as const,
+                rejectionReason: undefined,
+                rejectionRemarks: undefined,
+              })),
             }
           : requisition,
       ),
@@ -286,11 +274,7 @@ export default function useRequisitions() {
    * required (callers must enforce this); remarks are optional.
    * The requisition is closed and removed from any active queue.
    */
-  function rejectRequisition(
-    requisitionId: string,
-    reason: RejectionReason,
-    remarks?: string,
-  ) {
+  function rejectRequisition(requisitionId: string, reason: RejectionReason, remarks?: string) {
     setRequisitions((current) =>
       current.map((requisition) =>
         requisition.id === requisitionId
@@ -332,14 +316,12 @@ export default function useRequisitions() {
               sendBackNote: trimmedRemarks || undefined,
               sentBackBy: sentBy,
               sentBackAt: new Date().toISOString(),
-              trips: requisition.trips.map(
-                (trip): Trip => ({
-                  ...trip,
-                  status: "Pending" as const,
-                  rejectionReason: reason,
-                  rejectionRemarks: trimmedRemarks || undefined,
-                }),
-              ),
+              trips: requisition.trips.map((trip): Trip => ({
+                ...trip,
+                status: "Pending" as const,
+                rejectionReason: reason,
+                rejectionRemarks: trimmedRemarks || undefined,
+              })),
             }
           : requisition,
       ),

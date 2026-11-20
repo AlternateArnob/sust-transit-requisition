@@ -15,11 +15,5 @@ export default function Button({
   type = "button",
   ...rest
 }: ButtonProps) {
-  return (
-    <button
-      type={type}
-      className={`${buttonClass(variant, size)} ${className}`}
-      {...rest}
-    />
-  );
+  return <button type={type} className={`${buttonClass(variant, size)} ${className}`} {...rest} />;
 }

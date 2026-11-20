@@ -1,11 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
-import {
-  isTransportInCharge,
-  isTransportAdministrator,
-  isSuperAdmin,
-} from "../utils/permissions";
+import { isTransportInCharge, isTransportAdministrator, isSuperAdmin } from "../utils/permissions";
 
 interface NavItem {
   label: string;
@@ -45,10 +41,7 @@ const TRANSPORT_ADMINISTRATOR_ITEMS: NavItem[] = [
   { label: "Requisitions", path: "/admin/requisitions" },
 ];
 
-const SUPER_ADMIN_ITEMS: NavItem[] = [
-  DASHBOARD_ITEM,
-  { label: "Accounts", path: "/admin/users" },
-];
+const SUPER_ADMIN_ITEMS: NavItem[] = [DASHBOARD_ITEM, { label: "Accounts", path: "/admin/users" }];
 
 export default function Sidebar() {
   const { currentUser } = useAuth();
@@ -73,9 +66,7 @@ export default function Sidebar() {
             end={item.path === "/admin"}
             className={({ isActive }) =>
               `block rounded-md px-3 py-2 text-sm font-medium ${
-                isActive
-                  ? "bg-primary text-white"
-                  : "text-secondary hover:bg-surface"
+                isActive ? "bg-primary text-white" : "text-secondary hover:bg-surface"
               }`
             }
           >

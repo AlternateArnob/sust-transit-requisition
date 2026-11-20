@@ -16,9 +16,7 @@ export default function RegisterPage() {
   const { findByEmail, add } = useUsers();
   const { requestOtp } = useOtp();
 
-  const [email, setEmail] = useState(
-    () => localStorage.getItem(PENDING_EMAIL_KEY) ?? "",
-  );
+  const [email, setEmail] = useState(() => localStorage.getItem(PENDING_EMAIL_KEY) ?? "");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [devCode, setDevCode] = useState<string | null>(null);
@@ -29,9 +27,7 @@ export default function RegisterPage() {
 
     const trimmed = email.trim().toLowerCase();
     if (!isSustEmail(trimmed)) {
-      setError(
-        "Please use a valid @sust.edu or @student.sust.edu email address.",
-      );
+      setError("Please use a valid @sust.edu or @student.sust.edu email address.");
       return;
     }
 
@@ -99,9 +95,7 @@ export default function RegisterPage() {
 
         {error ? <AuthError>{error}</AuthError> : null}
 
-        {devCode ? (
-          <DevCodeNote label={`OTP for ${email}:`} code={devCode} />
-        ) : null}
+        {devCode ? <DevCodeNote label={`OTP for ${email}:`} code={devCode} /> : null}
 
         <Button type="submit" disabled={submitting} className="w-full">
           {submitting ? "Sending code…" : "Send verification code →"}

@@ -35,9 +35,7 @@ export default function RecommendedByMePage() {
             requisition.status !== "Pending Recommendation",
       )
       .sort((a, b) =>
-        (b.recommendedAt ?? b.createdAt).localeCompare(
-          a.recommendedAt ?? a.createdAt,
-        ),
+        (b.recommendedAt ?? b.createdAt).localeCompare(a.recommendedAt ?? a.createdAt),
       );
   }, [requisitions, currentUser, myName]);
 
@@ -79,9 +77,7 @@ export default function RecommendedByMePage() {
           {
             header: "Recommended on",
             render: (row) =>
-              row.recommendedAt
-                ? new Date(row.recommendedAt).toLocaleDateString()
-                : "—",
+              row.recommendedAt ? new Date(row.recommendedAt).toLocaleDateString() : "—",
           },
           {
             header: "Your message",
@@ -89,9 +85,7 @@ export default function RecommendedByMePage() {
           },
           {
             header: "Status",
-            render: (row) => (
-              <ApplicationStatusBadge status={row.status} />
-            ),
+            render: (row) => <ApplicationStatusBadge status={row.status} />,
           },
           {
             header: "Action",

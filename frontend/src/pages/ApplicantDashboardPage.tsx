@@ -39,9 +39,7 @@ export default function ApplicantDashboardPage() {
   const allTrips = myRequisitions.flatMap((requisition) => requisition.trips);
   const tripCounts = getTripStatusCounts(allTrips);
 
-  const draftCount = myRequisitions.filter(
-    (requisition) => requisition.status === "Draft",
-  ).length;
+  const draftCount = myRequisitions.filter((requisition) => requisition.status === "Draft").length;
 
   const recent = myRequisitions.slice(0, 5);
 
@@ -52,12 +50,15 @@ export default function ApplicantDashboardPage() {
       <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">
         <PageTitle
           title={`Welcome${currentUser.fullName ? `, ${currentUser.fullName}` : ""}`}
-          subtitle={`An overview of your transport requisitions — ${new Date().toLocaleDateString(undefined, {
+          subtitle={`An overview of your transport requisitions — ${new Date().toLocaleDateString(
+            undefined,
+            {
               weekday: "long",
               day: "numeric",
               month: "long",
               year: "numeric",
-            })}`}
+            },
+          )}`}
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -88,37 +89,25 @@ export default function ApplicantDashboardPage() {
 
         {draftCount > 0 ? (
           <div className="rounded-md border border-border bg-white px-4 py-3 text-sm text-text">
-            You have {draftCount} draft{draftCount === 1 ? "" : "s"} waiting
-            to be submitted.{" "}
-            <Link
-              to="/my-requisitions"
-              className="font-medium text-primary hover:underline"
-            >
+            You have {draftCount} draft{draftCount === 1 ? "" : "s"} waiting to be submitted.{" "}
+            <Link to="/my-requisitions" className="font-medium text-primary hover:underline">
               Finish {draftCount === 1 ? "it" : "them"}
             </Link>
           </div>
         ) : null}
 
         <div className="flex flex-wrap gap-3">
-          <Link
-            to="/apply"
-            className={buttonClass("primary")}
-          >
+          <Link to="/apply" className={buttonClass("primary")}>
             + New Requisition
           </Link>
-          <Link
-            to="/my-requisitions"
-            className={buttonClass("secondary")}
-          >
+          <Link to="/my-requisitions" className={buttonClass("secondary")}>
             View My Requisitions
           </Link>
         </div>
 
         <Card flush>
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
-            <p className="text-sm font-medium text-text">
-              Recent Requisitions
-            </p>
+            <p className="text-sm font-medium text-text">Recent Requisitions</p>
 
             <Link
               to="/my-requisitions"
@@ -132,10 +121,7 @@ export default function ApplicantDashboardPage() {
             {recent.length === 0 ? (
               <p className="px-5 py-8 text-center text-sm text-text-muted">
                 No requisitions yet.{" "}
-                <Link
-                  to="/apply"
-                  className="font-medium text-secondary hover:underline"
-                >
+                <Link to="/apply" className="font-medium text-secondary hover:underline">
                   Submit your first requisition
                 </Link>
               </p>
@@ -153,10 +139,7 @@ export default function ApplicantDashboardPage() {
                       {requisition.purpose || "—"}
                     </p>
                     <p className="mt-0.5 text-xs text-text-muted">
-                      {formatDateRange(
-                        requisition.startDate,
-                        requisition.endDate,
-                      )}
+                      {formatDateRange(requisition.startDate, requisition.endDate)}
                     </p>
                   </div>
                   <ApplicationStatusBadge status={requisition.status} />

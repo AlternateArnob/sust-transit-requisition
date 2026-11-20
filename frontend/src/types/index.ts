@@ -2,30 +2,18 @@ export { VEHICLE_CATEGORIES, VEHICLE_STATUSES } from "./vehicle";
 
 export type { Vehicle, VehicleCategory, VehicleStatus } from "./vehicle";
 
-export type {
-  DriverDesignation,
-  Driver,
-  DriverStatus,
-  AssignmentResult,
-} from "./driver";
+export type { DriverDesignation, Driver, DriverStatus, AssignmentResult } from "./driver";
 
 export { WEEKDAYS } from "./schedule";
 
-export type {
-  Weekday,
-  StudentTransportVehicle,
-  StudentTransportSchedule,
-} from "./schedule";
+export type { Weekday, StudentTransportVehicle, StudentTransportSchedule } from "./schedule";
 export type { MileageEntry } from "./mileage";
 export type { OffDayType, VehicleOffDay } from "./offday";
 export type { Allocation } from "./allocation";
 export type { NotificationType, AppNotification } from "./notification";
 export type { DutySlip, DutySlipTripSnapshot } from "./dutySlip";
 
-export {
-  REQUISITION_TYPES,
-  REJECTION_REASONS,
-} from "./requisition";
+export { REQUISITION_TYPES, REJECTION_REASONS } from "./requisition";
 
 export type {
   RequisitionType,
@@ -40,10 +28,7 @@ export type { Trip, RequestedVehicleCategory } from "./trip";
 export type { TripDraft } from "./tripDraft";
 export { createEmptyTripDraft, tripToDraft } from "./tripDraft";
 
-export {
-  APPLICANT_PROFILES,
-  LOCKED_PROFILE_FIELDS_BY_ROLE,
-} from "./user";
+export { APPLICANT_PROFILES, LOCKED_PROFILE_FIELDS_BY_ROLE } from "./user";
 
 export type { ApplicantProfile, UserRole, UserAccount } from "./user";
 

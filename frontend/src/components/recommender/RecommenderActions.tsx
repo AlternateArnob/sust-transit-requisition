@@ -2,10 +2,7 @@ import { useState } from "react";
 
 import Modal from "../Modal";
 import Button from "../ui/Button";
-import {
-  REJECTION_REASONS,
-  type RejectionReason,
-} from "../../types";
+import { REJECTION_REASONS, type RejectionReason } from "../../types";
 
 interface RecommenderActionsProps {
   /**
@@ -86,8 +83,7 @@ export default function RecommenderActions({
     closeDialog();
   }
 
-  const dialogTitle =
-    dialog === "reject" ? "Reject requisition" : "Send back to applicant";
+  const dialogTitle = dialog === "reject" ? "Reject requisition" : "Send back to applicant";
 
   const dialogIntro =
     dialog === "reject"
@@ -105,9 +101,8 @@ export default function RecommenderActions({
   if (!isAssigned) {
     return (
       <div className="rounded-md border border-form-warn-border bg-form-warn-bg p-4 text-sm text-form-warn-text">
-        You are signed in as a recommender but you are not assigned to the
-        applicant&apos;s department. Contact the administrator if this looks
-        wrong.
+        You are signed in as a recommender but you are not assigned to the applicant&apos;s
+        department. Contact the administrator if this looks wrong.
       </div>
     );
   }
@@ -115,12 +110,10 @@ export default function RecommenderActions({
   return (
     <div className="space-y-3 rounded-md border border-border bg-surface p-4">
       <div>
-        <p className="text-sm font-semibold text-text">
-          Your decision
-        </p>
+        <p className="text-sm font-semibold text-text">Your decision</p>
         <p className="text-xs text-text-muted">
-          Acting as {recommenderName || "Recommender"}. A reason is required
-          for reject and send-back.
+          Acting as {recommenderName || "Recommender"}. A reason is required for reject and
+          send-back.
         </p>
       </div>
 
@@ -146,18 +139,10 @@ export default function RecommenderActions({
         >
           Recommend
         </Button>
-        <Button
-          variant="secondary"
-          onClick={() => openDialog("send-back")}
-          disabled={isSubmitting}
-        >
+        <Button variant="secondary" onClick={() => openDialog("send-back")} disabled={isSubmitting}>
           Send back to applicant
         </Button>
-        <Button
-          variant="danger"
-          onClick={() => openDialog("reject")}
-          disabled={isSubmitting}
-        >
+        <Button variant="danger" onClick={() => openDialog("reject")} disabled={isSubmitting}>
           Reject
         </Button>
       </div>
@@ -168,14 +153,10 @@ export default function RecommenderActions({
             <p className="text-sm text-text-muted">{dialogIntro}</p>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text">
-                Reason
-              </label>
+              <label className="mb-1.5 block text-sm font-medium text-text">Reason</label>
               <select
                 value={reason}
-                onChange={(event) =>
-                  setReason(event.target.value as RejectionReason)
-                }
+                onChange={(event) => setReason(event.target.value as RejectionReason)}
                 className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
               >
                 {REJECTION_REASONS.map((option) => (
@@ -187,9 +168,7 @@ export default function RecommenderActions({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text">
-                Remarks
-              </label>
+              <label className="mb-1.5 block text-sm font-medium text-text">Remarks</label>
               <textarea
                 value={remarks}
                 onChange={(event) => setRemarks(event.target.value)}
@@ -199,9 +178,7 @@ export default function RecommenderActions({
               />
             </div>
 
-            {validation ? (
-              <p className="text-xs text-error">{validation}</p>
-            ) : null}
+            {validation ? <p className="text-xs text-error">{validation}</p> : null}
 
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="secondary" onClick={closeDialog}>

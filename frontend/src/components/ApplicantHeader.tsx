@@ -7,13 +7,7 @@ import SustLogo from "./SustLogo";
 import LogoutButton from "./LogoutButton";
 
 type NavKey =
-  | "dashboard"
-  | "apply"
-  | "my-requisitions"
-  | "my-mileage"
-  | "request"
-  | "recommended"
-  | "profile";
+  "dashboard" | "apply" | "my-requisitions" | "my-mileage" | "request" | "recommended" | "profile";
 
 type NavLinkItem = { key: NavKey; to: string; label: string };
 
@@ -73,9 +67,7 @@ export default function ApplicantHeader({ active, title }: ApplicantHeaderProps)
   const current = active ?? keyFromPath(location.pathname);
 
   const linkClass = (key: NavKey) =>
-    current === key
-      ? "font-semibold underline underline-offset-4"
-      : "hover:underline";
+    current === key ? "font-semibold underline underline-offset-4" : "hover:underline";
 
   return (
     <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-6 gap-y-2 bg-primary px-6 py-3 text-white">

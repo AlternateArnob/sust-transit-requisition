@@ -8,15 +8,8 @@ import Modal from "../components/Modal";
 import TransportScheduleForm from "../components/TransportScheduleForm";
 import OffDayForm from "../components/OffDayForm";
 
-import {
-  formatTimeDisplay,
-  formatScheduledDays,
-  getScheduledDays,
-} from "../utils/scheduleUtils";
-import type {
-  StudentTransportVehicle,
-  StudentTransportSchedule,
-} from "../types";
+import { formatTimeDisplay, formatScheduledDays, getScheduledDays } from "../utils/scheduleUtils";
+import type { StudentTransportVehicle, StudentTransportSchedule } from "../types";
 import { buttonClass } from "../components/ui/buttonStyles";
 import PageTitle from "../components/ui/PageTitle";
 
@@ -30,9 +23,7 @@ export default function TransportSchedulePage() {
   const [tab, setTab] = useState<Tab>("schedule");
 
   const [isAddRouteOpen, setIsAddRouteOpen] = useState(false);
-  const [editingRoute, setEditingRoute] = useState<StudentTransportVehicle | null>(
-    null,
-  );
+  const [editingRoute, setEditingRoute] = useState<StudentTransportVehicle | null>(null);
   const [isAddOffDayOpen, setIsAddOffDayOpen] = useState(false);
 
   function getVehicle(vehicleId: string) {
@@ -42,9 +33,7 @@ export default function TransportSchedulePage() {
   function getVehicleLabel(vehicleId: string) {
     const vehicle = getVehicle(vehicleId);
 
-    return vehicle
-      ? `${vehicle.registrationNumber} (${vehicle.category})`
-      : "Unknown Vehicle";
+    return vehicle ? `${vehicle.registrationNumber} (${vehicle.category})` : "Unknown Vehicle";
   }
 
   function handleRouteSubmit(entry: StudentTransportVehicle) {
@@ -75,9 +64,7 @@ export default function TransportSchedulePage() {
     return days.map((day) => (
       <div key={day} className="text-xs leading-5">
         <span className="font-medium text-text">{day}:</span>{" "}
-        <span className="text-secondary">
-          {formatTimeDisplay(schedule[day] ?? "")}
-        </span>
+        <span className="text-secondary">{formatTimeDisplay(schedule[day] ?? "")}</span>
       </div>
     ));
   }
@@ -104,7 +91,10 @@ export default function TransportSchedulePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <PageTitle title="Transport Schedule" subtitle="Vehicles used for regular student transportation, and when each becomes free for requisition" />
+        <PageTitle
+          title="Transport Schedule"
+          subtitle="Vehicles used for regular student transportation, and when each becomes free for requisition"
+        />
 
         {tab === "schedule" ? (
           <button
@@ -171,9 +161,7 @@ export default function TransportSchedulePage() {
                 {schedules.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
-                      <p className="font-medium text-text">
-                        No student transport vehicles found
-                      </p>
+                      <p className="font-medium text-text">No student transport vehicles found</p>
 
                       <p className="mt-1 text-sm text-text-muted">
                         Add a vehicle used for regular student transportation.
@@ -195,17 +183,13 @@ export default function TransportSchedulePage() {
                           {vehicle?.registrationNumber ?? "Unknown Vehicle"}
                         </td>
 
-                        <td className="px-4 py-3 text-text-muted">
-                          {vehicle?.category ?? "—"}
-                        </td>
+                        <td className="px-4 py-3 text-text-muted">{vehicle?.category ?? "—"}</td>
 
                         <td className="px-4 py-3 font-medium text-secondary">
                           {formatScheduledDays(entry.schedule)}
                         </td>
 
-                        <td className="px-4 py-3">
-                          {formatFreeAfterSummary(entry.schedule)}
-                        </td>
+                        <td className="px-4 py-3">{formatFreeAfterSummary(entry.schedule)}</td>
 
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-3">
@@ -255,9 +239,7 @@ export default function TransportSchedulePage() {
                 {offDays.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
-                      <p className="font-medium text-text">
-                        No off-days found
-                      </p>
+                      <p className="font-medium text-text">No off-days found</p>
 
                       <p className="mt-1 text-sm text-text-muted">
                         Mark a vehicle unavailable for a date or weekday.
@@ -276,19 +258,13 @@ export default function TransportSchedulePage() {
                         {getVehicleLabel(offDay.vehicleId)}
                       </td>
 
-                      <td className="px-4 py-3 text-text-muted">
-                        {offDay.type}
-                      </td>
+                      <td className="px-4 py-3 text-text-muted">{offDay.type}</td>
 
                       <td className="px-4 py-3 text-text-muted">
-                        {offDay.type === "One-time"
-                          ? offDay.date
-                          : offDay.weekday}
+                        {offDay.type === "One-time" ? offDay.date : offDay.weekday}
                       </td>
 
-                      <td className="px-4 py-3 text-text-muted">
-                        {offDay.reason ?? "—"}
-                      </td>
+                      <td className="px-4 py-3 text-text-muted">{offDay.reason ?? "—"}</td>
 
                       <td className="px-4 py-3 text-right">
                         <button

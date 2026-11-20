@@ -118,14 +118,10 @@ export default function Step2TransportUser({
             <label className={FIELD_LABEL}>Designation (optional)</label>
             <input
               value={value.designation}
-              onChange={(event) =>
-                handleField("designation", event.target.value)
-              }
+              onChange={(event) => handleField("designation", event.target.value)}
               className={`${FIELD_UNDERLINE} sm:w-1/2`}
             />
-            {errors.designation ? (
-              <p className={ERROR_TEXT}>{errors.designation}</p>
-            ) : null}
+            {errors.designation ? <p className={ERROR_TEXT}>{errors.designation}</p> : null}
           </div>
         </div>
       )}

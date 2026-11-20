@@ -109,9 +109,7 @@ export default function RequisitionDetail({
   const [showSendBackToApplicant, setShowSendBackToApplicant] = useState(false);
   const [showSendBackToTIC, setShowSendBackToTIC] = useState(false);
   // Phase 5, §2.2 — which drivers' superseded-slip history is expanded.
-  const [expandedHistory, setExpandedHistory] = useState<
-    Record<string, boolean>
-  >({});
+  const [expandedHistory, setExpandedHistory] = useState<Record<string, boolean>>({});
 
   function handleVehicleSelected(vehicleId: string, driverId?: string) {
     if (!allocatingTrip || !onAssignVehicle) {
@@ -123,10 +121,7 @@ export default function RequisitionDetail({
   }
 
   const dutySlipGroups = getEligibleDutySlipGroups(requisition, allocations);
-  const missingVehicle = getTripsMissingVehicleAssignment(
-    requisition,
-    allocations,
-  );
+  const missingVehicle = getTripsMissingVehicleAssignment(requisition, allocations);
   const canForward = canForwardToAdministrator(requisition, allocations);
   const slipsGeneratable = canGenerateSlips(requisition);
 
@@ -151,92 +146,82 @@ export default function RequisitionDetail({
 
       {/* Requester Info */}
       <div className={SECTION_WRAP}>
-      <h2 className={`${SECTION_TITLE} mb-3`}>Requester Information</h2>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-        <div className="border-b border-form-rule pb-1.5">
-          <p className="text-xs font-medium text-form-muted">Requester</p>
-          <p className="text-sm text-form-ink">
-            {requisition.requesterName}
-          </p>
-        </div>
-
-        <div className="border-b border-form-rule pb-1.5">
-          <p className="text-xs font-medium text-form-muted">Type</p>
-          <RequisitionTypeBadge type={requisition.requisitionType} />
-        </div>
-
-        {requisition.department && (
+        <h2 className={`${SECTION_TITLE} mb-3`}>Requester Information</h2>
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
           <div className="border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">
-              Department / Organization
-            </p>
-            <p className="text-sm text-form-ink">{requisition.department}</p>
+            <p className="text-xs font-medium text-form-muted">Requester</p>
+            <p className="text-sm text-form-ink">{requisition.requesterName}</p>
           </div>
-        )}
 
-        {requisition.contactNumber && (
           <div className="border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">Contact</p>
+            <p className="text-xs font-medium text-form-muted">Type</p>
+            <RequisitionTypeBadge type={requisition.requisitionType} />
+          </div>
+
+          {requisition.department && (
+            <div className="border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Department / Organization</p>
+              <p className="text-sm text-form-ink">{requisition.department}</p>
+            </div>
+          )}
+
+          {requisition.contactNumber && (
+            <div className="border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Contact</p>
+              <p className="text-sm text-form-ink">{requisition.contactNumber}</p>
+            </div>
+          )}
+
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Date Range</p>
             <p className="text-sm text-form-ink">
-              {requisition.contactNumber}
+              {formatDateRange(requisition.startDate, requisition.endDate)}
             </p>
           </div>
-        )}
 
-        <div className="border-b border-form-rule pb-1.5">
-          <p className="text-xs font-medium text-form-muted">Date Range</p>
-          <p className="text-sm text-form-ink">
-            {formatDateRange(requisition.startDate, requisition.endDate)}
-          </p>
-        </div>
-
-        <div className="border-b border-form-rule pb-1.5">
-          <p className="text-xs font-medium text-form-muted">Schedule Type</p>
-          <p className="text-sm text-form-ink">{requisition.scheduleType}</p>
-        </div>
-
-        <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
-          <p className="text-xs font-medium text-form-muted">Purpose</p>
-          <p className="text-sm text-form-ink">{requisition.purpose}</p>
-        </div>
-
-        {requisition.supportingDocumentDataUrl && (
-          <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">
-              Supporting Document
-            </p>
-            <a
-              href={requisition.supportingDocumentDataUrl}
-              target="_blank"
-              rel="noreferrer"
-              download={requisition.supportingDocumentName || undefined}
-              className="text-sm font-medium text-primary hover:underline"
-            >
-              {requisition.supportingDocumentName || "View document"}
-            </a>
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-end justify-between gap-3 border-t border-form-rule pt-3 sm:col-span-2">
           <div className="border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">Signature</p>
-            {requester?.signatureDataUrl ? (
-              <img
-                src={requester.signatureDataUrl}
-                alt={`Signature of ${requisition.requesterName}`}
-                className="mt-1 h-14 max-w-[220px] object-contain"
-              />
-            ) : (
-              <p className="mt-1 text-sm italic text-form-muted">
-                No signature on file
-              </p>
-            )}
+            <p className="text-xs font-medium text-form-muted">Schedule Type</p>
+            <p className="text-sm text-form-ink">{requisition.scheduleType}</p>
           </div>
-          <p className="text-xs text-form-muted">
-            Submitted: {new Date(requisition.createdAt).toLocaleString()}
-          </p>
+
+          <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Purpose</p>
+            <p className="text-sm text-form-ink">{requisition.purpose}</p>
+          </div>
+
+          {requisition.supportingDocumentDataUrl && (
+            <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Supporting Document</p>
+              <a
+                href={requisition.supportingDocumentDataUrl}
+                target="_blank"
+                rel="noreferrer"
+                download={requisition.supportingDocumentName || undefined}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                {requisition.supportingDocumentName || "View document"}
+              </a>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-end justify-between gap-3 border-t border-form-rule pt-3 sm:col-span-2">
+            <div className="border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Signature</p>
+              {requester?.signatureDataUrl ? (
+                <img
+                  src={requester.signatureDataUrl}
+                  alt={`Signature of ${requisition.requesterName}`}
+                  className="mt-1 h-14 max-w-[220px] object-contain"
+                />
+              ) : (
+                <p className="mt-1 text-sm italic text-form-muted">No signature on file</p>
+              )}
+            </div>
+            <p className="text-xs text-form-muted">
+              Submitted: {new Date(requisition.createdAt).toLocaleString()}
+            </p>
+          </div>
         </div>
-      </div>
       </div>
 
       {requisition.recommenderName ? (
@@ -248,9 +233,7 @@ export default function RequisitionDetail({
               : ""}
           </p>
           {requisition.recommenderMessage ? (
-            <p className="mt-1 text-form-ink">
-              “{requisition.recommenderMessage}”
-            </p>
+            <p className="mt-1 text-form-ink">“{requisition.recommenderMessage}”</p>
           ) : null}
         </div>
       ) : null}
@@ -282,15 +265,11 @@ export default function RequisitionDetail({
               : undefined;
 
             return (
-              <div
-                key={trip.id}
-                className="rounded-lg border border-form-rule bg-white p-4"
-              >
+              <div key={trip.id} className="rounded-lg border border-form-rule bg-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-medium text-form-ink">
-                      Trip {index + 1} · {trip.date} · {trip.startTime}–
-                      {trip.endTime}
+                      Trip {index + 1} · {trip.date} · {trip.startTime}–{trip.endTime}
                     </p>
 
                     <p className="mt-1 text-sm text-form-muted">
@@ -312,9 +291,7 @@ export default function RequisitionDetail({
                     {trip.status === "Rejected" && (
                       <p className="mt-2 text-xs font-medium text-error">
                         Rejected — {trip.rejectionReason}
-                        {trip.rejectionRemarks
-                          ? `: ${trip.rejectionRemarks}`
-                          : ""}
+                        {trip.rejectionRemarks ? `: ${trip.rejectionRemarks}` : ""}
                       </p>
                     )}
 
@@ -330,9 +307,7 @@ export default function RequisitionDetail({
                         {vehicle
                           ? `${vehicle.registrationNumber} (${vehicle.category})`
                           : "Unknown vehicle"}
-                        {assignedDriver
-                          ? ` · Driver: ${assignedDriver.name}`
-                          : " · No driver"}
+                        {assignedDriver ? ` · Driver: ${assignedDriver.name}` : " · No driver"}
                       </p>
                     )}
 
@@ -340,9 +315,8 @@ export default function RequisitionDetail({
                       trip.status === "Pending" &&
                       mode === "transportAdministrator" && (
                         <p className="mt-2 text-xs font-medium text-warning">
-                          No vehicle on file — this trip shouldn't have
-                          reached this queue without one. Send the
-                          application back to Transport In-Charge.
+                          No vehicle on file — this trip shouldn't have reached this queue without
+                          one. Send the application back to Transport In-Charge.
                         </p>
                       )}
                   </div>
@@ -365,7 +339,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => onRemoveVehicleAssignment?.(trip.id)}
-                        className={buttonClass("danger","sm")}
+                        className={buttonClass("danger", "sm")}
                       >
                         Remove
                       </button>
@@ -383,7 +357,7 @@ export default function RequisitionDetail({
                         type="button"
                         onClick={() => onApproveTrip?.(trip.id)}
                         disabled={!allocation}
-                        className={buttonClass("success","sm")}
+                        className={buttonClass("success", "sm")}
                       >
                         Approve
                       </button>
@@ -391,7 +365,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => startReject(trip.id)}
-                        className={buttonClass("danger","sm")}
+                        className={buttonClass("danger", "sm")}
                       >
                         Reject
                       </button>
@@ -401,39 +375,37 @@ export default function RequisitionDetail({
                 {/* Transport Administrator — mark an approved trip
                     Completed once it's actually happened (FRD §22),
                     independent of approve/reject and of mileage */}
-                {mode === "transportAdministrator" &&
-                  trip.status === "Approved" && (
-                    <div className="mt-3 flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => onCompleteTrip?.(trip.id)}
-                        className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
-                      >
-                        Mark Completed
-                      </button>
+                {mode === "transportAdministrator" && trip.status === "Approved" && (
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => onCompleteTrip?.(trip.id)}
+                      className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
+                    >
+                      Mark Completed
+                    </button>
 
-                      <button
-                        type="button"
-                        onClick={() => onResetTripDecision?.(trip.id)}
-                        className="text-xs font-medium text-secondary hover:underline"
-                      >
-                        Undo decision
-                      </button>
-                    </div>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => onResetTripDecision?.(trip.id)}
+                      className="text-xs font-medium text-secondary hover:underline"
+                    >
+                      Undo decision
+                    </button>
+                  </div>
+                )}
 
-                {mode === "transportAdministrator" &&
-                  trip.status === "Rejected" && (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => onResetTripDecision?.(trip.id)}
-                        className="text-xs font-medium text-secondary hover:underline"
-                      >
-                        Undo decision
-                      </button>
-                    </div>
-                  )}
+                {mode === "transportAdministrator" && trip.status === "Rejected" && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => onResetTripDecision?.(trip.id)}
+                      className="text-xs font-medium text-secondary hover:underline"
+                    >
+                      Undo decision
+                    </button>
+                  </div>
+                )}
 
                 {rejectingTripId === trip.id && (
                   <div className="mt-3 space-y-2 rounded-md border border-form-rule bg-surface p-3">
@@ -444,9 +416,7 @@ export default function RequisitionDetail({
 
                       <select
                         value={reason}
-                        onChange={(event) =>
-                          setReason(event.target.value as RejectionReason)
-                        }
+                        onChange={(event) => setReason(event.target.value as RejectionReason)}
                         className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
                       >
                         {REJECTION_REASONS.map((item) => (
@@ -474,7 +444,7 @@ export default function RequisitionDetail({
                       <button
                         type="button"
                         onClick={() => setRejectingTripId(null)}
-                        className={buttonClass("secondary","sm")}
+                        className={buttonClass("secondary", "sm")}
                       >
                         Cancel
                       </button>
@@ -550,8 +520,8 @@ export default function RequisitionDetail({
         <div className="space-y-3 rounded-md border border-form-rule bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-secondary">
-              Not right? Send the whole application back to Transport In
-              Charge instead of deciding trip-by-trip.
+              Not right? Send the whole application back to Transport In Charge instead of deciding
+              trip-by-trip.
             </p>
 
             <button
@@ -597,8 +567,7 @@ export default function RequisitionDetail({
                 </button>
               ) : (
                 <p className="mb-3 text-sm text-form-muted">
-                  Confirmation slip becomes available once at least one trip
-                  is approved.
+                  Confirmation slip becomes available once at least one trip is approved.
                 </p>
               )}
             </>
@@ -606,20 +575,14 @@ export default function RequisitionDetail({
 
           {dutySlipGroups.length === 0 ? (
             <p className="text-sm text-form-muted">
-              No approved & allocated trips yet — duty slips become available
-              once trips are approved.
+              No approved & allocated trips yet — duty slips become available once trips are
+              approved.
             </p>
           ) : (
             <div className="space-y-2">
               {dutySlipGroups.map((group) => {
-                const assignedDriver = driver.find(
-                  (member) => member.id === group.driverId,
-                );
-                const history = getDutySlipHistory(
-                  requisition.id,
-                  group.driverId,
-                  dutySlips,
-                );
+                const assignedDriver = driver.find((member) => member.id === group.driverId);
+                const history = getDutySlipHistory(requisition.id, group.driverId, dutySlips);
                 const latestSlip = history[0];
                 const stale = latestSlip
                   ? hasStaleVehicleAssignment(latestSlip, allocations)
@@ -688,9 +651,7 @@ export default function RequisitionDetail({
                           onClick={handleGenerateClick}
                           className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
                         >
-                          {latestSlip
-                            ? "Regenerate Duty Slip"
-                            : "Generate Duty Slip"}
+                          {latestSlip ? "Regenerate Duty Slip" : "Generate Duty Slip"}
                         </button>
                       )}
                     </div>
@@ -707,8 +668,8 @@ export default function RequisitionDetail({
                           }
                           className="text-xs font-medium text-secondary hover:underline"
                         >
-                          {historyOpen ? "Hide" : "Show"} slip history (
-                          {olderSlips.length} superseded)
+                          {historyOpen ? "Hide" : "Show"} slip history ({olderSlips.length}{" "}
+                          superseded)
                         </button>
 
                         {historyOpen && (
@@ -718,10 +679,7 @@ export default function RequisitionDetail({
                                 key={slip.id}
                                 className="flex items-center justify-between text-xs text-form-muted"
                               >
-                                <span>
-                                  Generated{" "}
-                                  {new Date(slip.generatedAt).toLocaleString()}
-                                </span>
+                                <span>Generated {new Date(slip.generatedAt).toLocaleString()}</span>
                                 <span className="inline-flex rounded-full bg-error-bg px-2 py-0.5 font-medium text-error">
                                   Superseded — see new slip
                                 </span>
@@ -740,11 +698,7 @@ export default function RequisitionDetail({
       )}
 
       {allocatingTrip && (
-        <Modal
-          title="Assign Vehicle"
-          onClose={() => setAllocatingTrip(null)}
-          wide
-        >
+        <Modal title="Assign Vehicle" onClose={() => setAllocatingTrip(null)} wide>
           <AllocationPicker
             trip={allocatingTrip}
             allocations={allocations}
@@ -789,15 +743,11 @@ function SendBackForm({
     <div className="space-y-2 rounded-md border border-form-rule bg-white p-3">
       {withReason && reason && onReasonChange && (
         <div>
-          <label className="mb-1 block text-xs font-medium text-form-muted">
-            Reason
-          </label>
+          <label className="mb-1 block text-xs font-medium text-form-muted">Reason</label>
 
           <select
             value={reason}
-            onChange={(event) =>
-              onReasonChange(event.target.value as RejectionReason)
-            }
+            onChange={(event) => onReasonChange(event.target.value as RejectionReason)}
             className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
           >
             {REJECTION_REASONS.map((item) => (
@@ -824,11 +774,7 @@ function SendBackForm({
       </div>
 
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary","sm")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary", "sm")}>
           Cancel
         </button>
 

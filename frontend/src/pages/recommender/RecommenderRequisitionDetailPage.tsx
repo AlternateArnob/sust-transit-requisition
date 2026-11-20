@@ -11,10 +11,7 @@ import Card, { SectionHeading } from "../../components/ui/Card";
 import PageTitle from "../../components/ui/PageTitle";
 import { ApplicationStatusBadge, TripStatusBadge } from "../../components/ui/StatusBadge";
 
-import {
-  formatDateRange,
-  getTripStatusCounts,
-} from "../../utils/requisitionUtils";
+import { formatDateRange, getTripStatusCounts } from "../../utils/requisitionUtils";
 import {
   buildApplicantNotification,
   buildRequisitionNotifications,
@@ -23,10 +20,7 @@ import {
 
 import type { RejectionReason, UserAccount } from "../../types";
 
-function scopesMatch(
-  requesterDept: string | undefined,
-  recommender: UserAccount,
-): boolean {
+function scopesMatch(requesterDept: string | undefined, recommender: UserAccount): boolean {
   const department = requesterDept?.trim().toLowerCase();
   const headDept = recommender.headOfDepartment?.trim().toLowerCase();
   const headOffice = recommender.headOfOffice?.trim().toLowerCase();
@@ -76,8 +70,7 @@ export default function RecommenderRequisitionDetailPage() {
   }
 
   const isAssigned = scopesMatch(requisition.department, currentUser);
-  const recommenderName =
-    currentUser.fullName?.trim() || currentUser.email || "Department Head";
+  const recommenderName = currentUser.fullName?.trim() || currentUser.email || "Department Head";
 
   function handleRecommend(message: string) {
     if (!requisition) return;
@@ -95,14 +88,11 @@ export default function RecommenderRequisitionDetailPage() {
       // "Departmental/Official → Department/Office Head → if approved →
       // Transport Office". Only they need to know a new item just
       // landed in their queue; nobody else gets a fan-out ping for this.
-      for (const notification of buildRequisitionNotifications(
-        findTransportInCharge(users),
-        {
-          requisition,
-          type: "New Requisition",
-          message: `${requisition.requesterName}'s requisition was recommended by ${recommenderName} and is awaiting Transport Office review.${trimmedMessage ? ` Message: "${trimmedMessage}"` : ""}`,
-        },
-      )) {
+      for (const notification of buildRequisitionNotifications(findTransportInCharge(users), {
+        requisition,
+        type: "New Requisition",
+        message: `${requisition.requesterName}'s requisition was recommended by ${recommenderName} and is awaiting Transport Office review.${trimmedMessage ? ` Message: "${trimmedMessage}"` : ""}`,
+      })) {
         addNotification(notification);
       }
 
@@ -115,9 +105,7 @@ export default function RecommenderRequisitionDetailPage() {
 
       navigate("/admin/recommender");
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : "Could not recommend requisition.",
-      );
+      setActionError(err instanceof Error ? err.message : "Could not recommend requisition.");
     } finally {
       setIsSubmitting(false);
     }
@@ -142,9 +130,7 @@ export default function RecommenderRequisitionDetailPage() {
 
       navigate("/admin/recommender");
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : "Could not reject requisition.",
-      );
+      setActionError(err instanceof Error ? err.message : "Could not reject requisition.");
     } finally {
       setIsSubmitting(false);
     }
@@ -169,11 +155,7 @@ export default function RecommenderRequisitionDetailPage() {
 
       navigate("/admin/recommender");
     } catch (err) {
-      setActionError(
-        err instanceof Error
-          ? err.message
-          : "Could not send back requisition.",
-      );
+      setActionError(err instanceof Error ? err.message : "Could not send back requisition.");
     } finally {
       setIsSubmitting(false);
     }
@@ -184,10 +166,7 @@ export default function RecommenderRequisitionDetailPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link
-          to="/admin/recommender"
-          className="text-xs font-medium text-primary hover:underline"
-        >
+        <Link to="/admin/recommender" className="text-xs font-medium text-primary hover:underline">
           ← Back to requests
         </Link>
         <div className="mt-2">
@@ -199,8 +178,7 @@ export default function RecommenderRequisitionDetailPage() {
             actions={
               <Card className="px-4 py-2.5 text-xs text-text-muted">
                 <p>
-                  Status:{" "}
-                  <ApplicationStatusBadge status={requisition.status} />
+                  Status: <ApplicationStatusBadge status={requisition.status} />
                 </p>
                 <p className="mt-1">
                   Scope:{" "}
@@ -233,38 +211,27 @@ export default function RecommenderRequisitionDetailPage() {
         <SectionHeading>Journey summary</SectionHeading>
         <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">
-              Type
-            </dt>
+            <dt className="text-xs uppercase tracking-wide text-text-muted">Type</dt>
             <dd className="mt-1 text-text">{requisition.requisitionType}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">
-              Department / Office
-            </dt>
+            <dt className="text-xs uppercase tracking-wide text-text-muted">Department / Office</dt>
             <dd className="mt-1 text-text">{requisition.department ?? "—"}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">
-              Date range
-            </dt>
+            <dt className="text-xs uppercase tracking-wide text-text-muted">Date range</dt>
             <dd className="mt-1 text-text">
               {formatDateRange(requisition.startDate, requisition.endDate)}
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-text-muted">
-              Trips
-            </dt>
+            <dt className="text-xs uppercase tracking-wide text-text-muted">Trips</dt>
             <dd className="mt-1 text-text">
-              {counts.pending} pending · {counts.approved} approved ·{" "}
-              {counts.rejected} rejected
+              {counts.pending} pending · {counts.approved} approved · {counts.rejected} rejected
             </dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-xs uppercase tracking-wide text-text-muted">
-              Purpose
-            </dt>
+            <dt className="text-xs uppercase tracking-wide text-text-muted">Purpose</dt>
             <dd className="mt-1 text-text">{requisition.purpose}</dd>
           </div>
         </dl>

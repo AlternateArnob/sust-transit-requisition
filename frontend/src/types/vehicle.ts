@@ -50,8 +50,4 @@ export const VEHICLE_CATEGORIES: VehicleCategory[] = [
   "Pickup",
 ];
 
-export const VEHICLE_STATUSES: VehicleStatus[] = [
-  "Active",
-  "Under Maintenance",
-  "Out-of-Service",
-];
+export const VEHICLE_STATUSES: VehicleStatus[] = ["Active", "Under Maintenance", "Out-of-Service"];

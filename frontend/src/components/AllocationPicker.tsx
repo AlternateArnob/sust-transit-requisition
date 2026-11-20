@@ -29,8 +29,7 @@ export default function AllocationPicker({
 
   const evaluated = vehicles
     .filter(
-      (vehicle) =>
-        trip.vehicleCategory === "Any" || vehicle.category === trip.vehicleCategory,
+      (vehicle) => trip.vehicleCategory === "Any" || vehicle.category === trip.vehicleCategory,
     )
     .map((vehicle) =>
       getVehicleEligibility(vehicle, trip, {
@@ -71,9 +70,7 @@ export default function AllocationPicker({
           <div
             key={vehicle.id}
             className={`rounded-md border px-4 py-3 ${
-              eligible
-                ? "border-border bg-white"
-                : "border-border bg-surface opacity-60"
+              eligible ? "border-border bg-white" : "border-border bg-surface opacity-60"
             }`}
           >
             <div className="flex items-center justify-between gap-3">
@@ -125,11 +122,7 @@ export default function AllocationPicker({
       </div>
 
       <div className="flex justify-end border-t border-border pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel
         </button>
       </div>

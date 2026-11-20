@@ -11,27 +11,16 @@ import type { UserRole } from "../types";
  * matrix this file encodes.
  */
 
-export const ADMIN_ROLES = [
-  "TransportInCharge",
-  "TransportAdministrator",
-  "SuperAdmin",
-] as const;
+export const ADMIN_ROLES = ["TransportInCharge", "TransportAdministrator", "SuperAdmin"] as const;
 
 export type AdminRole = (typeof ADMIN_ROLES)[number];
 
 /** Roles that share the /admin layout (Transport Office roles + the
  *  DepartmentHead recommender, who reuses the same shell for their inbox). */
-export const ADMIN_LAYOUT_ROLES: ReadonlyArray<UserRole> = [
-  ...ADMIN_ROLES,
-  "DepartmentHead",
-];
+export const ADMIN_LAYOUT_ROLES: ReadonlyArray<UserRole> = [...ADMIN_ROLES, "DepartmentHead"];
 
 export function isAdminRole(role: UserRole | undefined): role is AdminRole {
-  return (
-    role === "TransportInCharge" ||
-    role === "TransportAdministrator" ||
-    role === "SuperAdmin"
-  );
+  return role === "TransportInCharge" || role === "TransportAdministrator" || role === "SuperAdmin";
 }
 
 export function isTransportInCharge(role: UserRole | undefined): boolean {
@@ -81,9 +70,7 @@ export function canSendBackToApplicant(role: UserRole | undefined): boolean {
   return isTransportInCharge(role);
 }
 
-export function canSendBackToTransportInCharge(
-  role: UserRole | undefined,
-): boolean {
+export function canSendBackToTransportInCharge(role: UserRole | undefined): boolean {
   return isTransportAdministrator(role);
 }
 

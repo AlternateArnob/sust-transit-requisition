@@ -4,10 +4,7 @@ import { Link, Navigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useRequisitions from "../../hooks/useRequisitions";
 
-import {
-  formatDateRange,
-  getTripStatusCounts,
-} from "../../utils/requisitionUtils";
+import { formatDateRange, getTripStatusCounts } from "../../utils/requisitionUtils";
 import DataTable from "../../components/DataTable";
 import Card from "../../components/ui/Card";
 import PageTitle from "../../components/ui/PageTitle";
@@ -45,9 +42,7 @@ export default function RecommenderInboxPage() {
       (requisition) => requisition.status === "Pending Recommendation",
     );
 
-    const sorted = [...pending].sort((a, b) =>
-      a.createdAt.localeCompare(b.createdAt),
-    );
+    const sorted = [...pending].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
     return sorted.map((requisition) => ({
       requisition,
@@ -79,17 +74,13 @@ export default function RecommenderInboxPage() {
               View requisitions I recommended →
             </Link>
             <p>
-              <span className="font-semibold text-text">{counts.total}</span>{" "}
-              pending ·{" "}
-              <span className="font-semibold text-text">{counts.assigned}</span>{" "}
-              assigned to you
+              <span className="font-semibold text-text">{counts.total}</span> pending ·{" "}
+              <span className="font-semibold text-text">{counts.assigned}</span> assigned to you
             </p>
             <p className="mt-1">
               Scoped to department:{" "}
               <span className="font-medium text-text">
-                {currentUser.headOfDepartment ||
-                  currentUser.headOfOffice ||
-                  "—"}
+                {currentUser.headOfDepartment || currentUser.headOfOffice || "—"}
               </span>
             </p>
           </Card>
@@ -115,11 +106,7 @@ export default function RecommenderInboxPage() {
           },
           {
             header: "Date range",
-            render: (row) =>
-              formatDateRange(
-                row.requisition.startDate,
-                row.requisition.endDate,
-              ),
+            render: (row) => formatDateRange(row.requisition.startDate, row.requisition.endDate),
           },
           {
             header: "Trips",

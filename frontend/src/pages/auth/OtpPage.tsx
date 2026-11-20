@@ -7,11 +7,7 @@ import useOtp from "../../hooks/useOtp";
 import useUsers from "../../hooks/useUsers";
 import useAuth from "../../hooks/useAuth";
 import OtpInput from "../../components/OtpInput";
-import {
-  OTP_EXPIRY_MS,
-  OTP_LENGTH,
-  OTP_MAX_ATTEMPTS,
-} from "../../types";
+import { OTP_EXPIRY_MS, OTP_LENGTH, OTP_MAX_ATTEMPTS } from "../../types";
 import { STORAGE_KEYS } from "../../data/storageKeys";
 
 interface LocationState {
@@ -30,9 +26,7 @@ export default function OtpPage() {
   const { findByEmail, markVerified } = useUsers();
   const { login } = useAuth();
 
-  const [email] = useState<string>(
-    state.email ?? localStorage.getItem(PENDING_EMAIL_KEY) ?? "",
-  );
+  const [email] = useState<string>(state.email ?? localStorage.getItem(PENDING_EMAIL_KEY) ?? "");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
@@ -53,8 +47,7 @@ export default function OtpPage() {
   }, [challenge]);
 
   const expiresAt = challenge ? new Date(challenge.expiresAt).getTime() : null;
-  const secondsLeft =
-    expiresAt !== null ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : 0;
+  const secondsLeft = expiresAt !== null ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : 0;
   const expired = challenge !== undefined && secondsLeft === 0;
 
   function handleVerify(event: React.FormEvent) {
@@ -128,10 +121,8 @@ export default function OtpPage() {
       subtitle={
         <>
           We sent a {OTP_LENGTH}-digit code to{" "}
-          <span className="font-medium text-form-ink">
-            {email || "your email"}
-          </span>
-          . The code is valid for {OTP_EXPIRY_MS / 60000} minutes.
+          <span className="font-medium text-form-ink">{email || "your email"}</span>. The code is
+          valid for {OTP_EXPIRY_MS / 60000} minutes.
         </>
       }
     >
@@ -155,9 +146,10 @@ export default function OtpPage() {
             <span className="mt-2 text-xs text-form-muted">
               {expired
                 ? "Code expired."
-                : `Expires in ${Math.floor(secondsLeft / 60)}:${String(
-                    secondsLeft % 60,
-                  ).padStart(2, "0")}`}
+                : `Expires in ${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(
+                    2,
+                    "0",
+                  )}`}
             </span>
           ) : null}
         </div>

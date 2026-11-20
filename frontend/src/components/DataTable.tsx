@@ -50,9 +50,7 @@ export default function DataTable<T>({
                   <p className="font-medium text-text">{emptyTitle}</p>
 
                   {emptyDescription && (
-                    <p className="mt-1 text-sm text-text-muted">
-                      {emptyDescription}
-                    </p>
+                    <p className="mt-1 text-sm text-text-muted">{emptyDescription}</p>
                   )}
                 </td>
               </tr>

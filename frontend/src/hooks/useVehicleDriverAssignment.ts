@@ -58,10 +58,7 @@ export default function useVehicleDriverAssignment() {
         };
       }
 
-      if (
-        targetDriver.permanentVehicleId &&
-        targetDriver.permanentVehicleId !== vehicleId
-      ) {
+      if (targetDriver.permanentVehicleId && targetDriver.permanentVehicleId !== vehicleId) {
         return {
           success: false,
           message: "This driver is already assigned to another vehicle.",

@@ -26,17 +26,13 @@ function writeSession(userId: string | null): void {
 
 export default function useAuth() {
   const { users, findById } = useUsers();
-  const [activeUserId, setActiveUserId] = useState<string | null>(() =>
-    readSession(),
-  );
+  const [activeUserId, setActiveUserId] = useState<string | null>(() => readSession());
 
   useEffect(() => {
     writeSession(activeUserId);
   }, [activeUserId]);
 
-  const currentUser: UserAccount | null = activeUserId
-    ? findById(activeUserId) ?? null
-    : null;
+  const currentUser: UserAccount | null = activeUserId ? (findById(activeUserId) ?? null) : null;
 
   const login = useCallback((userId: string) => {
     setActiveUserId(userId);

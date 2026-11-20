@@ -29,11 +29,7 @@ const LOGO_W = (LOGO_H * 250) / 272;
 /**
  * Letterhead. Returns the y position where body content should start.
  */
-export function drawHeader(
-  doc: jsPDF,
-  title: string,
-  applicationNo?: string,
-): number {
+export function drawHeader(doc: jsPDF, title: string, applicationNo?: string): number {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   doc.addImage(sustLogo, "PNG", MARGIN, 12, LOGO_W, LOGO_H);
@@ -43,11 +39,7 @@ export function drawHeader(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(...PDF_COLORS.muted);
-  doc.text(
-    "Shahjalal University of Science and Technology  ·  Transport Wing",
-    textX,
-    18,
-  );
+  doc.text("Shahjalal University of Science and Technology  ·  Transport Wing", textX, 18);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(15);
@@ -79,11 +71,7 @@ export function drawHeader(
 }
 
 /** Uppercase bold section heading with a full-width light divider. */
-export function drawSectionHeading(
-  doc: jsPDF,
-  text: string,
-  y: number,
-): number {
+export function drawSectionHeading(doc: jsPDF, text: string, y: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   doc.setFont("helvetica", "bold");
@@ -100,11 +88,7 @@ export function drawSectionHeading(
 }
 
 /** Muted label on the left, dark value on the right; wraps long values. */
-export function drawInfoRows(
-  doc: jsPDF,
-  rows: [string, string][],
-  y: number,
-): number {
+export function drawInfoRows(doc: jsPDF, rows: [string, string][], y: number): number {
   const pageWidth = doc.internal.pageSize.getWidth();
   const valueX = MARGIN + 52;
   const valueWidth = pageWidth - MARGIN - valueX;

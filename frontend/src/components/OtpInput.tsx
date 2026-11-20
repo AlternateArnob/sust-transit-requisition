@@ -46,10 +46,7 @@ export default function OtpInput({
     }
   }
 
-  function handleKeyDown(
-    event: React.KeyboardEvent<HTMLInputElement>,
-    index: number,
-  ) {
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>, index: number) {
     if (event.key === "Backspace" && !cells[index] && index > 0) {
       refs.current[index - 1]?.focus();
     }
@@ -92,11 +89,7 @@ export default function OtpInput({
             h-12 w-10 rounded-md border bg-form-field text-center text-lg font-semibold
             text-form-ink outline-none transition
             focus:bg-white focus:ring-2 focus:ring-primary focus:ring-offset-1
-            ${
-              invalid
-                ? "border-error focus:ring-error"
-                : "border-form-rule"
-            }
+            ${invalid ? "border-error focus:ring-error" : "border-form-rule"}
             ${disabled ? "cursor-not-allowed bg-surface" : ""}
           `}
         />

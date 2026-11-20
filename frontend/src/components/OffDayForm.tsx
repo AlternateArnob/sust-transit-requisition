@@ -5,12 +5,7 @@ import useAllocations from "../hooks/useAllocations";
 
 import { getWeekdayFromDate, todayString } from "../utils/scheduleUtils";
 
-import {
-  WEEKDAYS,
-  type VehicleOffDay,
-  type OffDayType,
-  type Weekday,
-} from "../types";
+import { WEEKDAYS, type VehicleOffDay, type OffDayType, type Weekday } from "../types";
 import { buttonClass } from "./ui/buttonStyles";
 
 interface OffDayFormProps {
@@ -53,21 +48,17 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
     // allocations. Without this floor, a "Recurring: Monday" off-day
     // could never be set for a vehicle that ever had so much as one
     // completed trip fall on a Monday, no matter how long ago.
-    const upcoming = allocations.filter(
-      (allocation) => allocation.date >= todayString(),
-    );
+    const upcoming = allocations.filter((allocation) => allocation.date >= todayString());
 
     if (type === "One-time") {
       return upcoming.filter(
-        (allocation) =>
-          allocation.vehicleId === vehicleId && allocation.date === date,
+        (allocation) => allocation.vehicleId === vehicleId && allocation.date === date,
       );
     }
 
     return upcoming.filter(
       (allocation) =>
-        allocation.vehicleId === vehicleId &&
-        getWeekdayFromDate(allocation.date) === weekday,
+        allocation.vehicleId === vehicleId && getWeekdayFromDate(allocation.date) === weekday,
     );
   }
 
@@ -103,9 +94,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
     const conflicts = getConflictingAllocations();
 
     if (conflicts.length > 0) {
-      const dates = [
-        ...new Set(conflicts.map((allocation) => allocation.date)),
-      ].join(", ");
+      const dates = [...new Set(conflicts.map((allocation) => allocation.date))].join(", ");
       setSubmitError(
         `Cannot mark this vehicle unavailable — it already has ${conflicts.length} allocation(s) on ${dates}. Reassign or remove those allocations first.`,
       );
@@ -128,10 +117,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Vehicle */}
       <div>
-        <label
-          htmlFor="offDayVehicle"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="offDayVehicle" className="mb-1.5 block text-sm font-medium text-text">
           Vehicle
         </label>
 
@@ -150,16 +136,12 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
           ))}
         </select>
 
-        {errors.vehicleId && (
-          <p className="mt-1 text-xs text-error">{errors.vehicleId}</p>
-        )}
+        {errors.vehicleId && <p className="mt-1 text-xs text-error">{errors.vehicleId}</p>}
       </div>
 
       {/* Type */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-text">
-          Off-Day Type
-        </label>
+        <label className="mb-2 block text-sm font-medium text-text">Off-Day Type</label>
 
         <div className="flex gap-5">
           <label className="flex items-center gap-2 text-sm text-text">
@@ -187,10 +169,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
       {/* Date or Weekday */}
       {type === "One-time" ? (
         <div>
-          <label
-            htmlFor="offDayDate"
-            className="mb-1.5 block text-sm font-medium text-text"
-          >
+          <label htmlFor="offDayDate" className="mb-1.5 block text-sm font-medium text-text">
             Date
           </label>
 
@@ -202,16 +181,11 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
             className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
           />
 
-          {errors.date && (
-            <p className="mt-1 text-xs text-error">{errors.date}</p>
-          )}
+          {errors.date && <p className="mt-1 text-xs text-error">{errors.date}</p>}
         </div>
       ) : (
         <div>
-          <label
-            htmlFor="offDayWeekday"
-            className="mb-1.5 block text-sm font-medium text-text"
-          >
+          <label htmlFor="offDayWeekday" className="mb-1.5 block text-sm font-medium text-text">
             Weekday
           </label>
 
@@ -228,18 +202,13 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
             ))}
           </select>
 
-          {errors.weekday && (
-            <p className="mt-1 text-xs text-error">{errors.weekday}</p>
-          )}
+          {errors.weekday && <p className="mt-1 text-xs text-error">{errors.weekday}</p>}
         </div>
       )}
 
       {/* Reason */}
       <div>
-        <label
-          htmlFor="offDayReason"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="offDayReason" className="mb-1.5 block text-sm font-medium text-text">
           Reason (optional)
         </label>
 
@@ -262,18 +231,11 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
 
       {/* Buttons */}
       <div className="flex justify-end gap-3 border-t border-border pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className={buttonClass("primary")}
-        >
+        <button type="submit" className={buttonClass("primary")}>
           Mark Off-Day
         </button>
       </div>

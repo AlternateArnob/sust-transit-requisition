@@ -9,10 +9,7 @@ import { isWithinHoldWindow } from "../../utils/validators";
 import { parseRoute } from "../../utils/routeUtils";
 import { ERROR_TEXT, FIELD_BOXED, FIELD_LABEL, FIELD_TEXTAREA } from "./formTheme";
 
-const VEHICLE_CATEGORY_OPTIONS: RequestedVehicleCategory[] = [
-  ...VEHICLE_CATEGORIES,
-  "Any",
-];
+const VEHICLE_CATEGORY_OPTIONS: RequestedVehicleCategory[] = [...VEHICLE_CATEGORIES, "Any"];
 
 interface Step3JourneyProps {
   requisitionType: RequisitionType;
@@ -42,9 +39,7 @@ const TYPE_HINTS: Partial<Record<RequisitionType, string>> = {
  * offering it as a purpose leads nowhere useful (see Step 3 of the
  * applicant-module fix plan).
  */
-function availableTypesFor(
-  profile: ApplicantProfile | undefined,
-): RequisitionType[] {
+function availableTypesFor(profile: ApplicantProfile | undefined): RequisitionType[] {
   if (profile === "Student") {
     return ["Departmental/Official"];
   }
@@ -64,9 +59,7 @@ export default function Step3Journey({
   const isDepartmental = requisitionType === "Departmental/Official";
 
   function updateTrip(id: string, patch: Partial<TripDraft>) {
-    onTripsChange(
-      trips.map((trip) => (trip.id === id ? { ...trip, ...patch } : trip)),
-    );
+    onTripsChange(trips.map((trip) => (trip.id === id ? { ...trip, ...patch } : trip)));
   }
 
   function addTrip() {
@@ -101,19 +94,13 @@ export default function Step3Journey({
                 className="mt-0.5 h-4 w-4 border-form-rule text-primary focus:ring-primary"
               />
               <span>
-                <span className="block text-sm font-medium text-form-ink">
-                  {type}
-                </span>
-                <span className="mt-0.5 block text-xs text-form-muted">
-                  {TYPE_HINTS[type]}
-                </span>
+                <span className="block text-sm font-medium text-form-ink">{type}</span>
+                <span className="mt-0.5 block text-xs text-form-muted">{TYPE_HINTS[type]}</span>
               </span>
             </label>
           ))}
         </div>
-        {errors.requisitionType ? (
-          <p className={ERROR_TEXT}>{errors.requisitionType}</p>
-        ) : null}
+        {errors.requisitionType ? <p className={ERROR_TEXT}>{errors.requisitionType}</p> : null}
       </div>
 
       <div
@@ -187,9 +174,7 @@ function TripCard({
     <div className="rounded-lg border border-form-rule bg-white p-4">
       {!isPersonal ? (
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[13px] font-medium text-primary">
-            Trip No. {index + 1}
-          </p>
+          <p className="text-[13px] font-medium text-primary">Trip No. {index + 1}</p>
           {showRemove ? (
             <button
               type="button"
@@ -256,15 +241,12 @@ function TripCard({
         </div>
 
         {errors[`time-${trip.id}`] ? (
-          <p className={`-mt-2 sm:col-span-2 ${ERROR_TEXT}`}>
-            {errors[`time-${trip.id}`]}
-          </p>
+          <p className={`-mt-2 sm:col-span-2 ${ERROR_TEXT}`}>{errors[`time-${trip.id}`]}</p>
         ) : null}
 
         {trip.startTime && trip.endTime && !durationOk ? (
           <p className={`-mt-2 sm:col-span-2 ${ERROR_TEXT}`}>
-            {holdLimitError ??
-              "This trip exceeds the 3-hour vehicle-hold limit."}
+            {holdLimitError ?? "This trip exceeds the 3-hour vehicle-hold limit."}
           </p>
         ) : null}
 
@@ -280,9 +262,7 @@ function TripCard({
               </span>
               <input
                 value={trip.destination}
-                onChange={(event) =>
-                  onChange({ destination: event.target.value })
-                }
+                onChange={(event) => onChange({ destination: event.target.value })}
                 placeholder="e.g. Osmani International Airport"
                 className={FIELD_BOXED}
               />
@@ -308,16 +288,13 @@ function TripCard({
               className={FIELD_TEXTAREA}
             />
             <p className="mt-1 text-xs text-form-muted">
-              Write every stop in order, separated by{" "}
-              <span className="font-mono">-&gt;</span>.
+              Write every stop in order, separated by <span className="font-mono">-&gt;</span>.
             </p>
             {stops.length > 0 ? (
               <ol className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-form-ink">
                 {stops.map((stop, stopIndex) => (
                   <li key={`${stop}-${stopIndex}`} className="flex items-center gap-1.5">
-                    {stopIndex > 0 ? (
-                      <span className="text-form-muted">→</span>
-                    ) : null}
+                    {stopIndex > 0 ? <span className="text-form-muted">→</span> : null}
                     <span className="rounded-md border border-form-rule bg-form-field px-2 py-0.5">
                       {stop}
                     </span>

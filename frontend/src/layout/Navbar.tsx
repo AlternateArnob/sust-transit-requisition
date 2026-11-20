@@ -53,14 +53,10 @@ function Navbar({ title }: NavbarProps) {
             className="inline-flex h-9 items-center gap-2 rounded-md bg-white/10 px-3 text-sm font-medium text-white hover:bg-white/20"
             aria-label={`${recommendationsCount} pending recommendation${recommendationsCount === 1 ? "" : "s"}`}
           >
-            <span
-              className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-primary"
-            >
+            <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-primary">
               {recommendationsCount}
             </span>
-            <span>
-              pending recommendation{recommendationsCount === 1 ? "" : "s"}
-            </span>
+            <span>pending recommendation{recommendationsCount === 1 ? "" : "s"}</span>
           </Link>
         ) : null}
 

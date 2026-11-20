@@ -15,9 +15,7 @@ export default function NotificationsPage() {
   const { requisitions } = useRequisitions();
   const isApplicant = currentUser?.role === "Applicant";
 
-  const sorted = [...notifications].sort((a, b) =>
-    b.timestamp.localeCompare(a.timestamp),
-  );
+  const sorted = [...notifications].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 
   function handleClick(notification: AppNotification) {
     markAsRead(notification.id);
@@ -44,9 +42,7 @@ export default function NotificationsPage() {
       // their own application (same rule as the notification bell).
       if (currentUser?.role === "DepartmentHead") {
         const isOwn = requisitions.some(
-          (item) =>
-            item.id === notification.linkId &&
-            item.requesterId === currentUser.id,
+          (item) => item.id === notification.linkId && item.requesterId === currentUser.id,
         );
         navigate(
           isOwn
@@ -86,9 +82,7 @@ export default function NotificationsPage() {
 
       <Card flush className="overflow-hidden">
         {sorted.length === 0 ? (
-          <p className="px-4 py-12 text-center text-sm text-text-muted">
-            No notifications yet
-          </p>
+          <p className="px-4 py-12 text-center text-sm text-text-muted">No notifications yet</p>
         ) : (
           sorted.map((notification) => (
             <button
@@ -100,18 +94,12 @@ export default function NotificationsPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-primary">
-                  {notification.type}
-                </p>
+                <p className="text-sm font-medium text-primary">{notification.type}</p>
 
-                {!notification.isRead && (
-                  <span className="h-2 w-2 rounded-full bg-error" />
-                )}
+                {!notification.isRead && <span className="h-2 w-2 rounded-full bg-error" />}
               </div>
 
-              <p className="mt-1 text-sm text-text">
-                {notification.message}
-              </p>
+              <p className="mt-1 text-sm text-text">{notification.message}</p>
 
               <p className="mt-1 text-xs text-text-muted">
                 {new Date(notification.timestamp).toLocaleString()}

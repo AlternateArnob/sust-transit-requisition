@@ -58,16 +58,17 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
-      <PageTitle title="Edit Profile" subtitle={<>{currentUser.role} — update your own account details.</>} />
+      <PageTitle
+        title="Edit Profile"
+        subtitle={<>{currentUser.role} — update your own account details.</>}
+      />
 
       <form
         onSubmit={handleSubmit}
         className="space-y-4 rounded-lg border border-border bg-white shadow-sm p-6"
       >
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-text">
-            Full Name
-          </span>
+          <span className="text-sm font-medium text-text">Full Name</span>
           <input
             type="text"
             value={fullName}
@@ -87,9 +88,7 @@ export default function ProfilePage() {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-text">
-            Mobile Number
-          </span>
+          <span className="text-sm font-medium text-text">Mobile Number</span>
           <input
             type="tel"
             value={mobile}
@@ -112,17 +111,11 @@ export default function ProfilePage() {
         )}
 
         <div className="flex justify-end gap-2 pt-2">
-          <Link
-            to="/admin"
-            className={`${buttonClass("secondary")} flex`}
-          >
+          <Link to="/admin" className={`${buttonClass("secondary")} flex`}>
             Back to Dashboard
           </Link>
 
-          <button
-            type="submit"
-            className={buttonClass("primary")}
-          >
+          <button type="submit" className={buttonClass("primary")}>
             Save Changes
           </button>
         </div>

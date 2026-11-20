@@ -6,8 +6,7 @@ const BASE =
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-form-action text-white hover:bg-secondary",
-  secondary:
-    "border border-border bg-white text-text hover:bg-surface",
+  secondary: "border border-border bg-white text-text hover:bg-surface",
   danger: "border border-error-bg bg-white text-error hover:bg-error-bg/50",
   success: "bg-success text-white hover:opacity-90",
 };
@@ -18,9 +17,6 @@ const SIZES: Record<ButtonSize, string> = {
 };
 
 /** Class string for anything that must look like a button (e.g. a router Link). */
-export function buttonClass(
-  variant: ButtonVariant = "primary",
-  size: ButtonSize = "md",
-): string {
+export function buttonClass(variant: ButtonVariant = "primary", size: ButtonSize = "md"): string {
   return `${BASE} ${VARIANTS[variant]} ${SIZES[size]}`;
 }

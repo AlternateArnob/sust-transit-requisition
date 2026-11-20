@@ -15,13 +15,8 @@ import type { AppNotification } from "../types";
 export default function NotificationBell() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const {
-    notifications,
-    addNotification,
-    markAsRead,
-    markAllAsRead,
-    unreadCount,
-  } = useNotifications();
+  const { notifications, addNotification, markAsRead, markAllAsRead, unreadCount } =
+    useNotifications();
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { vehicles } = useVehicles();
@@ -33,13 +28,7 @@ export default function NotificationBell() {
 
   // Reconcile detected conflicts against already-notified ones on every render cycle
   useEffect(() => {
-    const conflicts = detectConflicts(
-      allocations,
-      requisitions,
-      vehicles,
-      offDays,
-      schedules,
-    );
+    const conflicts = detectConflicts(allocations, requisitions, vehicles, offDays, schedules);
     const notifiedConflictIds = new Set(
       notifications
         .filter((notification) => notification.linkType === "conflict")
@@ -64,10 +53,7 @@ export default function NotificationBell() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(event.target as Node)
-      ) {
+      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -76,9 +62,7 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const sorted = [...notifications].sort((a, b) =>
-    b.timestamp.localeCompare(a.timestamp),
-  );
+  const sorted = [...notifications].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   const recent = sorted.slice(0, 8);
 
   function handleClick(notification: AppNotification) {
@@ -110,9 +94,7 @@ export default function NotificationBell() {
       // OWN requisition belongs in My Requisitions, not the recommender
       // inbox.
       const isOwnRequisition = requisitions.some(
-        (item) =>
-          item.id === notification.linkId &&
-          item.requesterId === currentUser?.id,
+        (item) => item.id === notification.linkId && item.requesterId === currentUser?.id,
       );
       if (currentUser?.role === "DepartmentHead" && isOwnRequisition) {
         navigate(`/my-requisitions?open=${notification.linkId}`);
@@ -180,9 +162,7 @@ export default function NotificationBell() {
 
           <div className="max-h-96 overflow-y-auto">
             {recent.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-text-muted">
-                No notifications yet
-              </p>
+              <p className="px-4 py-6 text-center text-sm text-text-muted">No notifications yet</p>
             ) : (
               recent.map((notification) => (
                 <button
@@ -193,12 +173,8 @@ export default function NotificationBell() {
                     notification.isRead ? "" : "bg-info-bg/40"
                   }`}
                 >
-                  <p className="text-xs font-medium text-primary">
-                    {notification.type}
-                  </p>
-                  <p className="mt-0.5 text-sm text-text">
-                    {notification.message}
-                  </p>
+                  <p className="text-xs font-medium text-primary">{notification.type}</p>
+                  <p className="mt-0.5 text-sm text-text">{notification.message}</p>
                   <p className="mt-1 text-xs text-text-muted">
                     {new Date(notification.timestamp).toLocaleString()}
                   </p>
@@ -213,9 +189,7 @@ export default function NotificationBell() {
               onClick={() => {
                 setIsOpen(false);
                 navigate(
-                  currentUser?.role === "Applicant"
-                    ? "/notifications"
-                    : "/admin/notifications",
+                  currentUser?.role === "Applicant" ? "/notifications" : "/admin/notifications",
                 );
               }}
               className="text-xs font-medium text-secondary hover:underline"

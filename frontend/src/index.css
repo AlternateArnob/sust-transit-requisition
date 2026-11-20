@@ -1,32 +1,32 @@
 @import "tailwindcss";
 @theme {
-  --color-primary: #0F2747;
-  --color-secondary: #334E68;
-  --color-surface: #F8FAFC;
-  --color-card: #FFFFFF;
-  --color-text: #1E293B;
-  --color-text-muted: #64748B;
-  --color-border: #E2E8F0;
-  --color-success: #15803D;
-  --color-success-bg: #DCFCE7;
-  --color-warning: #B45309;
-  --color-warning-bg: #FEF3C7;
-  --color-error: #B91C1C;
-  --color-error-bg: #FEE2E2;
-  --color-info: #0F2747;
-  --color-info-bg: #DBEAFE;
-  --color-neutral: #64748B;
-  --color-neutral-bg: #F1F5F9;
-  --color-review: #6D28D9;
-  --color-review-bg: #EDE9FE;
-  --color-accent: #F59E0B;
+  --color-primary: #0f2747;
+  --color-secondary: #334e68;
+  --color-surface: #f8fafc;
+  --color-card: #ffffff;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-success: #15803d;
+  --color-success-bg: #dcfce7;
+  --color-warning: #b45309;
+  --color-warning-bg: #fef3c7;
+  --color-error: #b91c1c;
+  --color-error-bg: #fee2e2;
+  --color-info: #0f2747;
+  --color-info-bg: #dbeafe;
+  --color-neutral: #64748b;
+  --color-neutral-bg: #f1f5f9;
+  --color-review: #6d28d9;
+  --color-review-bg: #ede9fe;
+  --color-accent: #f59e0b;
   /* Requisition-type badges */
-  --color-type-personal: #0E7490;
-  --color-type-personal-bg: #CFFAFE;
-  --color-type-official: #4338CA;
-  --color-type-official-bg: #E0E7FF;
-  --color-type-club: #BE185D;
-  --color-type-club-bg: #FCE7F3;
+  --color-type-personal: #0e7490;
+  --color-type-personal-bg: #cffafe;
+  --color-type-official: #4338ca;
+  --color-type-official-bg: #e0e7ff;
+  --color-type-club: #be185d;
+  --color-type-club-bg: #fce7f3;
 
   /*
    * Applicant-facing forms (requisition, register, profile setup) use a
@@ -36,18 +36,18 @@
    * mirror the app's existing primary/text/border/error colors so the
    * form reads as part of the same product, not a different skin.
    */
-  --color-form-paper: #FFFFFF;
-  --color-form-band: #F8FAFC;
-  --color-form-ink: #0F172A;
-  --color-form-muted: #64748B;
-  --color-form-rule: #E2E8F0;
-  --color-form-seal: #B91C1C;
+  --color-form-paper: #ffffff;
+  --color-form-band: #f8fafc;
+  --color-form-ink: #0f172a;
+  --color-form-muted: #64748b;
+  --color-form-rule: #e2e8f0;
+  --color-form-seal: #b91c1c;
   /* Requisition-form card design */
-  --color-form-field: #FAFAFA;
-  --color-form-placeholder: #94A3B8;
-  --color-form-dashed: #CBD5E1;
-  --color-form-action: #0F172A;
-  --color-form-warn-bg: #FFFBEB;
-  --color-form-warn-border: #FDE68A;
-  --color-form-warn-text: #9A3412;
+  --color-form-field: #fafafa;
+  --color-form-placeholder: #94a3b8;
+  --color-form-dashed: #cbd5e1;
+  --color-form-action: #0f172a;
+  --color-form-warn-bg: #fffbeb;
+  --color-form-warn-border: #fde68a;
+  --color-form-warn-text: #9a3412;
 }

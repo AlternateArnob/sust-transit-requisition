@@ -1,20 +1,8 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-import {
-  drawFooter,
-  drawHeader,
-  drawInfoRows,
-  drawSectionHeading,
-  tableStyle,
-} from "./pdfTheme";
-import type {
-  Requisition,
-  Vehicle,
-  Driver,
-  Trip,
-  Allocation,
-} from "../../types";
+import { drawFooter, drawHeader, drawInfoRows, drawSectionHeading, tableStyle } from "./pdfTheme";
+import type { Requisition, Vehicle, Driver, Trip, Allocation } from "../../types";
 
 export function generateDutySlipPdf(
   requisition: Requisition,
@@ -55,9 +43,7 @@ export function generateDutySlipPdf(
   autoTable(doc, {
     ...tableStyle(),
     startY: y,
-    head: [
-      ["Date", "Reporting Location", "Reporting Time", "Vehicle", "Route"],
-    ],
+    head: [["Date", "Reporting Location", "Reporting Time", "Vehicle", "Route"]],
     body: rows,
   });
 

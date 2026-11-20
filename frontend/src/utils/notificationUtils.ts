@@ -1,9 +1,4 @@
-import type {
-  AppNotification,
-  NotificationType,
-  Requisition,
-  UserAccount,
-} from "../types";
+import type { AppNotification, NotificationType, Requisition, UserAccount } from "../types";
 
 /**
  * Phase 5 — match a requisition's department/office against every
@@ -17,9 +12,7 @@ function scopeMatches(department: string | undefined, head: UserAccount): boolea
   const headDept = head.headOfDepartment?.trim().toLowerCase();
   const headOffice = head.headOfOffice?.trim().toLowerCase();
 
-  return Boolean(
-    (headDept && dept === headDept) || (headOffice && dept === headOffice),
-  );
+  return Boolean((headDept && dept === headDept) || (headOffice && dept === headOffice));
 }
 
 /**
@@ -34,7 +27,9 @@ export function findDepartmentHeadsForRequisition(
 ): UserAccount[] {
   return users.filter(
     (user) =>
-      user.role === "DepartmentHead" && user.isVerified && scopeMatches(requisition.department, user),
+      user.role === "DepartmentHead" &&
+      user.isVerified &&
+      scopeMatches(requisition.department, user),
   );
 }
 
@@ -48,21 +43,13 @@ export function findDepartmentHeadsForRequisition(
  */
 export function findTransportInCharge(users: UserAccount[]): UserAccount[] {
   return users.filter(
-    (user) =>
-      user.role === "TransportInCharge" &&
-      user.isVerified &&
-      user.isActive !== false,
+    (user) => user.role === "TransportInCharge" && user.isVerified && user.isActive !== false,
   );
 }
 
-export function findTransportAdministrators(
-  users: UserAccount[],
-): UserAccount[] {
+export function findTransportAdministrators(users: UserAccount[]): UserAccount[] {
   return users.filter(
-    (user) =>
-      user.role === "TransportAdministrator" &&
-      user.isVerified &&
-      user.isActive !== false,
+    (user) => user.role === "TransportAdministrator" && user.isVerified && user.isActive !== false,
   );
 }
 
@@ -95,10 +82,7 @@ export function buildApplicantNotification(
  * visible on reactivation, or to anyone with access to their history
  * (Phase 8's "don't discard history" reasoning applies here too).
  */
-export function buildAccountStatusNotification(
-  userId: string,
-  message: string,
-): AppNotification {
+export function buildAccountStatusNotification(userId: string, message: string): AppNotification {
   return {
     id: crypto.randomUUID(),
     type: "Account Status Changed",

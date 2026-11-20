@@ -10,9 +10,7 @@ export default function useAllocations() {
   // allocationUtils.ts) so history isn't lost by mutating an existing
   // Allocation in place; not exposing `update` here means a future call
   // site can't accidentally reintroduce that pattern.
-  const { items, add, remove } = useLocalStorageCollection<Allocation>(
-    STORAGE_KEY,
-  );
+  const { items, add, remove } = useLocalStorageCollection<Allocation>(STORAGE_KEY);
 
   return {
     allocations: items,

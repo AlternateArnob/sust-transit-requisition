@@ -21,18 +21,11 @@ const ACCEPT = "application/pdf,image/png,image/jpeg,image/jpg";
  * document. The document is read through FileReader.readAsDataURL so it can
  * be persisted alongside the requisition in localStorage.
  */
-export default function Step4Details({
-  value,
-  onChange,
-  errors = {},
-}: Step4DetailsProps) {
+export default function Step4Details({ value, onChange, errors = {} }: Step4DetailsProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [readError, setReadError] = useState<string | undefined>();
 
-  function handleField<K extends keyof DetailsDraft>(
-    field: K,
-    nextValue: DetailsDraft[K],
-  ) {
+  function handleField<K extends keyof DetailsDraft>(field: K, nextValue: DetailsDraft[K]) {
     onChange({ ...value, [field]: nextValue });
   }
 
@@ -92,14 +85,10 @@ export default function Step4Details({
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-form-dashed bg-form-band px-4 py-3">
           <span
             className={`min-w-0 flex-1 truncate text-sm ${
-              value.supportingDocumentDataUrl
-                ? "text-form-ink"
-                : "text-form-placeholder"
+              value.supportingDocumentDataUrl ? "text-form-ink" : "text-form-placeholder"
             }`}
           >
-            {value.supportingDocumentDataUrl
-              ? value.supportingDocumentName
-              : "No file chosen"}
+            {value.supportingDocumentDataUrl ? value.supportingDocumentName : "No file chosen"}
           </span>
 
           {value.supportingDocumentDataUrl ? (

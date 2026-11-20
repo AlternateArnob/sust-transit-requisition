@@ -91,9 +91,7 @@ export default function SignatureUpload({
         className="hidden"
       />
 
-      {helperText ? (
-        <p className="text-xs text-text-muted">{helperText}</p>
-      ) : null}
+      {helperText ? <p className="text-xs text-text-muted">{helperText}</p> : null}
     </div>
   );
 }

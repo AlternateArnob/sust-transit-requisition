@@ -53,9 +53,7 @@ export default function UsersPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<UserAccount | null>(null);
 
-  const allUsers = [...users].sort((a, b) =>
-    a.createdAt.localeCompare(b.createdAt),
-  );
+  const allUsers = [...users].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
   const activeSuperAdminCount = allUsers.filter(
     (user) => user.role === "SuperAdmin" && user.isActive !== false,
@@ -79,9 +77,7 @@ export default function UsersPage() {
     }
 
     const isLastActiveSuperAdmin =
-      user.role === "SuperAdmin" &&
-      user.isActive !== false &&
-      activeSuperAdminCount <= 1;
+      user.role === "SuperAdmin" && user.isActive !== false && activeSuperAdminCount <= 1;
 
     if (isLastActiveSuperAdmin) {
       return {
@@ -137,9 +133,7 @@ export default function UsersPage() {
     if (roleChanged || activeChanged) {
       const parts: string[] = [];
       if (activeChanged) {
-        parts.push(
-          patch.isActive ? "reactivated" : "deactivated",
-        );
+        parts.push(patch.isActive ? "reactivated" : "deactivated");
       }
       if (roleChanged) {
         parts.push(`role changed to ${patch.role}`);
@@ -159,7 +153,10 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <PageTitle title="Registered Accounts" subtitle="Every registered account — edit name, email, mobile, role, or active status. Delete is only available for other Super Admin accounts." />
+        <PageTitle
+          title="Registered Accounts"
+          subtitle="Every registered account — edit name, email, mobile, role, or active status. Delete is only available for other Super Admin accounts."
+        />
 
         <button
           type="button"
@@ -194,9 +191,7 @@ export default function UsersPage() {
                     <td className="px-4 py-3 font-medium text-text">
                       {user.fullName ?? "—"}
                       {user.id === currentUser?.id && (
-                        <span className="ml-2 text-xs font-normal text-text-muted">
-                          (you)
-                        </span>
+                        <span className="ml-2 text-xs font-normal text-text-muted">(you)</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-text-muted">{user.email}</td>
@@ -204,9 +199,7 @@ export default function UsersPage() {
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                          isActive
-                            ? "bg-success-bg text-success"
-                            : "bg-error-bg text-error"
+                          isActive ? "bg-success-bg text-success" : "bg-error-bg text-error"
                         }`}
                       >
                         {isActive ? "Active" : "Deactivated"}
@@ -226,7 +219,7 @@ export default function UsersPage() {
                           <button
                             type="button"
                             onClick={() => handleDelete(user)}
-                            className={buttonClass("danger","sm")}
+                            className={buttonClass("danger", "sm")}
                           >
                             Delete
                           </button>
@@ -242,10 +235,7 @@ export default function UsersPage() {
       </div>
 
       {editing && (
-        <Modal
-          title={`Edit ${editing.fullName ?? editing.email}`}
-          onClose={() => setEditing(null)}
-        >
+        <Modal title={`Edit ${editing.fullName ?? editing.email}`} onClose={() => setEditing(null)}>
           <EditAccountForm
             user={editing}
             lock={rowLockFor(editing)}
@@ -259,10 +249,7 @@ export default function UsersPage() {
       )}
 
       {showCreate && (
-        <Modal
-          title="Add Transport Office Account"
-          onClose={() => setShowCreate(false)}
-        >
+        <Modal title="Add Transport Office Account" onClose={() => setShowCreate(false)}>
           <CreateAccountForm
             existingEmails={users.map((user) => user.email.toLowerCase())}
             onSubmit={(user) => {
@@ -303,9 +290,7 @@ function EditAccountForm({
   const [mobile, setMobile] = useState(user.mobile ?? "");
   const [role, setRole] = useState<UserRole>(user.role);
   const [isActive, setIsActive] = useState(user.isActive !== false);
-  const [headOfDepartment, setHeadOfDepartment] = useState(
-    user.headOfDepartment ?? "",
-  );
+  const [headOfDepartment, setHeadOfDepartment] = useState(user.headOfDepartment ?? "");
   const [headOfOffice, setHeadOfOffice] = useState(user.headOfOffice ?? "");
   const [error, setError] = useState<string | null>(null);
 
@@ -366,9 +351,7 @@ function EditAccountForm({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-text">
-          Mobile Number
-        </span>
+        <span className="text-sm font-medium text-text">Mobile Number</span>
         <input
           type="tel"
           value={mobile}
@@ -398,9 +381,7 @@ function EditAccountForm({
       {role === "DepartmentHead" ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-text">
-              Head of Department
-            </span>
+            <span className="text-sm font-medium text-text">Head of Department</span>
             <select
               value={headOfDepartment}
               onChange={(event) => setHeadOfDepartment(event.target.value)}
@@ -416,9 +397,7 @@ function EditAccountForm({
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-text">
-              Head of Office
-            </span>
+            <span className="text-sm font-medium text-text">Head of Office</span>
             <select
               value={headOfOffice}
               onChange={(event) => setHeadOfOffice(event.target.value)}
@@ -434,17 +413,14 @@ function EditAccountForm({
           </label>
 
           <p className="text-xs text-text-muted sm:col-span-2">
-            Set one of these to determine which requisitions route to this
-            person for recommendation — a requisition's Department or
-            Office must match exactly for it to reach them.
+            Set one of these to determine which requisitions route to this person for recommendation
+            — a requisition's Department or Office must match exactly for it to reach them.
           </p>
         </div>
       ) : null}
 
       <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-        <span className="text-sm font-medium text-text">
-          Account Active
-        </span>
+        <span className="text-sm font-medium text-text">Account Active</span>
         <button
           type="button"
           disabled={lock.locked}
@@ -460,9 +436,7 @@ function EditAccountForm({
         </button>
       </div>
 
-      {lock.locked && (
-        <p className="text-xs text-form-placeholder">{lock.reason}</p>
-      )}
+      {lock.locked && <p className="text-xs text-form-placeholder">{lock.reason}</p>}
 
       {error && (
         <p className="rounded-md border border-error-bg bg-error-bg px-3 py-2 text-sm text-error">
@@ -471,18 +445,11 @@ function EditAccountForm({
       )}
 
       <div className="flex justify-end gap-2 pt-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className={buttonClass("primary")}
-        >
+        <button type="submit" className={buttonClass("primary")}>
           Save Changes
         </button>
       </div>
@@ -582,9 +549,7 @@ function CreateAccountForm({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium text-text">
-          Initial Password
-        </span>
+        <span className="text-sm font-medium text-text">Initial Password</span>
         <input
           type="password"
           value={password}
@@ -601,18 +566,11 @@ function CreateAccountForm({
       )}
 
       <div className="flex justify-end gap-2 pt-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className={buttonClass("primary")}
-        >
+        <button type="submit" className={buttonClass("primary")}>
           Create Account
         </button>
       </div>

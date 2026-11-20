@@ -26,10 +26,7 @@ import { getEligibleDutySlipGroups, canGenerateSlips } from "../utils/dutySlipUt
 import { reassignAllocation } from "../utils/allocationUtils";
 import { generateConfirmationSlip } from "../utils/pdf/confirmationSlip";
 import { generateDutySlipPdf } from "../utils/pdf/dutySlip";
-import {
-  getMileageColumnStatus,
-  type MileageTripContext,
-} from "../utils/mileageUtils";
+import { getMileageColumnStatus, type MileageTripContext } from "../utils/mileageUtils";
 import {
   isTransportInCharge,
   isTransportAdministrator,
@@ -42,11 +39,7 @@ import {
   buildRequisitionNotifications,
 } from "../utils/notificationUtils";
 
-import type {
-  Requisition,
-  RejectionReason,
-  RequisitionType,
-} from "../types";
+import type { Requisition, RejectionReason, RequisitionType } from "../types";
 import { REQUISITION_TYPES } from "../types";
 import PageTitle from "../components/ui/PageTitle";
 
@@ -67,8 +60,7 @@ export default function RequisitionsPage() {
     markReadyForAccounts,
     completeTrip,
   } = useRequisitions();
-  const { allocations, addAllocation, removeAllocation } =
-    useAllocations();
+  const { allocations, addAllocation, removeAllocation } = useAllocations();
   const { vehicles } = useVehicles();
   const { drivers } = useDrivers();
   const { dutySlips, addDutySlip } = useDutySlips();
@@ -79,9 +71,7 @@ export default function RequisitionsPage() {
   const [tab, setTab] = useState<Tab>("queue");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("All");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [mileageTarget, setMileageTarget] = useState<
-    MileageTripContext[] | null
-  >(null);
+  const [mileageTarget, setMileageTarget] = useState<MileageTripContext[] | null>(null);
 
   /**
    * Phase 1 — which stage a requisition shows up in the "Queue" tab
@@ -105,10 +95,7 @@ export default function RequisitionsPage() {
    *  "other" admin role looking at an out-of-turn item) gets a
    *  read-only view. */
   function modeFor(requisition: Requisition): Mode {
-    if (
-      isTransportInCharge(currentUser?.role) &&
-      isInTransportInChargeQueue(requisition)
-    ) {
+    if (isTransportInCharge(currentUser?.role) && isInTransportInChargeQueue(requisition)) {
       return "transportInCharge";
     }
     if (
@@ -120,9 +107,7 @@ export default function RequisitionsPage() {
     return "viewOnly";
   }
 
-  const sorted = [...requisitions].sort((a, b) =>
-    a.createdAt.localeCompare(b.createdAt),
-  );
+  const sorted = [...requisitions].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
   const filtered = sorted.filter((requisition) => {
     if (tab === "queue") {
@@ -141,18 +126,12 @@ export default function RequisitionsPage() {
     return true;
   });
 
-  const selected = requisitions.find(
-    (requisition) => requisition.id === selectedId,
-  );
+  const selected = requisitions.find((requisition) => requisition.id === selectedId);
   const selectedMode = selected ? modeFor(selected) : "viewOnly";
 
   // --- Transport In Charge actions ------------------------------------
 
-  function handleAssignVehicle(
-    tripId: string,
-    vehicleId: string,
-    driverId?: string,
-  ) {
+  function handleAssignVehicle(tripId: string, vehicleId: string, driverId?: string) {
     if (!selected) return;
 
     const trip = selected.trips.find((item) => item.id === tripId);
@@ -238,11 +217,7 @@ export default function RequisitionsPage() {
     );
   }
 
-  function handleRejectTrip(
-    tripId: string,
-    reason: RejectionReason,
-    remarks?: string,
-  ) {
+  function handleRejectTrip(tripId: string, reason: RejectionReason, remarks?: string) {
     if (!selected) return;
     rejectTrip(selected.id, tripId, reason, remarks);
 
@@ -382,13 +357,20 @@ export default function RequisitionsPage() {
 
   return (
     <div className="space-y-6">
-      <PageTitle title="Requisitions" subtitle={<>{isTransportInCharge(currentUser?.role) &&
-            "Assign vehicles to incoming requisitions and forward them for approval"}
-          {isTransportAdministrator(currentUser?.role) &&
-            "Review forwarded requisitions and approve or reject each trip"}
-          {!isTransportInCharge(currentUser?.role) &&
-            !isTransportAdministrator(currentUser?.role) &&
-            "Oversight view of the transport requisition pipeline"}</>} />
+      <PageTitle
+        title="Requisitions"
+        subtitle={
+          <>
+            {isTransportInCharge(currentUser?.role) &&
+              "Assign vehicles to incoming requisitions and forward them for approval"}
+            {isTransportAdministrator(currentUser?.role) &&
+              "Review forwarded requisitions and approve or reject each trip"}
+            {!isTransportInCharge(currentUser?.role) &&
+              !isTransportAdministrator(currentUser?.role) &&
+              "Oversight view of the transport requisition pipeline"}
+          </>
+        }
+      />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2 border-b border-border">
@@ -413,9 +395,7 @@ export default function RequisitionsPage() {
             Type
             <select
               value={typeFilter}
-              onChange={(event) =>
-                setTypeFilter(event.target.value as TypeFilter)
-              }
+              onChange={(event) => setTypeFilter(event.target.value as TypeFilter)}
               className="h-9 rounded-md border border-border bg-white px-2 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
             >
               <option value="All">All Types</option>
@@ -448,9 +428,7 @@ export default function RequisitionsPage() {
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-12 text-center">
-                    <p className="font-medium text-text">
-                      No requisitions found
-                    </p>
+                    <p className="font-medium text-text">No requisitions found</p>
                     <p className="mt-1 text-sm text-text-muted">
                       Add a requisition to get started.
                     </p>
@@ -483,17 +461,13 @@ export default function RequisitionsPage() {
                         {requisition.purpose}
                       </td>
                       <td className="px-4 py-3 text-text-muted">
-                        {formatDateRange(
-                          requisition.startDate,
-                          requisition.endDate,
-                        )}
+                        {formatDateRange(requisition.startDate, requisition.endDate)}
                       </td>
                       <td className="px-4 py-3 text-text-muted">
                         {requisition.trips.length}
                         {counts.approved + counts.rejected > 0 && (
                           <span className="ml-1 text-xs text-form-placeholder">
-                            ({counts.approved} approved, {counts.rejected}{" "}
-                            rejected)
+                            ({counts.approved} approved, {counts.rejected} rejected)
                           </span>
                         )}
                       </td>
@@ -521,9 +495,7 @@ export default function RequisitionsPage() {
                           (allowMileageEntry ? (
                             <button
                               type="button"
-                              onClick={() =>
-                                setMileageTarget(mileageStatus.trips)
-                              }
+                              onClick={() => setMileageTarget(mileageStatus.trips)}
                               className="text-sm font-medium text-secondary hover:underline"
                             >
                               Record Mileage

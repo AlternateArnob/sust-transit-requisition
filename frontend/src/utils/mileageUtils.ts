@@ -18,8 +18,7 @@ export interface MileageTripContext {
 export function isMileageEligibleRequisition(requisition: Requisition): boolean {
   return (
     requisition.requisitionType === "Personal" &&
-    (requisition.applicantProfile === "Teacher" ||
-      requisition.applicantProfile === "Officer")
+    (requisition.applicantProfile === "Teacher" || requisition.applicantProfile === "Officer")
   );
 }
 
@@ -61,9 +60,7 @@ export function getRecordedMileageTrips(
   const result: (MileageTripContext & { entry: MileageEntry })[] = [];
 
   mileageEntries.forEach((entry) => {
-    const requisition = requisitions.find(
-      (item) => item.id === entry.requisitionId,
-    );
+    const requisition = requisitions.find((item) => item.id === entry.requisitionId);
     const trip = requisition?.trips.find((item) => item.id === entry.tripId);
     const allocation = allocations.find((item) => item.tripId === entry.tripId);
 
@@ -72,9 +69,7 @@ export function getRecordedMileageTrips(
     }
   });
 
-  return result.sort((a, b) =>
-    b.entry.recordedAt.localeCompare(a.entry.recordedAt),
-  );
+  return result.sort((a, b) => b.entry.recordedAt.localeCompare(a.entry.recordedAt));
 }
 
 export function getAwaitingMileageTripsForRequisition(
@@ -127,9 +122,7 @@ export function getMileageColumnStatus(
   // getTripsAwaitingMileage), so an Approved-but-not-yet-Completed trip
   // correctly reads as "not-ready" rather than jumping straight to
   // "awaiting".
-  const completedTrips = requisition.trips.filter(
-    (trip) => trip.status === "Completed",
-  );
+  const completedTrips = requisition.trips.filter((trip) => trip.status === "Completed");
 
   if (completedTrips.length === 0) {
     return { kind: "not-ready" };
@@ -138,29 +131,18 @@ export function getMileageColumnStatus(
   const requisitionEntries = mileageEntries.filter(
     (entry) => entry.requisitionId === requisition.id,
   );
-  const recordedTripIds = new Set(
-    requisitionEntries.map((entry) => entry.tripId),
-  );
+  const recordedTripIds = new Set(requisitionEntries.map((entry) => entry.tripId));
 
   // Every completed trip on this requisition has a recorded distance —
   // applicant can now see the total across all of them.
-  const allCompletedTripsRecorded = completedTrips.every((trip) =>
-    recordedTripIds.has(trip.id),
-  );
+  const allCompletedTripsRecorded = completedTrips.every((trip) => recordedTripIds.has(trip.id));
 
   if (allCompletedTripsRecorded) {
-    const totalKm = requisitionEntries.reduce(
-      (sum, entry) => sum + entry.distanceKm,
-      0,
-    );
+    const totalKm = requisitionEntries.reduce((sum, entry) => sum + entry.distanceKm, 0);
     return { kind: "recorded", distanceKm: totalKm };
   }
 
-  const awaiting = getAwaitingMileageTripsForRequisition(
-    requisition,
-    allocations,
-    mileageEntries,
-  );
+  const awaiting = getAwaitingMileageTripsForRequisition(requisition, allocations, mileageEntries);
 
   if (awaiting.length === 0) {
     // Completed trip(s) exist but somehow have no allocation on record

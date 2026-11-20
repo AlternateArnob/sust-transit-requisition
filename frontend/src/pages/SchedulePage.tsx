@@ -33,23 +33,17 @@ export default function SchedulePage() {
 
   const activeDrivers = drivers.filter((member) => member.status === "Active");
 
-  const selectedDriver = activeDrivers.find(
-    (member) => member.id === selectedDriverId,
-  );
+  const selectedDriver = activeDrivers.find((member) => member.id === selectedDriverId);
 
   const targetVehicleId =
     mode === "vehicle" ? selectedVehicleId : selectedDriver?.permanentVehicleId;
 
-  const targetVehicle = vehicles.find(
-    (vehicle) => vehicle.id === targetVehicleId,
-  );
+  const targetVehicle = vehicles.find((vehicle) => vehicle.id === targetVehicleId);
 
   const weekday = date ? getWeekdayFromDate(date) : undefined;
 
   const offDay =
-    targetVehicleId && date
-      ? getOffDayForVehicleOnDate(targetVehicleId, date, offDays)
-      : undefined;
+    targetVehicleId && date ? getOffDayForVehicleOnDate(targetVehicleId, date, offDays) : undefined;
 
   const studentTransportTime =
     targetVehicleId && date
@@ -64,18 +58,13 @@ export default function SchedulePage() {
     targetVehicleId && date
       ? allocations
           .filter(
-            (allocation) =>
-              allocation.vehicleId === targetVehicleId &&
-              allocation.date === date,
+            (allocation) => allocation.vehicleId === targetVehicleId && allocation.date === date,
           )
           .sort((a, b) => a.startTime.localeCompare(b.startTime))
       : [];
 
   function getRequisitionPurpose(requisitionId: string) {
-    return (
-      requisitions.find((item) => item.id === requisitionId)?.purpose ??
-      "Unknown requisition"
-    );
+    return requisitions.find((item) => item.id === requisitionId)?.purpose ?? "Unknown requisition";
   }
 
   function formatDate(dateString: string) {
@@ -90,7 +79,10 @@ export default function SchedulePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <PageTitle title="Schedule Lookup" subtitle="Check a vehicle's or driver's commitments on a specific date" />
+      <PageTitle
+        title="Schedule Lookup"
+        subtitle="Check a vehicle's or driver's commitments on a specific date"
+      />
 
       {/* Controls */}
       <div className="rounded-lg border border-border bg-white shadow-sm p-5">
@@ -124,10 +116,7 @@ export default function SchedulePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {mode === "vehicle" ? (
             <div>
-              <label
-                htmlFor="vehicleSelect"
-                className="mb-1.5 block text-sm font-medium text-text"
-              >
+              <label htmlFor="vehicleSelect" className="mb-1.5 block text-sm font-medium text-text">
                 Vehicle
               </label>
 
@@ -148,10 +137,7 @@ export default function SchedulePage() {
             </div>
           ) : (
             <div>
-              <label
-                htmlFor="driverSelect"
-                className="mb-1.5 block text-sm font-medium text-text"
-              >
+              <label htmlFor="driverSelect" className="mb-1.5 block text-sm font-medium text-text">
                 Driver
               </label>
 
@@ -173,10 +159,7 @@ export default function SchedulePage() {
           )}
 
           <div>
-            <label
-              htmlFor="dateSelect"
-              className="mb-1.5 block text-sm font-medium text-text"
-            >
+            <label htmlFor="dateSelect" className="mb-1.5 block text-sm font-medium text-text">
               Date
             </label>
 
@@ -192,20 +175,17 @@ export default function SchedulePage() {
       </div>
 
       {/* Empty state: driver picked but no vehicle assigned */}
-      {mode === "driver" &&
-        selectedDriver &&
-        !selectedDriver.permanentVehicleId && (
-          <div className="rounded-lg border border-border bg-white shadow-sm p-8 text-center">
-            <p className="font-medium text-text">
-              {selectedDriver.name} has no permanently assigned vehicle
-            </p>
+      {mode === "driver" && selectedDriver && !selectedDriver.permanentVehicleId && (
+        <div className="rounded-lg border border-border bg-white shadow-sm p-8 text-center">
+          <p className="font-medium text-text">
+            {selectedDriver.name} has no permanently assigned vehicle
+          </p>
 
-            <p className="mt-1 text-sm text-text-muted">
-              Assign a vehicle to this driver from Vehicle Management to see their
-              schedule.
-            </p>
-          </div>
-        )}
+          <p className="mt-1 text-sm text-text-muted">
+            Assign a vehicle to this driver from Vehicle Management to see their schedule.
+          </p>
+        </div>
+      )}
 
       {/* Empty state: nothing selected yet */}
       {!targetVehicleId && !(mode === "driver" && selectedDriver) && (
@@ -213,8 +193,7 @@ export default function SchedulePage() {
           <p className="font-medium text-text">Nothing selected yet</p>
 
           <p className="mt-1 text-sm text-text-muted">
-            Choose a {mode === "vehicle" ? "vehicle" : "driver"} and a date to
-            view their schedule.
+            Choose a {mode === "vehicle" ? "vehicle" : "driver"} and a date to view their schedule.
           </p>
         </div>
       )}
@@ -253,8 +232,8 @@ export default function SchedulePage() {
             {targetVehicle.operationalStatus !== "Active" && (
               <div className="rounded-md border border-form-warn-border bg-form-warn-bg px-4 py-3">
                 <p className="text-sm font-medium text-warning">
-                  This vehicle is {targetVehicle.operationalStatus} and is not
-                  eligible for requisition allocation.
+                  This vehicle is {targetVehicle.operationalStatus} and is not eligible for
+                  requisition allocation.
                 </p>
               </div>
             )}
@@ -274,16 +253,12 @@ export default function SchedulePage() {
 
             {/* Student transport commitment */}
             <div>
-              <p className="mb-2 text-sm font-medium text-text">
-                Student Transport
-              </p>
+              <p className="mb-2 text-sm font-medium text-text">Student Transport</p>
 
               {studentTransportTime ? (
                 <div
                   className={`rounded-md border px-4 py-3 ${
-                    offDay
-                      ? "border-border bg-surface opacity-70"
-                      : "border-border bg-white"
+                    offDay ? "border-border bg-surface opacity-70" : "border-border bg-white"
                   }`}
                 >
                   <p className="text-sm font-medium text-text">
@@ -292,28 +267,24 @@ export default function SchedulePage() {
                   </p>
 
                   <p className="mt-1 text-sm text-text-muted">
-                    Requisition allocations cannot start before this time on{" "}
-                    {weekday}.
+                    Requisition allocations cannot start before this time on {weekday}.
                   </p>
                 </div>
               ) : (
                 <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
-                  This vehicle is free all day on {weekday ?? "this date"} —
-                  no student transport schedule applies.
+                  This vehicle is free all day on {weekday ?? "this date"} — no student transport
+                  schedule applies.
                 </p>
               )}
             </div>
 
             {/* Requisition allocations on this date */}
             <div>
-              <p className="mb-2 text-sm font-medium text-text">
-                Requisition Allocations
-              </p>
+              <p className="mb-2 text-sm font-medium text-text">Requisition Allocations</p>
 
               {dayAllocations.length === 0 ? (
                 <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
-                  No requisition trips allocated to this vehicle on{" "}
-                  {formatDate(date)}.
+                  No requisition trips allocated to this vehicle on {formatDate(date)}.
                 </p>
               ) : (
                 <ul className="space-y-2">

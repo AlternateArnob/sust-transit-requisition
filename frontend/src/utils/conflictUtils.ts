@@ -39,12 +39,8 @@ export function detectConflicts(
   const conflicts: Conflict[] = [];
 
   function findContext(allocation: Allocation) {
-    const requisition = requisitions.find(
-      (item) => item.id === allocation.requisitionId,
-    );
-    const trip = requisition?.trips.find(
-      (item) => item.id === allocation.tripId,
-    );
+    const requisition = requisitions.find((item) => item.id === allocation.requisitionId);
+    const trip = requisition?.trips.find((item) => item.id === allocation.tripId);
 
     return requisition && trip ? { requisition, trip } : undefined;
   }
@@ -63,10 +59,7 @@ export function detectConflicts(
       return;
     }
 
-    if (
-      vehicle.operationalStatus !== "Active" ||
-      !vehicle.availableForRequisition
-    ) {
+    if (vehicle.operationalStatus !== "Active" || !vehicle.availableForRequisition) {
       conflicts.push({
         id: `unavailable-${allocation.id}`,
         type: "Vehicle Unavailable",
@@ -83,11 +76,7 @@ export function detectConflicts(
       });
     }
 
-    const offDay = getOffDayForVehicleOnDate(
-      vehicle.id,
-      allocation.date,
-      offDays,
-    );
+    const offDay = getOffDayForVehicleOnDate(vehicle.id, allocation.date, offDays);
 
     if (offDay) {
       conflicts.push({
@@ -98,12 +87,8 @@ export function detectConflicts(
         allocation,
         requisition,
         trip,
-        description: `${vehicle.registrationNumber} is marked off-day on ${
-          allocation.date
-        } (${
-          offDay.type === "One-time"
-            ? "one-time"
-            : `recurring, every ${offDay.weekday}`
+        description: `${vehicle.registrationNumber} is marked off-day on ${allocation.date} (${
+          offDay.type === "One-time" ? "one-time" : `recurring, every ${offDay.weekday}`
         }) but is still allocated to this trip.`,
       });
     }
@@ -114,12 +99,7 @@ export function detectConflicts(
         other.vehicleId === allocation.vehicleId &&
         other.date === allocation.date &&
         allocation.id < other.id &&
-        timeRangesOverlap(
-          allocation.startTime,
-          allocation.endTime,
-          other.startTime,
-          other.endTime,
-        )
+        timeRangesOverlap(allocation.startTime, allocation.endTime, other.startTime, other.endTime)
       ) {
         conflicts.push({
           id: `double-${allocation.id}-${other.id}`,

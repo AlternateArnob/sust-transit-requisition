@@ -5,9 +5,7 @@ export function isVehicleOperationallyAvailable(vehicle: Vehicle): boolean {
 }
 
 export function isVehicleEligibleForRequisition(vehicle: Vehicle): boolean {
-  return (
-    vehicle.operationalStatus === "Active" && vehicle.availableForRequisition
-  );
+  return vehicle.operationalStatus === "Active" && vehicle.availableForRequisition;
 }
 
 export function isVehicleAvailable(vehicle: Vehicle): boolean {
@@ -27,10 +25,7 @@ export function isVehicleAvailable(vehicle: Vehicle): boolean {
  * vehicle; "Out-of-Service" / not-available-for-requisition is the
  * correct way to retire a vehicle that has ever been used.
  */
-export function hasAllocationHistory(
-  vehicleId: string,
-  allocations: Allocation[],
-): boolean {
+export function hasAllocationHistory(vehicleId: string, allocations: Allocation[]): boolean {
   return allocations.some((allocation) => allocation.vehicleId === vehicleId);
 }
 
@@ -44,7 +39,6 @@ export function isDuplicateRegistration(
   return vehicles.some(
     (vehicle) =>
       vehicle.id !== currentVehicleId &&
-      vehicle.registrationNumber.trim().toLowerCase() ===
-        normalizedRegistration,
+      vehicle.registrationNumber.trim().toLowerCase() === normalizedRegistration,
   );
 }

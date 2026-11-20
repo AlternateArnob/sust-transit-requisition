@@ -4,12 +4,12 @@ React 19 + TypeScript + Vite + Tailwind CSS v4. Data is stored in `localStorage`
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the dev server |
-| `npm run build` | Type-check and build for production |
-| `npm run lint` | Run ESLint |
-| `npm run preview` | Preview the production build |
+| Command           | Purpose                             |
+| ----------------- | ----------------------------------- |
+| `npm run dev`     | Start the dev server                |
+| `npm run build`   | Type-check and build for production |
+| `npm run lint`    | Run ESLint                          |
+| `npm run preview` | Preview the production build        |
 
 ## Setup
 

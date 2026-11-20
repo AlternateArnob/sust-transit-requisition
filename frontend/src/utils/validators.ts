@@ -16,11 +16,7 @@ export function isPositiveNumber(value: string): boolean {
  * not exceed `maxHours`. Per §4 a single requisition trip cannot keep a
  * vehicle for more than 3 hours without admin flagging.
  */
-export function isWithinHoldWindow(
-  start: string,
-  end: string,
-  maxHours = 3,
-): boolean {
+export function isWithinHoldWindow(start: string, end: string, maxHours = 3): boolean {
   if (!start || !end) return true;
   const [fromH = 0, fromM = 0] = start.split(":").map(Number);
   const [toH = 0, toM = 0] = end.split(":").map(Number);

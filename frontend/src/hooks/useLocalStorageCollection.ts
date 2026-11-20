@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function useLocalStorageCollection<T extends { id: string }>(
-  storageKey: string,
-) {
+export default function useLocalStorageCollection<T extends { id: string }>(storageKey: string) {
   const [items, setItems] = useState<T[]>(() => {
     const stored = localStorage.getItem(storageKey);
 
@@ -32,9 +30,7 @@ export default function useLocalStorageCollection<T extends { id: string }>(
   }
 
   function update(updated: T) {
-    setItems((current) =>
-      current.map((item) => (item.id === updated.id ? updated : item)),
-    );
+    setItems((current) => current.map((item) => (item.id === updated.id ? updated : item)));
   }
 
   function remove(id: string) {

@@ -31,9 +31,7 @@ export default function LandingPage() {
 
   const isTransportStaff = isAdminRole(currentUser?.role);
   const homePath =
-    isTransportStaff || currentUser?.role === "DepartmentHead"
-      ? "/admin"
-      : "/dashboard";
+    isTransportStaff || currentUser?.role === "DepartmentHead" ? "/admin" : "/dashboard";
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
@@ -41,9 +39,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <SustLogo heightClass="h-10" badge />
-            <span className="text-base font-semibold sm:text-lg">
-              SUST Transport Requisition
-            </span>
+            <span className="text-base font-semibold sm:text-lg">SUST Transport Requisition</span>
           </div>
           {isAuthenticated ? <LogoutButton /> : null}
         </div>
@@ -59,10 +55,9 @@ export default function LandingPage() {
             Transport Requisition Management System
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-form-muted sm:text-base">
-            Request university vehicles, follow the approval of your
-            requisition and download your confirmation slip, all in one place.
-            The system replaces paper forms for the faculty, officers and staff
-            of the university.
+            Request university vehicles, follow the approval of your requisition and download your
+            confirmation slip, all in one place. The system replaces paper forms for the faculty,
+            officers and staff of the university.
           </p>
 
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
@@ -102,9 +97,7 @@ export default function LandingPage() {
               <p className="text-xs font-semibold uppercase tracking-wide text-form-muted">
                 Step {index + 1}
               </p>
-              <h2 className="mt-1 text-base font-semibold text-form-action">
-                {step.title}
-              </h2>
+              <h2 className="mt-1 text-base font-semibold text-form-action">{step.title}</h2>
               <p className="mt-2 text-sm text-form-muted">{step.text}</p>
             </div>
           ))}

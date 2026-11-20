@@ -11,14 +11,8 @@ import { buttonClass } from "../components/ui/buttonStyles";
 import PageTitle from "../components/ui/PageTitle";
 
 export default function DriverPage() {
-  const {
-    drivers,
-    addDriver,
-    updateDriver,
-    deactivateDriver,
-    activateDriver,
-    deleteDriver,
-  } = useDrivers();
+  const { drivers, addDriver, updateDriver, deactivateDriver, activateDriver, deleteDriver } =
+    useDrivers();
   const { vehicles, updateVehicle } = useVehicles();
 
   const [search, setSearch] = useState("");
@@ -50,9 +44,7 @@ export default function DriverPage() {
       return;
     }
 
-    const vehicle = vehicles.find(
-      (item) => item.id === member.permanentVehicleId,
-    );
+    const vehicle = vehicles.find((item) => item.id === member.permanentVehicleId);
 
     if (vehicle && vehicle.permanentDriverId === member.id) {
       updateVehicle({ ...vehicle, permanentDriverId: undefined });
@@ -60,9 +52,7 @@ export default function DriverPage() {
   }
 
   function handleDeactivate(member: Driver) {
-    const confirmed = window.confirm(
-      `Are you sure you want to deactivate ${member.name}?`,
-    );
+    const confirmed = window.confirm(`Are you sure you want to deactivate ${member.name}?`);
 
     if (!confirmed) {
       return;
@@ -77,9 +67,7 @@ export default function DriverPage() {
   }
 
   function handleDelete(member: Driver) {
-    const confirmed = window.confirm(
-      `Permanently delete ${member.name}? This cannot be undone.`,
-    );
+    const confirmed = window.confirm(`Permanently delete ${member.name}? This cannot be undone.`);
 
     if (!confirmed) {
       return;
@@ -105,7 +93,10 @@ export default function DriverPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <PageTitle title="Driver Management" subtitle={<>Manage university drivers ({drivers.length} drivers)</>} />
+        <PageTitle
+          title="Driver Management"
+          subtitle={<>Manage university drivers ({drivers.length} drivers)</>}
+        />
 
         <button
           type="button"
@@ -154,9 +145,7 @@ export default function DriverPage() {
               {filteredDriver.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center">
-                    <p className="font-medium text-text">
-                      No drivers found
-                    </p>
+                    <p className="font-medium text-text">No drivers found</p>
                     <p className="mt-1 text-sm text-text-muted">
                       Try changing your search or filters.
                     </p>
@@ -170,25 +159,15 @@ export default function DriverPage() {
                       index % 2 === 1 ? "bg-surface" : "bg-white"
                     }`}
                   >
-                    <td className="px-4 py-3 font-medium text-text">
-                      {member.name}
-                    </td>
+                    <td className="px-4 py-3 font-medium text-text">{member.name}</td>
 
-                    <td className="px-4 py-3 text-text-muted">
-                      {member.designation}
-                    </td>
+                    <td className="px-4 py-3 text-text-muted">{member.designation}</td>
 
-                    <td className="px-4 py-3 text-text-muted">
-                      {member.phone ?? "—"}
-                    </td>
+                    <td className="px-4 py-3 text-text-muted">{member.phone ?? "—"}</td>
 
                     <td className="px-4 py-3">
                       <span
-                        className={
-                          member.status === "Active"
-                            ? "text-success"
-                            : "text-text-muted"
-                        }
+                        className={member.status === "Active" ? "text-success" : "text-text-muted"}
                       >
                         {member.status}
                       </span>
@@ -245,10 +224,7 @@ export default function DriverPage() {
 
       {isAddModalOpen && (
         <Modal title="Add Driver" onClose={() => setIsAddModalOpen(false)}>
-          <DriverForm
-            onSubmit={handleDriverSubmit}
-            onCancel={() => setIsAddModalOpen(false)}
-          />
+          <DriverForm onSubmit={handleDriverSubmit} onCancel={() => setIsAddModalOpen(false)} />
         </Modal>
       )}
 

@@ -21,23 +21,13 @@ export default function ConflictsPage() {
   const { offDays } = useOffDays();
   const { schedules } = useTransportSchedule();
 
-  const [reassignConflict, setReassignConflict] = useState<Conflict | null>(
-    null,
-  );
+  const [reassignConflict, setReassignConflict] = useState<Conflict | null>(null);
 
-  const conflicts = detectConflicts(
-    allocations,
-    requisitions,
-    vehicles,
-    offDays,
-    schedules,
-  );
+  const conflicts = detectConflicts(allocations, requisitions, vehicles, offDays, schedules);
 
   function getVehicleLabel(vehicleId: string) {
     const vehicle = vehicles.find((item) => item.id === vehicleId);
-    return vehicle
-      ? `${vehicle.registrationNumber} (${vehicle.category})`
-      : "Unknown Vehicle";
+    return vehicle ? `${vehicle.registrationNumber} (${vehicle.category})` : "Unknown Vehicle";
   }
 
   function handleReject(conflict: Conflict) {
@@ -66,23 +56,23 @@ export default function ConflictsPage() {
     // Phase 8, §3 — new record, old one removed, instead of mutating
     // the same Allocation in place.
     removeAllocation(reassignConflict.allocation.id);
-    addAllocation(
-      reassignAllocation(reassignConflict.allocation, vehicleId, driverId),
-    );
+    addAllocation(reassignAllocation(reassignConflict.allocation, vehicleId, driverId));
     setReassignConflict(null);
   }
 
   return (
     <div className="space-y-6">
-      <PageTitle title="Conflicts" subtitle="Automatically detected resource conflicts across current allocations" />
+      <PageTitle
+        title="Conflicts"
+        subtitle="Automatically detected resource conflicts across current allocations"
+      />
 
       {conflicts.length === 0 ? (
         <div className="rounded-lg border border-border bg-white shadow-sm p-8 text-center">
           <p className="font-medium text-text">No conflicts detected</p>
 
           <p className="mt-1 text-sm text-text-muted">
-            All current allocations are clear of vehicle, off-day, and route
-            conflicts.
+            All current allocations are clear of vehicle, off-day, and route conflicts.
           </p>
         </div>
       ) : (
@@ -105,19 +95,14 @@ export default function ConflictsPage() {
                       {conflict.severity}
                     </span>
 
-                    <span className="text-sm font-medium text-text">
-                      {conflict.type}
-                    </span>
+                    <span className="text-sm font-medium text-text">{conflict.type}</span>
                   </div>
 
-                  <p className="mt-2 text-sm text-text-muted">
-                    {conflict.description}
-                  </p>
+                  <p className="mt-2 text-sm text-text-muted">{conflict.description}</p>
 
                   <p className="mt-2 text-xs text-text-muted">
-                    Source: {conflict.requisition.requesterName} —{" "}
-                    {conflict.trip.date} {conflict.trip.startTime}–
-                    {conflict.trip.endTime} ·{" "}
+                    Source: {conflict.requisition.requesterName} — {conflict.trip.date}{" "}
+                    {conflict.trip.startTime}–{conflict.trip.endTime} ·{" "}
                     {getVehicleLabel(conflict.vehicleId)}
                   </p>
                 </div>
@@ -134,7 +119,7 @@ export default function ConflictsPage() {
                   <button
                     type="button"
                     onClick={() => handleReject(conflict)}
-                    className={buttonClass("danger","sm")}
+                    className={buttonClass("danger", "sm")}
                   >
                     Reject Trip
                   </button>
@@ -146,11 +131,7 @@ export default function ConflictsPage() {
       )}
 
       {reassignConflict && (
-        <Modal
-          title="Reassign Vehicle"
-          onClose={() => setReassignConflict(null)}
-          wide
-        >
+        <Modal title="Reassign Vehicle" onClose={() => setReassignConflict(null)} wide>
           <AllocationPicker
             trip={reassignConflict.trip}
             allocations={allocations}

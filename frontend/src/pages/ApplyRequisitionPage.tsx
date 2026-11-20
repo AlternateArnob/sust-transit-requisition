@@ -6,10 +6,7 @@ import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
 import useNotifications from "../hooks/useNotifications";
 import useUsers from "../hooks/useUsers";
-import {
-  buildRequisitionNotifications,
-  findTransportInCharge,
-} from "../utils/notificationUtils";
+import { buildRequisitionNotifications, findTransportInCharge } from "../utils/notificationUtils";
 
 import RequisitionForm from "../components/RequisitionForm";
 import ApplicantHeader from "../components/ApplicantHeader";
@@ -81,7 +78,6 @@ export default function ApplyRequisitionPage() {
     setSubmitted(requisition);
   }
 
-
   return (
     <div className="min-h-screen bg-surface">
       <ApplicantHeader active="apply" />
@@ -98,26 +94,24 @@ export default function ApplyRequisitionPage() {
             </h2>
 
             <p className="mt-2 text-sm text-text-muted">
-              Reference ID:{" "}
-              <span className="font-medium text-text">{submitted.id}</span>
+              Reference ID: <span className="font-medium text-text">{submitted.id}</span>
             </p>
 
             <p className="mt-1 text-sm text-text-muted">
-              The transport office has been notified and will review your
-              request. You'll be contacted using the phone number you provided
-              once a decision is made.
+              The transport office has been notified and will review your request. You'll be
+              contacted using the phone number you provided once a decision is made.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-{wasResubmitted ? null : (
-              <button
-                type="button"
-                onClick={() => setSubmitted(null)}
-                className={buttonClass("primary")}
-              >
-                Submit another requisition
-              </button>
-)}
+              {wasResubmitted ? null : (
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(null)}
+                  className={buttonClass("primary")}
+                >
+                  Submit another requisition
+                </button>
+              )}
 
               <Link
                 to="/my-requisitions"

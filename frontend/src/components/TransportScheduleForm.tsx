@@ -4,11 +4,7 @@ import useVehicles from "../hooks/useVehicles";
 import useTransportSchedule from "../hooks/useTransportSchedule";
 
 import { WEEKDAYS } from "../types";
-import type {
-  StudentTransportVehicle,
-  StudentTransportSchedule,
-  Weekday,
-} from "../types";
+import type { StudentTransportVehicle, StudentTransportSchedule, Weekday } from "../types";
 import { buttonClass } from "./ui/buttonStyles";
 
 interface TransportScheduleFormProps {
@@ -60,9 +56,7 @@ export default function TransportScheduleForm({
 
   const [vehicleId, setVehicleId] = useState(route?.vehicleId ?? "");
   const [days, setDays] = useState<Record<Weekday, boolean>>(initialDays);
-  const [freeAfterTime, setFreeAfterTime] = useState(
-    singleTime(route?.schedule ?? {}),
-  );
+  const [freeAfterTime, setFreeAfterTime] = useState(singleTime(route?.schedule ?? {}));
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState("");
@@ -133,10 +127,7 @@ export default function TransportScheduleForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label
-          htmlFor="vehicleId"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="vehicleId" className="mb-1.5 block text-sm font-medium text-text">
           Vehicle
         </label>
 
@@ -155,19 +146,15 @@ export default function TransportScheduleForm({
           ))}
         </select>
 
-        {errors.vehicleId && (
-          <p className="mt-1 text-xs text-error">{errors.vehicleId}</p>
-        )}
+        {errors.vehicleId && <p className="mt-1 text-xs text-error">{errors.vehicleId}</p>}
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-text">
-          Scheduled Days
-        </label>
+        <label className="mb-1.5 block text-sm font-medium text-text">Scheduled Days</label>
 
         <p className="mb-2 text-xs text-text-muted">
-          Select the weekdays the vehicle follows the student transport
-          schedule. The same Free After time will apply to every selected day.
+          Select the weekdays the vehicle follows the student transport schedule. The same Free
+          After time will apply to every selected day.
         </p>
 
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
@@ -195,16 +182,11 @@ export default function TransportScheduleForm({
           })}
         </div>
 
-        {errors.days && (
-          <p className="mt-1 text-xs text-error">{errors.days}</p>
-        )}
+        {errors.days && <p className="mt-1 text-xs text-error">{errors.days}</p>}
       </div>
 
       <div>
-        <label
-          htmlFor="freeAfterTime"
-          className="mb-1.5 block text-sm font-medium text-text"
-        >
+        <label htmlFor="freeAfterTime" className="mb-1.5 block text-sm font-medium text-text">
           Free After
         </label>
 
@@ -217,15 +199,10 @@ export default function TransportScheduleForm({
         />
 
         <p className="mt-1 text-xs text-text-muted">
-          Vehicle is unavailable for requisition before this time on every
-          selected weekday.
+          Vehicle is unavailable for requisition before this time on every selected weekday.
         </p>
 
-        {errors.freeAfterTime && (
-          <p className="mt-1 text-xs text-error">
-            {errors.freeAfterTime}
-          </p>
-        )}
+        {errors.freeAfterTime && <p className="mt-1 text-xs text-error">{errors.freeAfterTime}</p>}
       </div>
 
       {submitError && (
@@ -235,18 +212,11 @@ export default function TransportScheduleForm({
       )}
 
       <div className="flex justify-end gap-3 border-t border-border pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={buttonClass("secondary")}
-        >
+        <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className={buttonClass("primary")}
-        >
+        <button type="submit" className={buttonClass("primary")}>
           {isEditing ? "Save Changes" : "Add Vehicle"}
         </button>
       </div>

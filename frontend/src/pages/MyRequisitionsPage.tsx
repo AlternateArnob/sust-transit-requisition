@@ -79,9 +79,7 @@ export default function MyRequisitionsPage() {
     return <Navigate to="/login" replace />;
   }
 
-  const selected = myRequisitions.find(
-    (requisition) => requisition.id === selectedId,
-  );
+  const selected = myRequisitions.find((requisition) => requisition.id === selectedId);
 
   function handleDownloadConfirmationSlip() {
     if (!selected) return;
@@ -115,24 +113,18 @@ export default function MyRequisitionsPage() {
             {
               header: "Purpose",
               render: (requisition) => (
-                <span
-                  className="block max-w-xs truncate"
-                  title={requisition.purpose}
-                >
+                <span className="block max-w-xs truncate" title={requisition.purpose}>
                   {requisition.purpose || "—"}
                 </span>
               ),
             },
             {
               header: "Date",
-              render: (requisition) =>
-                formatDateRange(requisition.startDate, requisition.endDate),
+              render: (requisition) => formatDateRange(requisition.startDate, requisition.endDate),
             },
             {
               header: "Status",
-              render: (requisition) => (
-                <ApplicationStatusBadge status={requisition.status} />
-              ),
+              render: (requisition) => <ApplicationStatusBadge status={requisition.status} />,
             },
             {
               header: "Actions",
@@ -163,11 +155,7 @@ export default function MyRequisitionsPage() {
       </main>
 
       {selected && (
-        <Modal
-          title={`Requisition — ${selected.id}`}
-          onClose={() => setSelectedId(null)}
-          wide
-        >
+        <Modal title={`Requisition — ${selected.id}`} onClose={() => setSelectedId(null)} wide>
           <ApplicantRequisitionDetail
             requisition={selected}
             vehicles={vehicles}
