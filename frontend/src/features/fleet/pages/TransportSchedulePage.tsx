@@ -16,6 +16,7 @@ import {
 import type { StudentTransportVehicle, StudentTransportSchedule } from "@/types";
 import { buttonClass } from "@/shared/ui/buttonStyles";
 import PageTitle from "@/shared/ui/PageTitle";
+import { TABLE_CARD_CLASS, TABLE_HEAD_CLASS } from "@/shared/ui/formStyles";
 
 type Tab = "schedule" | "offdays";
 
@@ -148,10 +149,10 @@ export default function TransportSchedulePage() {
 
       {/* Schedule Tab */}
       {tab === "schedule" && (
-        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className={TABLE_CARD_CLASS}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
+              <thead className={TABLE_HEAD_CLASS}>
                 <tr>
                   <th className="px-4 py-3 font-semibold">Vehicle Number</th>
                   <th className="px-4 py-3 font-semibold">Vehicle Category</th>
@@ -226,10 +227,10 @@ export default function TransportSchedulePage() {
 
       {/* Off-Days Tab — unchanged */}
       {tab === "offdays" && (
-        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className={TABLE_CARD_CLASS}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
+              <thead className={TABLE_HEAD_CLASS}>
                 <tr>
                   <th className="px-4 py-3 font-semibold">Vehicle</th>
                   <th className="px-4 py-3 font-semibold">Type</th>

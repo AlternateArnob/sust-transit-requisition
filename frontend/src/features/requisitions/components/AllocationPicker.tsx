@@ -6,6 +6,7 @@ import useOffDays from "@/features/fleet/hooks/useOffDays";
 import { getVehicleEligibility } from "@/features/requisitions/utils/allocationUtils";
 import type { Trip, Allocation } from "@/types";
 import { buttonClass } from "@/shared/ui/buttonStyles";
+import { EMPTY_STATE_CLASS } from "@/shared/ui/formStyles";
 
 interface AllocationPickerProps {
   trip: Trip;
@@ -60,11 +61,7 @@ export default function AllocationPicker({
       </div>
 
       <div className="max-h-96 space-y-2 overflow-y-auto">
-        {evaluated.length === 0 && (
-          <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
-            No vehicles found.
-          </p>
-        )}
+        {evaluated.length === 0 && <p className={EMPTY_STATE_CLASS}>No vehicles found.</p>}
 
         {evaluated.map(({ vehicle, eligible, blockers, warnings }) => (
           <div

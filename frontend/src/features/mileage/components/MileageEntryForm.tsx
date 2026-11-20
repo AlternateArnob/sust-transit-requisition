@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Trip } from "@/types";
 import { isPositiveNumber } from "@/shared/utils/validators";
 import { buttonClass } from "@/shared/ui/buttonStyles";
+import { FULL_WIDTH_INPUT_CLASS, FULL_WIDTH_SELECT_CLASS } from "@/shared/ui/formStyles";
 
 interface MileageEntryFormProps {
   /**
@@ -50,7 +51,7 @@ export default function MileageEntryForm({ trips, onSubmit, onCancel }: MileageE
             id="mileageTrip"
             value={selectedTripId}
             onChange={(event) => setSelectedTripId(event.target.value)}
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+            className={FULL_WIDTH_SELECT_CLASS}
           >
             {trips.map((trip) => (
               <option key={trip.id} value={trip.id}>
@@ -83,7 +84,7 @@ export default function MileageEntryForm({ trips, onSubmit, onCancel }: MileageE
           step="0.1"
           value={distanceKm}
           onChange={(event) => setDistanceKm(event.target.value)}
-          className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+          className={FULL_WIDTH_INPUT_CLASS}
         />
 
         {error && <p className="mt-1 text-xs text-error">{error}</p>}

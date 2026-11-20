@@ -19,7 +19,7 @@ interface Step2TransportUserProps {
 }
 
 /**
- * Step 2 — collects who will physically use the transport. Defaults to
+ * Collects who will physically use the transport. Defaults to
  * "same as requester" so most applications need only one extra click.
  */
 export default function Step2TransportUser({
@@ -51,7 +51,7 @@ export default function Step2TransportUser({
         mobile: requester.mobile ?? "",
       });
     } else {
-      // Fix 4 — unchecking reveals a blank set of fields to fill in,
+      // Unchecking reveals a blank set of fields to fill in,
       // rather than leaving the requester's copied-over values sitting
       // there under an editable label (which read as "pre-filled, then
       // silently left as the requester" rather than a deliberate entry
@@ -80,7 +80,7 @@ export default function Step2TransportUser({
       </label>
 
       {sameAsRequester ? (
-        // Fix 4 — nothing to fill in while this is checked; a one-line
+        // Nothing to fill in while this is checked; a one-line
         // confirmation replaces the (previously always-rendered, just
         // greyed-out) field group entirely.
         <p className="text-sm text-form-muted">

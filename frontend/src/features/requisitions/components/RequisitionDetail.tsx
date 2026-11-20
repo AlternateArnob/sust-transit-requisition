@@ -27,7 +27,7 @@ import SendBackForm from "./SendBackForm";
 import TripCard, { type RequisitionDetailMode } from "./TripCard";
 
 /**
- * Phase 1 (admin module) — this used to be a single admin-only view that
+ * This used to be a single admin-only view that
  * both assigned a vehicle AND made the final approve/reject call in the
  * same action. The FRD splits that into two roles (§9, §19), so this
  * component now renders one of three modes instead:
@@ -69,7 +69,7 @@ interface RequisitionDetailProps {
   onSendBackToTransportInCharge?: (remarks: string) => void;
   onGenerateConfirmationSlip?: () => void;
   onGenerateDutySlip?: (driverId: string) => void;
-  /** Phase 6 (FRD §22) — Transport Office marks a trip Completed once it
+  /** (FRD §22) Transport Office marks a trip Completed once it
    *  actually happened. Independent of approve/reject and of mileage. */
   onCompleteTrip?: (tripId: string) => void;
 }
@@ -148,7 +148,7 @@ export default function RequisitionDetail({
         </div>
       ) : null}
 
-      {/* Phase 1 — Administrator's send-back reason, visible to Transport
+      {/* Administrator's send-back reason, visible to Transport
           In Charge until they forward it again. */}
       {requisition.transportOfficeRemarks && mode === "transportInCharge" && (
         <div className="rounded-md border border-form-warn-border bg-form-warn-bg p-4 text-sm text-form-warn-text">

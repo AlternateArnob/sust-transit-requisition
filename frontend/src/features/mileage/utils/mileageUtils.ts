@@ -7,8 +7,8 @@ export interface MileageTripContext {
 }
 
 /**
- * Phase 6 (admin module) — FRD §23 opens with "For approved personal-use
- * Teacher requisitions..."; the Phase 6 plan's decision extends this to
+ * FRD §23 opens with "For approved personal-use
+ * Teacher requisitions..."; the mileage plan extends this to
  * Officer personal-use trips too. Student personal-use trips, though
  * allowed per §5.3, are NOT mileage-eligible. Renamed from
  * isPersonalUseRequisition since that name no longer matched what the
@@ -32,7 +32,7 @@ export function getTripsAwaitingMileage(
 
   requisitions.filter(isMileageEligibleRequisition).forEach((requisition) => {
     requisition.trips.forEach((trip) => {
-      // Phase 6, §3.4 audit — was `!== "Approved"`. Mileage is recorded
+      // Was `!== "Approved"`. Mileage is recorded
       // "after the vehicle returns to the depot" (FRD §23), which is
       // downstream of the trip actually happening, not just being
       // approved. Requiring Completed keeps mileage entry from opening
@@ -86,7 +86,7 @@ export function getAwaitingMileageTripsForRequisition(
   const result: MileageTripContext[] = [];
 
   requisition.trips.forEach((trip) => {
-    // Phase 6, §3.4 audit — see getTripsAwaitingMileage for why this is
+    // See getTripsAwaitingMileage for why this is
     // Completed rather than Approved.
     if (trip.status !== "Completed" || recordedTripIds.has(trip.id)) {
       return;
@@ -117,7 +117,7 @@ export function getMileageColumnStatus(
     return { kind: "not-applicable" };
   }
 
-  // Phase 6, §3.4 audit — was "approvedTrips" gated on Approved. Mileage
+  // Was "approvedTrips" gated on Approved. Mileage
   // now only makes sense once a trip is actually Completed (see
   // getTripsAwaitingMileage), so an Approved-but-not-yet-Completed trip
   // correctly reads as "not-ready" rather than jumping straight to

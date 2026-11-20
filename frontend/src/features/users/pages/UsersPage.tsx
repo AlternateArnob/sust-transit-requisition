@@ -14,23 +14,21 @@ import { buttonClass } from "@/shared/ui/buttonStyles";
 import PageTitle from "@/shared/ui/PageTitle";
 
 /**
- * Corrections Step 4+5 (answered together — Step 5's scoping question
- * was "manage every registered user, not just Transport Office
- * accounts", which reshapes Step 4's Edit/Delete rules, so building
- * them as one page instead of two passes).
+ * Account management console: lists every registered user, not just
+ * Transport Office accounts.
  *
- * Step 5: the account list is no longer filtered to the 3 Transport
+ * The account list is no longer filtered to the 3 Transport
  * Office roles — every UserAccount shows up, Applicant and
  * DepartmentHead included.
  *
- * Step 4: standalone Deactivate/Reactivate button and inline role
+ * Standalone Deactivate/Reactivate button and inline role
  * <select> are gone, replaced by one "Edit" flow per row (name, email,
  * mobile, role, active status, submitted together). Delete is new and
  * deliberately narrow — see canDelete() below.
  *
  * Scoping choice made here, not explicitly asked for either way: "Add
  * Account" (creation) stays scoped to the 3 Transport Office roles, as
- * it was in Phase 9. Broadening *management* to every account doesn't
+ * it always has been. Broadening *management* to every account doesn't
  * imply this console should also fabricate brand-new Applicant/
  * DepartmentHead accounts — those still come from their own
  * registration/appointment flows elsewhere in the app. Flagging this
@@ -52,7 +50,7 @@ export default function UsersPage() {
   ).length;
 
   /**
-   * §4 decision A — block, don't just confirm. Applies to any account,
+   * Block, don't just confirm. Applies to any account,
    * not just the 3 Transport Office roles, since the underlying risks
    * (self-lockout, zero active Super Admins) don't care what role the
    * *other* accounts in the list happen to be.

@@ -86,7 +86,7 @@ export default function RecommenderRequisitionDetailPage() {
         message: trimmedMessage,
       });
 
-      // Step 8 — a recommendation is the only event that unblocks
+      // A recommendation is the only event that unblocks
       // Transport In Charge: per the applicant-module clarification,
       // "Departmental/Official → Department/Office Head → if approved →
       // Transport Office". Only they need to know a new item just
@@ -121,7 +121,7 @@ export default function RecommenderRequisitionDetailPage() {
     try {
       rejectRequisition(requisition.id, reason, remarks);
 
-      // Step 8 — per the applicant-module clarification, a rejection at
+      // Per the applicant-module clarification, a rejection at
       // this stage never reaches the Transport Office at all, not even
       // as a notification. Only the applicant is told.
       addNotification(

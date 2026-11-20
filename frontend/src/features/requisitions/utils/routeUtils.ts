@@ -1,5 +1,5 @@
 /**
- * Step 2 — the Departmental/Official trip form takes the whole route in
+ * The Departmental/Official trip form takes the whole route in
  * one text box ("Campus -> Amborkhana -> Zindabazar -> Campus") instead
  * of a list of separate stop inputs. These helpers turn that text into
  * the ordered stop list the rest of the app (Trip.stoppageSequence,

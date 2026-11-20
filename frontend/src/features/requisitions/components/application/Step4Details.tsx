@@ -17,7 +17,7 @@ interface Step4DetailsProps {
 const ACCEPT = "application/pdf,image/png,image/jpeg,image/jpg";
 
 /**
- * Step 4 — Reason for requisition (free text) plus an optional supporting
+ * Reason for requisition (free text) plus an optional supporting
  * document. The document is read through FileReader.readAsDataURL so it can
  * be persisted alongside the requisition in localStorage.
  */

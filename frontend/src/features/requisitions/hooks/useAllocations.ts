@@ -5,7 +5,7 @@ import { STORAGE_KEYS } from "@/shared/config/storageKeys";
 const STORAGE_KEY = STORAGE_KEYS.allocations;
 
 export default function useAllocations() {
-  // Phase 8, §3 — deliberately does not expose `update`. Reassignment
+  // Deliberately does not expose `update`. Reassignment
   // should always be remove-then-add (see reassignAllocation() in
   // allocationUtils.ts) so history isn't lost by mutating an existing
   // Allocation in place; not exposing `update` here means a future call

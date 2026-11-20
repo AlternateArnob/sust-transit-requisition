@@ -1,5 +1,6 @@
 import { buttonClass } from "@/shared/ui/buttonStyles";
 import type { UserAccount } from "@/types";
+import { TABLE_CARD_CLASS, TABLE_HEAD_CLASS } from "@/shared/ui/formStyles";
 
 interface UsersTableProps {
   users: UserAccount[];
@@ -17,10 +18,10 @@ export default function UsersTable({
   onDelete,
 }: UsersTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+    <div className={TABLE_CARD_CLASS}>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
+          <thead className={TABLE_HEAD_CLASS}>
             <tr>
               <th className="px-4 py-3 font-semibold">Name</th>
               <th className="px-4 py-3 font-semibold">Email</th>

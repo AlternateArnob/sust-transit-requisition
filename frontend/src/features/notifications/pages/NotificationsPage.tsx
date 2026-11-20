@@ -20,7 +20,7 @@ export default function NotificationsPage() {
   function handleClick(notification: AppNotification) {
     markAsRead(notification.id);
 
-    // Step 10 — an Applicant reaching this page (via the new /notifications
+    // An Applicant reaching this page (via the new /notifications
     // route) has no /admin access, so every link must resolve to an
     // applicant-facing route instead of the admin routes below.
     if (isApplicant) {
@@ -55,9 +55,8 @@ export default function NotificationsPage() {
       return;
     }
 
-    // Phase 9 — account activation/deactivation/role-change pings.
-    // This page never got the fix NotificationBell.tsx got in Phase 9;
-    // backfilling it here so both surfaces route consistently.
+    // Account activation/deactivation/role-change pings.
+    // Routes the same way NotificationBell.tsx does.
     if (notification.linkType === "user") {
       navigate("/admin/users");
       return;
@@ -111,7 +110,7 @@ export default function NotificationsPage() {
     </div>
   );
 
-  // Step 10 — this page is shared between the admin shell (rendered bare
+  // This page is shared between the admin shell (rendered bare
   // inside AdminLayout's <Outlet>, which already supplies Navbar/Sidebar)
   // and the new top-level /notifications route an Applicant hits
   // directly with no surrounding shell at all. Give Applicants the same

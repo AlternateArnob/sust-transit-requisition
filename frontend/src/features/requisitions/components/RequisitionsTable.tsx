@@ -8,6 +8,7 @@ import {
   type MileageTripContext,
 } from "@/features/mileage/utils/mileageUtils";
 import type { Allocation, MileageEntry, Requisition } from "@/types";
+import { TABLE_CARD_CLASS, TABLE_HEAD_CLASS } from "@/shared/ui/formStyles";
 
 interface RequisitionsTableProps {
   requisitions: Requisition[];
@@ -27,10 +28,10 @@ export default function RequisitionsTable({
   onRecordMileage,
 }: RequisitionsTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+    <div className={TABLE_CARD_CLASS}>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
+          <thead className={TABLE_HEAD_CLASS}>
             <tr>
               <th className="px-4 py-3 font-semibold">Type</th>
               <th className="px-4 py-3 font-semibold">Requester</th>

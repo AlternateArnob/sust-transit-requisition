@@ -8,7 +8,7 @@ import type {
 } from "@/types";
 
 /**
- * Phase 8, §3 — reassigning a trip's vehicle/driver used to overwrite
+ * Reassigning a trip's vehicle/driver used to overwrite
  * the existing `Allocation` record in place (same `id`, fields
  * mutated). That's fine today only because the two callers
  * (`RequisitionsPage.tsx`'s pre-approval "Change Vehicle", and
@@ -50,7 +50,7 @@ export interface TripContext {
 }
 
 /**
- * Phase 1 — trips still needing a Transport In Charge vehicle pick
+ * Trips still needing a Transport In Charge vehicle pick
  * before the requisition can be forwarded to the Administrator.
  * Rejected trips don't need one (nothing to allocate), so they don't
  * block forwarding.

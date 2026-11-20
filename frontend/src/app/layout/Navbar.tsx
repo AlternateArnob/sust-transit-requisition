@@ -32,7 +32,7 @@ function Navbar({ title }: NavbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Phase 5 — only DepartmentHeads get a "recommendations waiting" pill
+  // Only DepartmentHeads get a "recommendations waiting" pill
   // in the navbar. Admins already see admin-side workflows, and the
   // bell's running unreadCount covers their "something needs attention"
   // signal — we don't want to add a second pill to the Admin view.

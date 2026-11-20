@@ -36,7 +36,7 @@ export default function RequireAuth({
 
   const isActive = currentUser?.isActive ?? true;
 
-  // Phase 9 — a deactivated account must be signed out, not just
+  // A deactivated account must be signed out, not just
   // redirected away. Session state lives in useAuth/localStorage, so
   // this is a side effect (can't just render a Navigate and leave the
   // session intact) — a stale session would keep passing isAuthenticated

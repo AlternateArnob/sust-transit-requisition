@@ -6,6 +6,7 @@ import useTransportSchedule from "@/features/fleet/hooks/useTransportSchedule";
 import { WEEKDAYS } from "@/types";
 import type { StudentTransportVehicle, StudentTransportSchedule, Weekday } from "@/types";
 import { buttonClass } from "@/shared/ui/buttonStyles";
+import { FULL_WIDTH_SELECT_CLASS } from "@/shared/ui/formStyles";
 
 interface TransportScheduleFormProps {
   route?: StudentTransportVehicle;
@@ -135,7 +136,7 @@ export default function TransportScheduleForm({
           id="vehicleId"
           value={vehicleId}
           onChange={(event) => setVehicleId(event.target.value)}
-          className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+          className={FULL_WIDTH_SELECT_CLASS}
         >
           <option value="">Select a vehicle</option>
 

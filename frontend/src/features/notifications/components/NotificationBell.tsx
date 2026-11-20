@@ -69,7 +69,7 @@ export default function NotificationBell() {
     markAsRead(notification.id);
     setIsOpen(false);
 
-    // Step 10 — an Applicant has no /admin access at all, so their
+    // An Applicant has no /admin access at all, so their
     // notifications must resolve to applicant-facing schedules instead of
     // the admin ones below.
     if (currentUser?.role === "Applicant") {
@@ -85,7 +85,7 @@ export default function NotificationBell() {
       return;
     }
 
-    // Phase 5 — DepartmentHeads go straight to the recommender detail
+    // DepartmentHeads go straight to the recommender detail
     // page for requisition pings so they can act on the inbox directly.
     // Admins land on the requisitions queue; everyone else still falls
     // back to the requisitions list.
@@ -108,7 +108,7 @@ export default function NotificationBell() {
       return;
     }
 
-    // Phase 9 — account activation/deactivation/role-change pings.
+    // Account activation/deactivation/role-change pings.
     if (notification.linkType === "user") {
       navigate("/admin/users");
       return;

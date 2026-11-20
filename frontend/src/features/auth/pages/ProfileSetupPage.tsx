@@ -140,7 +140,7 @@ export default function ProfileSetupPage() {
       studentRegNumber: studentRegNumber.trim() || undefined,
     };
 
-    // Fix 1 — useUsers().update is update(id, patch); calling it with
+    // UseUsers().update is update(id, patch); calling it with
     // just `updated` silently made `id` the whole object and `patch`
     // undefined, so `user.id === id` never matched and this save was a
     // no-op at runtime (it also failed `tsc --noEmit`, which is how the
@@ -151,7 +151,7 @@ export default function ProfileSetupPage() {
     if (password) {
       savePassword(currentUser.id, password);
     }
-    // Step 9 — same landing decision as LoginPage.tsx: an applicant
+    // Same landing decision as LoginPage.tsx: an applicant
     // finishing profile setup for the first time should see the
     // dashboard first, not drop straight onto the requisition form.
     navigate(currentUser.role === "DepartmentHead" ? "/admin" : "/dashboard");
@@ -168,7 +168,7 @@ export default function ProfileSetupPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      {/* Same top bar as every other applicant page (Fix 3). */}
+      {/* Same top bar as every other applicant page */}
       <ApplicantHeader active="profile" />
 
       <main className="mx-auto max-w-3xl px-4 py-10">

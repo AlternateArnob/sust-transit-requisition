@@ -1,7 +1,7 @@
 import type { UserRole } from "@/types";
 
 /**
- * Phase 0 — capability-based permissions for the Transport Office roles.
+ * Capability-based permissions for the Transport Office roles.
  *
  * The rest of the app should call these instead of comparing
  * `currentUser.role === "..."` directly, so that if the permission
@@ -59,8 +59,8 @@ export function canManageOffDays(role: UserRole | undefined): boolean {
 // Requisition workflow — split between Transport In Charge and Transport
 // Administrator (FRD §9, §19). Super Admin is oversight-only here.
 // RequisitionsPage renders one of three modes per requisition based on
-// these (see Phase 1); the standalone AllocationPage was retired in
-// Phase 4 once Phase 1 made its "Needs Allocation" tab unreachable.
+// these. The standalone AllocationPage was retired once its "Needs
+// Allocation" tab became unreachable.
 // ---------------------------------------------------------------------
 export function canAssignVehicleAndForward(role: UserRole | undefined): boolean {
   return isTransportInCharge(role);
@@ -78,9 +78,8 @@ export function canSendBackToTransportInCharge(role: UserRole | undefined): bool
 // Trip completion / mileage — Transport Office operational staff
 // (TIC or Administrator); Super Admin is view-only (FRD §22, §23).
 //
-// Phase 6 note: two unused helpers were removed from just above this
-// block — `canFinalApprove` (referenced the "Final Approve" step Phase 1
-// retired entirely) and a `canGenerateSlips(role)` that name-collided
+// Note: two unused helpers were removed from just above this block —
+// `canFinalApprove` (referenced the retired "Final Approve" step) and a `canGenerateSlips(role)` that name-collided
 // with dutySlipUtils.ts's actually-used `canGenerateSlips(requisition)`.
 // Neither had any callers.
 // ---------------------------------------------------------------------
@@ -94,8 +93,8 @@ export function canRecordMileage(role: UserRole | undefined): boolean {
 
 // ---------------------------------------------------------------------
 // Super Admin — account administration and audit oversight (FRD §2, §25).
-// Built out in Phase 9; exposed here now so Phase 0's route guards and
-// nav can already tell Super Admin apart from the other two roles.
+// Used by the route guards and nav to tell Super Admin apart from the
+// other two roles.
 // ---------------------------------------------------------------------
 export function canManageUserAccounts(role: UserRole | undefined): boolean {
   return isSuperAdmin(role);

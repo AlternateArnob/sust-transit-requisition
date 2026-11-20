@@ -1,5 +1,5 @@
 /**
- * Fix 7 — canonical department/office lists.
+ * Canonical department/office lists.
  *
  * Department was previously free text, which meant "CSE", "Computer
  * Science", and "Computer Science & Engineering" could all exist as

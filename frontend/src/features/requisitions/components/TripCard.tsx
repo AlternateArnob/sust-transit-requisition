@@ -1,6 +1,7 @@
 import type { Allocation, Driver, Trip, Vehicle } from "@/types";
 import { TripStatusBadge } from "@/shared/ui/StatusBadge";
 import { buttonClass } from "@/shared/ui/buttonStyles";
+import { SMALL_ACTION_BUTTON_CLASS } from "@/shared/ui/formStyles";
 
 export type RequisitionDetailMode = "transportInCharge" | "transportAdministrator" | "viewOnly";
 
@@ -96,7 +97,7 @@ export default function TripCard({
           <button
             type="button"
             onClick={() => onAssignVehicle()}
-            className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
+            className={SMALL_ACTION_BUTTON_CLASS}
           >
             {allocation ? "Change Vehicle" : "Assign Vehicle"}
           </button>
@@ -141,11 +142,7 @@ export default function TripCard({
                     independent of approve/reject and of mileage */}
       {mode === "transportAdministrator" && trip.status === "Approved" && (
         <div className="mt-3 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => onComplete()}
-            className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
-          >
+          <button type="button" onClick={() => onComplete()} className={SMALL_ACTION_BUTTON_CLASS}>
             Mark Completed
           </button>
 

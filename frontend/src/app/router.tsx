@@ -55,7 +55,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    // Step 9 — applicant landing page after login, restricted to the
+    // Applicant landing page after login, restricted to the
     // Applicant role the same way /admin/users is restricted to
     // SuperAdmin: this page's stats/shortcuts only make sense for an
     // applicant's own requisitions, not the Transport Office roles or
@@ -68,7 +68,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    // Step 10 — applicants have no /admin access, so they need their own
+    // Applicants have no /admin access, so they need their own
     // top-level route to the same NotificationsPage the admin shell
     // uses (it's already generic over useNotifications()'s per-user
     // filtering, so no separate page is needed — just a route an
@@ -118,7 +118,7 @@ const router = createBrowserRouter([
         element: <DashboardPage />,
       },
       {
-        // Corrections Step 3 — TIC-only per the corrected requirements
+        // TIC-only per the corrected requirements
         // (Super Admin and Transport Administrator no longer manage
         // vehicles/drivers/schedule at all, not just "don't see the nav
         // link for it"). Narrowed from the shared ADMIN_ROLES guard.
@@ -154,7 +154,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        // Corrections Step 3 — Super Admin dropped; requisitions is now
+        // Super Admin dropped; requisitions is now
         // TIC + Transport Administrator only, matching "Super Admin's
         // only surface is accounts."
         path: "requisitions",
@@ -165,7 +165,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        // Phase 9 — Super Admin console. Narrower than the shared
+        // Super Admin console. Narrower than the shared
         // ADMIN_ROLES guard every other admin page uses: this page is
         // genuinely Super-Admin-exclusive (account activation, role
         // reassignment), not just Transport-Office-staff-shared.
@@ -177,7 +177,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        // Corrections Step 2 — self-service profile edit, open to the
+        // Self-service profile edit, open to the
         // whole /admin shell like notifications: every role that has a
         // navbar dropdown to reach this from should be able to use it.
         path: "profile",

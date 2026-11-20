@@ -7,6 +7,7 @@ import { getWeekdayFromDate, todayString } from "@/features/fleet/utils/schedule
 
 import { WEEKDAYS, type VehicleOffDay, type OffDayType, type Weekday } from "@/types";
 import { buttonClass } from "@/shared/ui/buttonStyles";
+import { FULL_WIDTH_INPUT_CLASS, FULL_WIDTH_SELECT_CLASS } from "@/shared/ui/formStyles";
 
 interface OffDayFormProps {
   onSubmit: (offDay: VehicleOffDay) => void;
@@ -125,7 +126,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
           id="offDayVehicle"
           value={vehicleId}
           onChange={(event) => setVehicleId(event.target.value)}
-          className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+          className={FULL_WIDTH_SELECT_CLASS}
         >
           <option value="">Select a vehicle</option>
 
@@ -178,7 +179,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
             type="date"
             value={date}
             onChange={(event) => setDate(event.target.value)}
-            className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+            className={FULL_WIDTH_INPUT_CLASS}
           />
 
           {errors.date && <p className="mt-1 text-xs text-error">{errors.date}</p>}
@@ -193,7 +194,7 @@ export default function OffDayForm({ onSubmit, onCancel }: OffDayFormProps) {
             id="offDayWeekday"
             value={weekday}
             onChange={(event) => setWeekday(event.target.value as Weekday)}
-            className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+            className={FULL_WIDTH_SELECT_CLASS}
           >
             {WEEKDAYS.map((day) => (
               <option key={day} value={day}>

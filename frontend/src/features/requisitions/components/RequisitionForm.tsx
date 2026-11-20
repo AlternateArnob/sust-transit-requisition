@@ -87,7 +87,7 @@ export default function RequisitionForm({ onSubmit, onCancel, initial }: Requisi
   );
 
   /**
-   * Step 5 — "Personal" requisitions are always exactly one trip. When the
+   * "Personal" requisitions are always exactly one trip. When the
    * applicant switches into Personal from Departmental/Official (which
    * may have accumulated several trips), collapse back down to the first
    * one rather than silently dropping the type check that used to
@@ -110,7 +110,7 @@ export default function RequisitionForm({ onSubmit, onCancel, initial }: Requisi
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Fix 6 — replaces the old "reproduce a paper signature" block. The
+  // Replaces the old "reproduce a paper signature" block. The
   // applicant already provided a signature once, in Profile Setup; this
   // is a plain digital confirmation, not a re-enactment of it.
   const [declarationConfirmed, setDeclarationConfirmed] = useState(false);
@@ -160,9 +160,8 @@ export default function RequisitionForm({ onSubmit, onCancel, initial }: Requisi
           "Enter the route with at least two stops, separated by ->  (e.g. Campus -> Amborkhana -> Campus).";
       }
 
-      // Step 7 — 3-hour vehicle-hold limit is a hard block, not a
-      // dismissible warning (folded into this step's validation per the
-      // fix plan's Step 5.6).
+      // The 3-hour vehicle-hold limit is a hard block, not a
+      // dismissible warning.
       if (trip.startTime && trip.endTime && !isWithinHoldWindow(trip.startTime, trip.endTime)) {
         next[`holdLimit-${trip.id}`] = "This trip exceeds the 3-hour vehicle-hold limit.";
       }
@@ -172,7 +171,7 @@ export default function RequisitionForm({ onSubmit, onCancel, initial }: Requisi
       next.reason = "Reason for requisition is required.";
     }
 
-    // Fix 6 — required before submit (checked here, in validateAll(),
+    // Required before submit (checked here, in validateAll(),
     // which handleSaveDraft() never calls — so saving a draft still
     // doesn't require it, only a full submit does).
     if (!declarationConfirmed) {
@@ -219,7 +218,7 @@ export default function RequisitionForm({ onSubmit, onCancel, initial }: Requisi
       requesterId: requester!.id,
       requesterName:
         requester!.fullName?.trim() || transportUser.fullName.trim() || requester!.email,
-      // Phase 6 — needed for mileage eligibility (FRD §23 scopes it to
+      // Needed for mileage eligibility (FRD §23 scopes it to
       // Teacher/Officer personal-use, not every "Personal" requisition).
       applicantProfile: requester!.applicantProfile,
       department: departmentOrOffice.trim() || undefined,
@@ -250,7 +249,7 @@ export default function RequisitionForm({ onSubmit, onCancel, initial }: Requisi
     setIsSubmitting(true);
     try {
       const draft = buildRequisition("Draft");
-      // Fix 2 — ApplyRequisitionPage.onSubmit already calls
+      // ApplyRequisitionPage.onSubmit already calls
       // addRequisition(...) once persistence is handed to it below; this
       // component only builds the object now. Calling addRequisition
       // here too was writing every save (draft or full submit) into
@@ -278,7 +277,7 @@ export default function RequisitionForm({ onSubmit, onCancel, initial }: Requisi
         : "Pending on Transport Office";
 
       const requisition = buildRequisition(finalStatus);
-      // Fix 2 — see the comment in handleSaveDraft above; persistence
+      // See the comment in handleSaveDraft above; persistence
       // happens once, in ApplyRequisitionPage's onSubmit.
       onSubmit(requisition);
 

@@ -5,9 +5,10 @@ import useAuth from "@/features/auth/hooks/useAuth";
 import useUsers from "@/features/users/hooks/useUsers";
 import { buttonClass } from "@/shared/ui/buttonStyles";
 import PageTitle from "@/shared/ui/PageTitle";
+import { ERROR_BANNER_CLASS, INPUT_CLASS } from "@/shared/ui/formStyles";
 
 /**
- * Corrections Step 2 — self-service profile editing for Transport
+ * Self-service profile editing for Transport
  * Office accounts. There was previously no equivalent of this on the
  * admin side at all (the applicant side already has one) — built as
  * its own page rather than a modal since editing your own account is a
@@ -73,7 +74,7 @@ export default function ProfilePage() {
             type="text"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
-            className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+            className={INPUT_CLASS}
           />
         </label>
 
@@ -83,7 +84,7 @@ export default function ProfilePage() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+            className={INPUT_CLASS}
           />
         </label>
 
@@ -94,15 +95,11 @@ export default function ProfilePage() {
             value={mobile}
             onChange={(event) => setMobile(event.target.value)}
             placeholder="01XXXXXXXXX"
-            className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+            className={INPUT_CLASS}
           />
         </label>
 
-        {error && (
-          <p className="rounded-md border border-error-bg bg-error-bg px-3 py-2 text-sm text-error">
-            {error}
-          </p>
-        )}
+        {error && <p className={ERROR_BANNER_CLASS}>{error}</p>}
 
         {saved && !error && (
           <p className="rounded-md border border-success-bg bg-success-bg px-3 py-2 text-sm text-success">

@@ -1,5 +1,5 @@
 /**
- * Phase 0 (admin module): the flat "Admin" role has been split into the
+ * The flat "Admin" role has been split into the
  * three distinct Transport Office roles the FRD calls for, each with its
  * own permissions — see utils/permissions.ts for the capability matrix.
  *
@@ -44,14 +44,14 @@ export interface UserAccount {
   headOfOffice?: string;
   isVerified: boolean;
   /**
-   * Phase 9 (admin module) — account activation, distinct from
+   * Account activation, distinct from
    * `isVerified`. `isVerified` means "finished OTP registration," and an
    * unverified account is still allowed to sign in (redirected back into
    * the OTP flow to finish onboarding) — it is NOT a block. `isActive`
    * is the actual sign-in gate: `false` means Super Admin has
    * deactivated this account and it must be signed out / refused login
    * outright, not redirected anywhere to "finish" something. Optional at
-   * the type level only because pre-Phase-9 stored data won't have it;
+   * the type level only because older stored data won't have it;
    * useUsers.ts migrates every record to a real boolean (default `true`)
    * on read, so by the time code outside that hook sees a UserAccount,
    * this is effectively always present.

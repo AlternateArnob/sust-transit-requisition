@@ -18,13 +18,13 @@ import { formatDateRange } from "@/features/requisitions/utils/requisitionUtils"
 import { generateConfirmationSlip } from "@/features/slips/utils/pdf/confirmationSlip";
 
 /**
- * Phase 6 — applicant-facing "My Requisitions" page (spec §6, Post-Approval).
+ * Applicant-facing "My Requisitions" page (spec §6, Post-Approval).
  *
  * Lists only the signed-in applicant's own requisitions (matched on
  * `requesterId`) and lets them open each one in a read-only detail view.
  * The Download Confirmation Slip button appears once the Transport
- * Administrator has approved at least one trip (Phase 1 retired the
- * separate "Final Approved" sign-off step) — everything else
+ * Administrator has approved at least one trip (there is no separate
+ * "Final Approved" sign-off step) — everything else
  * (approve/reject/allocate) stays admin/recommender-only and is
  * intentionally not reachable here.
  */
@@ -46,7 +46,7 @@ export default function MyRequisitionsPage() {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [requisitions, currentUser]);
 
-  // Step 10 — a notification's "requisition" link deep-links here as
+  // A notification's "requisition" link deep-links here as
   // /my-requisitions?open=<id> instead of an admin route. Once the list
   // has loaded, open that requisition's detail modal automatically, then
   // drop the query param so refreshing/closing doesn't reopen it.

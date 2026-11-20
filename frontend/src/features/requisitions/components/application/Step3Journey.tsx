@@ -36,7 +36,7 @@ const TYPE_HINTS: Partial<Record<RequisitionType, string>> = {
  * Per spec §4, Students can only apply for Departmental/Official use.
  * Teacher/Officer may also use Personal. "Club" is intentionally hidden
  * from every profile for now — there is no Club Account role yet, so
- * offering it as a purpose leads nowhere useful (see Step 3 of the
+ * offering it as a purpose leads nowhere useful (see the
  * applicant-module fix plan).
  */
 function availableTypesFor(profile: ApplicantProfile | undefined): RequisitionType[] {

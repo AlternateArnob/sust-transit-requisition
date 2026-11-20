@@ -16,7 +16,7 @@ import {
 } from "@/features/requisitions/utils/requisitionUtils";
 
 /**
- * Step 9 (applicant module) — the applicant's landing page after login,
+ * The applicant's landing page after login,
  * replacing the old behavior of dropping straight onto the requisition
  * form. Matches the admin side's DashboardPage.tsx in spirit (stat cards
  * + a recent-activity panel) but scoped to just this applicant's own

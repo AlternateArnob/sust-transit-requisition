@@ -9,6 +9,7 @@ import DriverForm from "@/features/fleet/components/DriverForm";
 import type { Driver } from "@/types";
 import { buttonClass } from "@/shared/ui/buttonStyles";
 import PageTitle from "@/shared/ui/PageTitle";
+import { TABLE_CARD_CLASS, TABLE_HEAD_CLASS } from "@/shared/ui/formStyles";
 
 export default function DriverPage() {
   const { drivers, addDriver, updateDriver, deactivateDriver, activateDriver, deleteDriver } =
@@ -127,10 +128,10 @@ export default function DriverPage() {
         </select>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className={TABLE_CARD_CLASS}>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
+            <thead className={TABLE_HEAD_CLASS}>
               <tr>
                 <th className="px-4 py-3 font-semibold">Driver</th>
                 <th className="px-4 py-3 font-semibold">Designation</th>

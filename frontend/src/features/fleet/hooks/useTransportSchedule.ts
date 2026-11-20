@@ -2,7 +2,7 @@ import useLocalStorageCollection from "@/shared/hooks/useLocalStorageCollection"
 import type { StudentTransportVehicle, StudentTransportSchedule } from "@/types";
 import { STORAGE_KEYS } from "@/shared/config/storageKeys";
 
-// Storage key intentionally left as the pre-Phase-3 name — renaming it
+// Storage key intentionally left as the original name — renaming it
 // would silently drop any schedule entries already saved in a user's
 // browser under the old key. Only the file/export name changed to shed
 // the "Routes" nomenclature FR-38 retires.

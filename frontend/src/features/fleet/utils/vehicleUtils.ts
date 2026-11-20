@@ -13,7 +13,7 @@ export function isVehicleAvailable(vehicle: Vehicle): boolean {
 }
 
 /**
- * Phase 2 (admin module) — FR-25 requires allocation/vehicle history to
+ * FR-25 requires allocation/vehicle history to
  * survive later changes, but confirmation and duty slips resolve a
  * vehicle's registration/category by looking `allocation.vehicleId` up
  * in the live vehicle list (see utils/pdf/confirmationSlip.ts and

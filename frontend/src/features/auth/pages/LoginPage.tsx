@@ -37,7 +37,7 @@ export default function LoginPage() {
       return;
     }
 
-    // Phase 9 — deactivation is a hard block, checked before the
+    // Deactivation is a hard block, checked before the
     // unverified/resume-onboarding branches below. Those branches log
     // the user in and send them somewhere to finish setup; a
     // deactivated account must never reach that, regardless of whether

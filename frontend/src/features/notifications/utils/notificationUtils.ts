@@ -1,7 +1,7 @@
 import type { AppNotification, NotificationType, Requisition, UserAccount } from "@/types";
 
 /**
- * Phase 5 — match a requisition's department/office against every
+ * Match a requisition's department/office against every
  * DepartmentHead's scope. We compare trimmed + lowercased so minor
  * punctuation/whitespace differences don't false-negative the match.
  */
@@ -38,8 +38,8 @@ export function findDepartmentHeadsForRequisition(
  * two are unscoped versions of the same idea for the Transport Office
  * roles (no department/office matching needed, everyone in the role
  * gets notified). `user.isActive !== false` treats the field as opt-in:
- * true for every account until Phase 9 actually introduces it, so this
- * doesn't silently drop pre-Phase-9 accounts that have no such field yet.
+ * true for every account until the field is introduced, so this
+ * doesn't silently drop older accounts that have no such field yet.
  */
 export function findTransportInCharge(users: UserAccount[]): UserAccount[] {
   return users.filter(
@@ -76,11 +76,11 @@ export function buildApplicantNotification(
 }
 
 /**
- * Phase 9 (FRD §24) — notify the affected account directly on
+ * (FRD §24) Notify the affected account directly on
  * activate/deactivate/role-change. For a deactivation the account can't
  * sign in to see it right away, but it's still correct to record —
  * visible on reactivation, or to anyone with access to their history
- * (Phase 8's "don't discard history" reasoning applies here too).
+ * (the same "don't discard history" reasoning applies here).
  */
 export function buildAccountStatusNotification(userId: string, message: string): AppNotification {
   return {

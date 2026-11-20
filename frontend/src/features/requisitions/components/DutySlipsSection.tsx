@@ -9,6 +9,7 @@ import {
 } from "@/features/slips/utils/dutySlipUtils";
 import { SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
 import type { RequisitionDetailMode } from "./TripCard";
+import { SMALL_ACTION_BUTTON_CLASS } from "@/shared/ui/formStyles";
 
 interface DutySlipsSectionProps {
   requisition: Requisition;
@@ -73,7 +74,7 @@ export default function DutySlipsSection({
             const historyOpen = !!expandedHistory[group.driverId];
 
             function handleGenerateClick() {
-              // §2.3 — regenerating replaces a slip a driver may
+              // Regenerating replaces a slip a driver may
               // already be holding a printed copy of; first-time
               // generation has nothing to supersede, so only confirm
               // when there's an existing slip.
@@ -114,7 +115,7 @@ export default function DutySlipsSection({
                     <button
                       type="button"
                       onClick={() => onGenerateDutySlip?.(group.driverId)}
-                      className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
+                      className={SMALL_ACTION_BUTTON_CLASS}
                     >
                       Download Driver Slip
                     </button>
@@ -124,7 +125,7 @@ export default function DutySlipsSection({
                     <button
                       type="button"
                       onClick={handleGenerateClick}
-                      className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
+                      className={SMALL_ACTION_BUTTON_CLASS}
                     >
                       {latestSlip ? "Regenerate Duty Slip" : "Generate Duty Slip"}
                     </button>

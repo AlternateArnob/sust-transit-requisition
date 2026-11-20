@@ -57,7 +57,7 @@ export default function ApplyRequisitionPage() {
       addRequisition(requisition);
     }
 
-    // Step 8 (applicant module) — per FRD §6, a Departmental/Official
+    // Per FRD §6, a Departmental/Official
     // requisition from a Student/Teacher/Officer must clear the
     // applicant's Department/Office Head before the Transport Office
     // ever sees it (RequisitionForm.tsx already sets the requisition's

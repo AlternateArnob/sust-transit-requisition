@@ -17,7 +17,7 @@ import {
 } from "@/features/mileage/utils/mileageUtils";
 
 /**
- * Phase 7 — applicant-facing mileage log (spec §7).
+ * Applicant-facing mileage log (spec §7).
  *
  * Since the driver never logs into the system, Admin records the actual
  * distance travelled against a requisition after the trip. This page
@@ -37,7 +37,7 @@ export default function MyMileagePage() {
     return getRecordedMileageTrips(requisitions, allocations, mileageEntries).filter(
       ({ requisition }) =>
         requisition.requesterId === currentUser.id &&
-        // Phase 6 (admin module) — narrowed from "any Personal-type
+        // Narrowed from "any Personal-type
         // requisition" to Teacher/Officer personal-use only, per FRD
         // §23's literal wording. A Student's Personal-use trips won't
         // show up here even though the requisition itself is allowed.

@@ -15,6 +15,11 @@ import {
   todayString,
 } from "@/features/fleet/utils/scheduleUtils";
 import PageTitle from "@/shared/ui/PageTitle";
+import {
+  EMPTY_STATE_CLASS,
+  FULL_WIDTH_INPUT_CLASS,
+  FULL_WIDTH_SELECT_CLASS,
+} from "@/shared/ui/formStyles";
 
 type LookupMode = "vehicle" | "driver";
 
@@ -124,7 +129,7 @@ export default function SchedulePage() {
                 id="vehicleSelect"
                 value={selectedVehicleId}
                 onChange={(event) => setSelectedVehicleId(event.target.value)}
-                className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                className={FULL_WIDTH_SELECT_CLASS}
               >
                 <option value="">Select a vehicle</option>
 
@@ -145,7 +150,7 @@ export default function SchedulePage() {
                 id="driverSelect"
                 value={selectedDriverId}
                 onChange={(event) => setSelectedDriverId(event.target.value)}
-                className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                className={FULL_WIDTH_SELECT_CLASS}
               >
                 <option value="">Select a driver</option>
 
@@ -168,7 +173,7 @@ export default function SchedulePage() {
               type="date"
               value={date}
               onChange={(event) => setDate(event.target.value)}
-              className="h-10 w-full rounded-md border border-border px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+              className={FULL_WIDTH_INPUT_CLASS}
             />
           </div>
         </div>
@@ -271,7 +276,7 @@ export default function SchedulePage() {
                   </p>
                 </div>
               ) : (
-                <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
+                <p className={EMPTY_STATE_CLASS}>
                   This vehicle is free all day on {weekday ?? "this date"} — no student transport
                   schedule applies.
                 </p>
@@ -283,7 +288,7 @@ export default function SchedulePage() {
               <p className="mb-2 text-sm font-medium text-text">Requisition Allocations</p>
 
               {dayAllocations.length === 0 ? (
-                <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-text-muted">
+                <p className={EMPTY_STATE_CLASS}>
                   No requisition trips allocated to this vehicle on {formatDate(date)}.
                 </p>
               ) : (

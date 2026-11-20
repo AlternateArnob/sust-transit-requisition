@@ -6,7 +6,7 @@ import type { UserAccount } from "@/types";
 const STORAGE_KEY = STORAGE_KEYS.users;
 
 /**
- * Phase 0 (admin module) — dev-only seed accounts, one per Transport
+ * Dev-only seed accounts, one per Transport
  * Office role, so all three role-specific flows are reachable locally
  * without a real registration path. Same shared password for all three
  * to keep local testing simple; never used outside dev seed data.
@@ -45,7 +45,7 @@ function readUsers(): UserAccount[] {
 
   try {
     const parsed: UserAccount[] = JSON.parse(stored);
-    // Phase 9 migration — pre-Phase-9 records have no isActive field at
+    // Migration — older records have no isActive field at
     // all; treat that as "always was active" rather than leaving it
     // undefined, so every other file can rely on it being a real boolean.
     //

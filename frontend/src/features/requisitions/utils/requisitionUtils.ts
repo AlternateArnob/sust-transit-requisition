@@ -2,7 +2,7 @@ import type { Requisition, Trip, ApplicationStatus } from "@/types";
 
 /**
  * Recomputes a requisition's status from its trips whenever a trip
- * decision changes. Phase 1 change: this used to default to a status
+ * decision changes. Note: this used to default to a status
  * derived from `requisitionType` any time no trip had been decided yet.
  * That doesn't work anymore now that "no trip decided" can legitimately
  * mean either "Recommended", "Pending on Transport Office", or "Pending
@@ -73,7 +73,7 @@ export function formatDateRange(startDate: string, endDate: string): string {
   return startDate === endDate ? startDate : `${startDate} → ${endDate}`;
 }
 
-/** Phase 4 (FRD §18) — a visible type badge per requisition, same pill
+/** (FRD §18) A visible type badge per requisition, same pill
  *  visual language as the ApplicationStatus badges already used in
  *  RequisitionsPage/RequisitionDetail, so the queue reads as one
  *  consistent tagging system rather than two different UI patterns. */

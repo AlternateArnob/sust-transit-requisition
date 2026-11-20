@@ -3,6 +3,7 @@ import { useState } from "react";
 import { DEPARTMENTS, OFFICES } from "@/shared/config/sustDirectory";
 import { buttonClass } from "@/shared/ui/buttonStyles";
 import type { UserAccount, UserRole } from "@/types";
+import { ERROR_BANNER_CLASS, INPUT_CLASS, SELECT_CLASS } from "@/shared/ui/formStyles";
 
 const ALL_ROLES: UserRole[] = [
   "Applicant",
@@ -66,7 +67,7 @@ export default function EditAccountForm({
       mobile: trimmedMobile || undefined,
       role,
       isActive,
-      // Fix 7 — the fields that actually determine recommendation
+      // The fields that actually determine recommendation
       // routing (findDepartmentHeadsForRequisition matches a
       // requisition's department/office against these). Only meaningful
       // for DepartmentHead accounts, but harmless to carry through
@@ -84,7 +85,7 @@ export default function EditAccountForm({
           type="text"
           value={fullName}
           onChange={(event) => setFullName(event.target.value)}
-          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+          className={INPUT_CLASS}
         />
       </label>
 
@@ -94,7 +95,7 @@ export default function EditAccountForm({
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+          className={INPUT_CLASS}
         />
       </label>
 
@@ -105,7 +106,7 @@ export default function EditAccountForm({
           value={mobile}
           onChange={(event) => setMobile(event.target.value)}
           placeholder="01XXXXXXXXX"
-          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+          className={INPUT_CLASS}
         />
       </label>
 
@@ -133,7 +134,7 @@ export default function EditAccountForm({
             <select
               value={headOfDepartment}
               onChange={(event) => setHeadOfDepartment(event.target.value)}
-              className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+              className={SELECT_CLASS}
             >
               <option value="">— none —</option>
               {DEPARTMENTS.map((dept) => (
@@ -149,7 +150,7 @@ export default function EditAccountForm({
             <select
               value={headOfOffice}
               onChange={(event) => setHeadOfOffice(event.target.value)}
-              className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+              className={SELECT_CLASS}
             >
               <option value="">— none —</option>
               {OFFICES.map((off) => (
@@ -186,11 +187,7 @@ export default function EditAccountForm({
 
       {lock.locked && <p className="text-xs text-form-placeholder">{lock.reason}</p>}
 
-      {error && (
-        <p className="rounded-md border border-error-bg bg-error-bg px-3 py-2 text-sm text-error">
-          {error}
-        </p>
-      )}
+      {error && <p className={ERROR_BANNER_CLASS}>{error}</p>}
 
       <div className="flex justify-end gap-2 pt-2">
         <button type="button" onClick={onCancel} className={buttonClass("secondary")}>

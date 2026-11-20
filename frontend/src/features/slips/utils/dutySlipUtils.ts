@@ -6,7 +6,7 @@ export interface DriverTripGroup {
 }
 
 /**
- * Phase 6, §3.4 audit — deliberately left at `trip.status === "Approved"`
+ * Deliberately left at `trip.status === "Approved"`
  * only, NOT extended to "Completed". A duty slip is the driver's
  * pre-trip instructions; once a trip is Completed there's nothing left
  * to instruct, so it shouldn't offer a fresh "Generate Duty Slip" for
@@ -43,7 +43,7 @@ export function getEligibleDutySlipGroups(
 }
 
 /**
- * Phase 5, §2.2 decision A — every slip ever generated for this
+ * Every slip ever generated for this
  * driver+requisition, newest first. The [0] entry is the current one;
  * everything after it is superseded by definition (a newer slip exists),
  * regardless of *why* it was regenerated — adding a day counts the same
@@ -97,15 +97,15 @@ export function hasStaleVehicleAssignment(slip: DutySlip, allocations: Allocatio
 }
 
 /**
- * Phase 5, §2.1 — shared by the Documents-section UI (to decide whether
+ * Shared by the Documents-section UI (to decide whether
  * to show the button) and the handler that actually generates the PDF
  * (so the guarantee holds even if a future UI change stops hiding the
  * button correctly). Single source of truth instead of two copies that
  * can drift.
  *
- * Phase 6, §3.4 audit — added "Completed" here. Once every trip is done,
+ * Added "Completed" here. Once every trip is done,
  * the requisition's slips should still be viewable/downloadable (FRD
- * §25 — historical records don't disappear), not locked out just
+ * Historical records don't disappear), not locked out just
  * because nothing is left "Approved" anymore.
  */
 export function canGenerateSlips(requisition: Requisition): boolean {

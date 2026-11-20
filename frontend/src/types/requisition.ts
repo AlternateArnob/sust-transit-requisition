@@ -6,7 +6,7 @@ export type RequisitionType = "Personal" | "Departmental/Official" | "Club";
 export const REQUISITION_TYPES: RequisitionType[] = ["Personal", "Departmental/Official", "Club"];
 
 /**
- * Phase 1 (admin module) — the flat "Pending Approval" stage is now two
+ * The flat "Pending Approval" stage is now two
  * explicit stages matching FRD §7/§9/§19: a requisition sits with the
  * Transport In Charge until a vehicle is assigned to every trip and it's
  * forwarded, then with the Transport Administrator for the actual
@@ -16,7 +16,7 @@ export const REQUISITION_TYPES: RequisitionType[] = ["Personal", "Departmental/O
  * confirmation-slip-eligible states.
  */
 /**
- * Phase 6 (admin module) — "Completed" added for FRD §7/§22: once every
+ * "Completed" added for FRD §7/§22: once every
  * trip on a requisition is either Completed or Rejected (i.e. nothing
  * left in Approved/Pending), the requisition itself is done. Mileage-
  * eligible requisitions have a further, more specific terminal state —
@@ -37,7 +37,7 @@ export type ApplicationStatus =
   | "Rejected";
 
 /**
- * Phase 6 — "Completed" added for FRD §22: Transport Office marks a trip
+ * "Completed" added for FRD §22: Transport Office marks a trip
  * Completed once it's actually happened, independently of mileage (FRD
  * is explicit that "completion status and mileage shall be stored
  * separately"). Only reachable from "Approved" — see completeTrip().
@@ -64,13 +64,13 @@ export interface Requisition {
   contactNumber?: string;
   requisitionType: RequisitionType;
   /**
-   * Phase 6 (admin module) — captured from the requester's account at
+   * Captured from the requester's account at
    * submission time (RequisitionForm.tsx), not editable afterward.
    * Needed because FRD §23 scopes mileage tracking narrower than
    * `requisitionType === "Personal"` alone can express — see
    * utils/mileageUtils.ts `isMileageEligibleRequisition()`. Optional
    * because it isn't meaningful for Club/Society accounts (no
-   * Teacher/Student/Officer profile) and because pre-Phase-6 stored
+   * Teacher/Student/Officer profile) and because older stored
    * requisitions won't have it.
    */
   applicantProfile?: ApplicantProfile;
@@ -89,7 +89,7 @@ export interface Requisition {
   /** ISO timestamp of the recommendation. */
   recommendedAt?: string;
   /**
-   * Phase 1 — set when the Transport Administrator sends the whole
+   * Set when the Transport Administrator sends the whole
    * application back to the Transport In Charge for rework (e.g. the
    * assigned vehicle turned out to be unsuitable). Cleared the next time
    * it's forwarded again so a stale reason doesn't linger after it's
@@ -109,8 +109,8 @@ export interface Requisition {
   /** ISO timestamp of the latest resubmission after a send-back. */
   resubmittedAt?: string;
   /**
-   * Step 6 (applicant module) — the optional file uploaded in Step 4 of
-   * the application form (FRD §5.1 "Supporting document, where
+   * The optional file uploaded in the
+   * Details step of the application form (FRD §5.1 "Supporting document, where
    * applicable"). Stored as a data URL alongside the requisition, same
    * pattern as `signatureDataUrl` on UserAccount, so it can persist in
    * localStorage without a separate file-storage layer. Only visible to

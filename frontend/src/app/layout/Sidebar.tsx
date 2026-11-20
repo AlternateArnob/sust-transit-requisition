@@ -20,7 +20,7 @@ const RECOMMENDER_ITEM: NavItem = {
 };
 
 /**
- * Corrections Step 3 — the three admin roles no longer share one nav
+ * The three admin roles no longer share one nav
  * list. Each role's surface is now genuinely different (not just a
  * couple of items hidden), so three explicit lists read more clearly
  * than one shared list with conditional filtering:

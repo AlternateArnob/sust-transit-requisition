@@ -2,7 +2,7 @@ import type { RequestedVehicleCategory, Trip } from "./trip";
 import type { RequisitionType } from "./requisition";
 
 /**
- * Step 5 (applicant module) — one requested trip within a requisition,
+ * One requested trip within a requisition,
  * as held in RequisitionForm's local state before submission.
  *
  * `destination` only applies when the parent requisition type is

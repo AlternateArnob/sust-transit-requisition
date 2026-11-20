@@ -4,6 +4,7 @@ import { hashPassword, MIN_PASSWORD_LENGTH } from "@/features/auth/utils/passwor
 import { buttonClass } from "@/shared/ui/buttonStyles";
 import { ADMIN_ROLES, type AdminRole } from "@/shared/utils/permissions";
 import type { UserAccount } from "@/types";
+import { ERROR_BANNER_CLASS, INPUT_CLASS, SELECT_CLASS } from "@/shared/ui/formStyles";
 
 export default function CreateAccountForm({
   existingEmails,
@@ -66,7 +67,7 @@ export default function CreateAccountForm({
           type="text"
           value={fullName}
           onChange={(event) => setFullName(event.target.value)}
-          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+          className={INPUT_CLASS}
         />
       </label>
 
@@ -77,7 +78,7 @@ export default function CreateAccountForm({
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="name@sust.edu"
-          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+          className={INPUT_CLASS}
         />
       </label>
 
@@ -86,7 +87,7 @@ export default function CreateAccountForm({
         <select
           value={role}
           onChange={(event) => setRole(event.target.value as AdminRole)}
-          className="h-10 rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+          className={SELECT_CLASS}
         >
           {ADMIN_ROLES.map((item) => (
             <option key={item} value={item}>
@@ -103,15 +104,11 @@ export default function CreateAccountForm({
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
-          className="h-10 rounded-md border border-border px-3 text-sm text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+          className={INPUT_CLASS}
         />
       </label>
 
-      {error && (
-        <p className="rounded-md border border-error-bg bg-error-bg px-3 py-2 text-sm text-error">
-          {error}
-        </p>
-      )}
+      {error && <p className={ERROR_BANNER_CLASS}>{error}</p>}
 
       <div className="flex justify-end gap-2 pt-2">
         <button type="button" onClick={onCancel} className={buttonClass("secondary")}>

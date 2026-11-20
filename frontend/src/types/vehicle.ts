@@ -1,5 +1,5 @@
 /**
- * Phase 2 (admin module) — FRD §12's category list has no "Eicher Bus".
+ * FRD §12's category list has no "Eicher Bus".
  * Kept here rather than silently dropped: existing seed/demo vehicle
  * records may already reference it, and removing the value would break
  * their category field and any select bound to it. Flagged for the

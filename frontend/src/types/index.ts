@@ -36,7 +36,7 @@ export { OTP_LENGTH, OTP_EXPIRY_MS, OTP_MAX_ATTEMPTS } from "./otp";
 export type { OtpChallenge } from "./otp";
 
 /**
- * Phase 2 (admin module) — FRD §11 lists Senior Driver / Driver / Driver
+ * FRD §11 lists Senior Driver / Driver / Driver
  * (Grade-1) / Driver (Outsourced) only, with no "Supervisor Driver".
  * Kept here rather than silently dropped for the same reason as
  * VehicleCategory's "Eicher Bus" (types/vehicle.ts) — existing driver

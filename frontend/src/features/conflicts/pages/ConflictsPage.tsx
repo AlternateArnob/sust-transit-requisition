@@ -53,7 +53,7 @@ export default function ConflictsPage() {
       return;
     }
 
-    // Phase 8, §3 — new record, old one removed, instead of mutating
+    // New record, old one removed, instead of mutating
     // the same Allocation in place.
     removeAllocation(reassignConflict.allocation.id);
     addAllocation(reassignAllocation(reassignConflict.allocation, vehicleId, driverId));

@@ -72,7 +72,7 @@ export default function RequisitionsPage() {
   const [mileageTarget, setMileageTarget] = useState<MileageTripContext[] | null>(null);
 
   /**
-   * Phase 1 — which stage a requisition shows up in the "Queue" tab
+   * Which stage a requisition shows up in the "Queue" tab
    * under depends on who's looking: Transport In Charge only sees what's
    * waiting on them, Transport Administrator only sees what's been
    * forwarded to them, and Super Admin sees the whole active pipeline
@@ -138,7 +138,7 @@ export default function RequisitionsPage() {
     const existing = allocations.find((item) => item.tripId === tripId);
 
     if (existing) {
-      // Phase 8, §3 — new record, old one removed, instead of mutating
+      // New record, old one removed, instead of mutating
       // the same Allocation in place.
       removeAllocation(existing.id);
       addAllocation(reassignAllocation(existing, vehicleId, driverId));
@@ -244,7 +244,7 @@ export default function RequisitionsPage() {
   }
 
   /**
-   * Phase 6 (FRD §22) — Transport Office marks an approved trip
+   * (FRD §22) Transport Office marks an approved trip
    * Completed once it's actually happened. Deliberately does not touch
    * mileage or the allocation — those are separate facts (§22: "stored
    * separately"), untouched here.
@@ -271,7 +271,7 @@ export default function RequisitionsPage() {
   function handleGenerateConfirmationSlip() {
     if (!selected) return;
 
-    // §2.1 — mirror the same conditions RequisitionDetail uses to decide
+    // Mirror the same conditions RequisitionDetail uses to decide
     // whether to even show the button, so the guarantee holds here too
     // instead of relying solely on the UI hiding it.
     if (modeFor(selected) !== "transportAdministrator") return;
@@ -316,7 +316,7 @@ export default function RequisitionsPage() {
     });
   }
 
-  // --- Mileage (Phase 6 groundwork, unaffected by the role split) -----
+  // --- Mileage (unaffected by the role split) -----
 
   function handleRecordMileage(tripId: string, distanceKm: number) {
     if (!mileageTarget || mileageTarget.length === 0) {

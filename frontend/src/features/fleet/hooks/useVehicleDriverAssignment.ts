@@ -2,7 +2,7 @@ import type { AssignmentResult } from "@/types";
 import useDrivers from "./useDrivers";
 
 /**
- * Phase 2 (admin module) — the single place that enforces FRD §13's
+ * The single place that enforces FRD §13's
  * vehicle<->driver assignment rules:
  *  - each vehicle has zero or one driver, each driver at most one vehicle
  *  - an inactive driver can never be assigned

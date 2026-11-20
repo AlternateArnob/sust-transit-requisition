@@ -13,6 +13,7 @@ import type { Vehicle } from "@/types";
 import { isDuplicateRegistration, hasAllocationHistory } from "@/features/fleet/utils/vehicleUtils";
 import { buttonClass } from "@/shared/ui/buttonStyles";
 import PageTitle from "@/shared/ui/PageTitle";
+import { TABLE_HEAD_CLASS } from "@/shared/ui/formStyles";
 
 export default function VehiclePage() {
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useVehicles();
@@ -233,7 +234,7 @@ export default function VehiclePage() {
             text-left text-sm
           "
           >
-            <thead className="border-b border-border bg-surface text-xs uppercase tracking-wide text-text-muted">
+            <thead className={TABLE_HEAD_CLASS}>
               <tr>
                 <th className="px-4 py-3 font-semibold">Registration</th>
 

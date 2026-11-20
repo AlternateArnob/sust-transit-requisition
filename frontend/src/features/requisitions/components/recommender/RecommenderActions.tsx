@@ -3,6 +3,7 @@ import { useState } from "react";
 import Modal from "@/shared/ui/Modal";
 import Button from "@/shared/ui/Button";
 import { REJECTION_REASONS, type RejectionReason } from "@/types";
+import { FULL_WIDTH_SELECT_CLASS } from "@/shared/ui/formStyles";
 
 interface RecommenderActionsProps {
   /**
@@ -157,7 +158,7 @@ export default function RecommenderActions({
               <select
                 value={reason}
                 onChange={(event) => setReason(event.target.value as RejectionReason)}
-                className="h-10 w-full rounded-md border border-border bg-white px-3 text-sm text-text outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                className={FULL_WIDTH_SELECT_CLASS}
               >
                 {REJECTION_REASONS.map((option) => (
                   <option key={option} value={option}>

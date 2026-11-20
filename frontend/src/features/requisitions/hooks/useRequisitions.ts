@@ -96,7 +96,7 @@ export default function useRequisitions() {
     );
   }
   /**
-   * Phase 1 — Transport In Charge forwards the requisition on once every
+   * Transport In Charge forwards the requisition on once every
    * trip has a vehicle assigned (FRD §9). Callers should gate this on
    * `canForwardToAdministrator` from utils/allocationUtils first; this
    * function itself only guards against forwarding something that isn't
@@ -119,7 +119,7 @@ export default function useRequisitions() {
   }
 
   /**
-   * Phase 1 — Transport Administrator sends the whole application back
+   * Transport Administrator sends the whole application back
    * to the Transport In Charge for rework (FRD §19), e.g. the assigned
    * vehicle turned out to be unsuitable. Every trip decision made so far
    * reverts to Pending and any vehicle assignment is cleared by the
@@ -162,7 +162,7 @@ export default function useRequisitions() {
   }
 
   /**
-   * Phase 6 (FRD §22) — Transport Office marks an approved trip
+   * (FRD §22) Transport Office marks an approved trip
    * Completed once it's actually happened. Deliberately independent of
    * mileage (§22: "completion status and mileage shall be stored
    * separately") — this only ever transitions Approved → Completed, and
@@ -229,7 +229,7 @@ export default function useRequisitions() {
   }
 
   /**
-   * Phase 4 — recommender workflow (spec §5 Stage A).
+   * Recommender workflow (spec §5 Stage A).
    *
    * Recommend → forwards the requisition to the Admin queue.
    * The recommender's name is stamped onto the requisition so the
@@ -270,7 +270,7 @@ export default function useRequisitions() {
   }
 
   /**
-   * Phase 4 — recommender rejects the requisition outright. Reason is
+   * Recommender rejects the requisition outright. Reason is
    * required (callers must enforce this); remarks are optional.
    * The requisition is closed and removed from any active queue.
    */
@@ -291,7 +291,7 @@ export default function useRequisitions() {
   }
 
   /**
-   * Phase 4 — recommender sends the requisition back to the applicant
+   * Recommender sends the requisition back to the applicant
    * for edits (the Transport In-Charge and the Department/Office Head
    * can both do this). The requisition transitions to "Information
    * Requested" and the applicant re-opens it from My Requisitions to

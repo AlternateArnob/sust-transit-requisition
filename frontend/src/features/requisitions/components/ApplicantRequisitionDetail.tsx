@@ -14,7 +14,7 @@ interface ApplicantRequisitionDetailProps {
   vehicles: Vehicle[];
   drivers: Driver[];
   allocations: Allocation[];
-  /** Fix 8 — the applicant's own account, for the signature on file. */
+  /** The applicant's own account, for the signature on file. */
   requester?: UserAccount;
   onDownloadConfirmationSlip: () => void;
   /** Opens the edit-and-resubmit form for a requisition that was sent back. */
@@ -22,7 +22,7 @@ interface ApplicantRequisitionDetailProps {
 }
 
 /**
- * Phase 6 — read-only requisition detail for the applicant. Deliberately
+ * Read-only requisition detail for the applicant. Deliberately
  * separate from the admin-facing `RequisitionDetail`, which exposes
  * approve/reject/allocate actions that must never be reachable from an
  * applicant's own view of their requisition.
@@ -36,12 +36,12 @@ export default function ApplicantRequisitionDetail({
   onDownloadConfirmationSlip,
   onEditAndResubmit,
 }: ApplicantRequisitionDetailProps) {
-  // Phase 1 — "Final Approved" is retired; the confirmation slip is
+  // "Final Approved" is retired; the confirmation slip is
   // available as soon as the Administrator has approved anything,
   // including a partially-approved multi-trip application (FRD §20
   // shows per-trip Approved/Rejected/Pending on the same slip).
   //
-  // Phase 5, §2.1 — this used to be its own copy of the same condition
+  // This used to be its own copy of the same condition
   // as RequisitionDetail.tsx and RequisitionsPage.tsx; now all three
   // share canGenerateSlips() so they can't drift apart.
   const canDownloadConfirmationSlip = canGenerateSlips(requisition);
