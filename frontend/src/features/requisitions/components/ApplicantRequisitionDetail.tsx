@@ -12,7 +12,7 @@ import { canGenerateSlips } from "@/features/slips/utils/dutySlipUtils";
 interface ApplicantRequisitionDetailProps {
   requisition: Requisition;
   vehicles: Vehicle[];
-  driver: Driver[];
+  drivers: Driver[];
   allocations: Allocation[];
   /** Fix 8 — the applicant's own account, for the signature on file. */
   requester?: UserAccount;
@@ -30,7 +30,7 @@ interface ApplicantRequisitionDetailProps {
 export default function ApplicantRequisitionDetail({
   requisition,
   vehicles,
-  driver,
+  drivers,
   allocations,
   requester,
   onDownloadConfirmationSlip,
@@ -170,7 +170,7 @@ export default function ApplicantRequisitionDetail({
                 ? vehicles.find((item) => item.id === allocation.vehicleId)
                 : undefined;
               const assignedDriver = allocation?.driverId
-                ? driver.find((item) => item.id === allocation.driverId)
+                ? drivers.find((item) => item.id === allocation.driverId)
                 : undefined;
 
               return (

@@ -159,7 +159,7 @@ export default function MyRequisitionsPage() {
           <ApplicantRequisitionDetail
             requisition={selected}
             vehicles={vehicles}
-            driver={drivers}
+            drivers={drivers}
             allocations={allocations}
             requester={currentUser}
             onDownloadConfirmationSlip={handleDownloadConfirmationSlip}

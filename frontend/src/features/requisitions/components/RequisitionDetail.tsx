@@ -9,28 +9,22 @@ import {
   type Driver,
   type Allocation,
   type DutySlip,
+  type UserAccount,
 } from "@/types";
-import { TripStatusBadge, RequisitionTypeBadge } from "@/shared/ui/StatusBadge";
-import { formatDateRange } from "@/features/requisitions/utils/requisitionUtils";
 import {
   getTripsMissingVehicleAssignment,
   canForwardToAdministrator,
 } from "@/features/requisitions/utils/allocationUtils";
-import {
-  getEligibleDutySlipGroups,
-  getDutySlipHistory,
-  hasStaleVehicleAssignment,
-  canGenerateSlips,
-} from "@/features/slips/utils/dutySlipUtils";
 import Modal from "@/shared/ui/Modal";
-import AllocationPicker from "./AllocationPicker";
-import GovFormMasthead from "@/features/requisitions/components/application/GovFormMasthead";
-import {
-  SECTION_TITLE,
-  SECTION_WRAP,
-} from "@/features/requisitions/components/application/formTheme";
-import type { UserAccount } from "@/types";
 import { buttonClass } from "@/shared/ui/buttonStyles";
+import AllocationPicker from "./AllocationPicker";
+import GovFormMasthead from "./application/GovFormMasthead";
+import { SECTION_TITLE, SECTION_WRAP } from "./application/formTheme";
+import DutySlipsSection from "./DutySlipsSection";
+import RejectTripForm from "./RejectTripForm";
+import RequesterSummary from "./RequesterSummary";
+import SendBackForm from "./SendBackForm";
+import TripCard, { type RequisitionDetailMode } from "./TripCard";
 
 /**
  * Phase 1 (admin module) — this used to be a single admin-only view that
@@ -48,19 +42,15 @@ import { buttonClass } from "@/shared/ui/buttonStyles";
  * Keeping this as one component (instead of three near-duplicates) means
  * the trip list / documents markup stays in exactly one place.
  */
-type Mode = "transportInCharge" | "transportAdministrator" | "viewOnly";
 
 interface RequisitionDetailProps {
   requisition: Requisition;
   vehicles: Vehicle[];
-  driver: Driver[];
+  drivers: Driver[];
   allocations: Allocation[];
   dutySlips: DutySlip[];
-  mode: Mode;
-  /**
-   * Fix 8 — the requester's account, used to show their signature on file.
-   * Optional: older records / deleted accounts simply show "No signature".
-   */
+  mode: RequisitionDetailMode;
+  /** The requester's account, used to show their signature on file. */
   requester?: UserAccount;
 
   // Transport In Charge stage (FRD §9) — omit in other modes.
@@ -83,11 +73,10 @@ interface RequisitionDetailProps {
    *  actually happened. Independent of approve/reject and of mileage. */
   onCompleteTrip?: (tripId: string) => void;
 }
-
 export default function RequisitionDetail({
   requisition,
   vehicles,
-  driver,
+  drivers,
   allocations,
   dutySlips,
   mode,
@@ -111,8 +100,6 @@ export default function RequisitionDetail({
   const [allocatingTrip, setAllocatingTrip] = useState<Trip | null>(null);
   const [showSendBackToApplicant, setShowSendBackToApplicant] = useState(false);
   const [showSendBackToTIC, setShowSendBackToTIC] = useState(false);
-  // Phase 5, §2.2 — which drivers' superseded-slip history is expanded.
-  const [expandedHistory, setExpandedHistory] = useState<Record<string, boolean>>({});
 
   function handleVehicleSelected(vehicleId: string, driverId?: string) {
     if (!allocatingTrip || !onAssignVehicle) {
@@ -123,10 +110,8 @@ export default function RequisitionDetail({
     setAllocatingTrip(null);
   }
 
-  const dutySlipGroups = getEligibleDutySlipGroups(requisition, allocations);
   const missingVehicle = getTripsMissingVehicleAssignment(requisition, allocations);
   const canForward = canForwardToAdministrator(requisition, allocations);
-  const slipsGeneratable = canGenerateSlips(requisition);
 
   function startReject(tripId: string) {
     setRejectingTripId(tripId);
@@ -147,85 +132,7 @@ export default function RequisitionDetail({
     <div className="space-y-7">
       <GovFormMasthead formTitle="Requisition Review" applicationNo={requisition.id} />
 
-      {/* Requester Info */}
-      <div className={SECTION_WRAP}>
-        <h2 className={`${SECTION_TITLE} mb-3`}>Requester Information</h2>
-        <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-          <div className="border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">Requester</p>
-            <p className="text-sm text-form-ink">{requisition.requesterName}</p>
-          </div>
-
-          <div className="border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">Type</p>
-            <RequisitionTypeBadge type={requisition.requisitionType} />
-          </div>
-
-          {requisition.department && (
-            <div className="border-b border-form-rule pb-1.5">
-              <p className="text-xs font-medium text-form-muted">Department / Organization</p>
-              <p className="text-sm text-form-ink">{requisition.department}</p>
-            </div>
-          )}
-
-          {requisition.contactNumber && (
-            <div className="border-b border-form-rule pb-1.5">
-              <p className="text-xs font-medium text-form-muted">Contact</p>
-              <p className="text-sm text-form-ink">{requisition.contactNumber}</p>
-            </div>
-          )}
-
-          <div className="border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">Date Range</p>
-            <p className="text-sm text-form-ink">
-              {formatDateRange(requisition.startDate, requisition.endDate)}
-            </p>
-          </div>
-
-          <div className="border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">Schedule Type</p>
-            <p className="text-sm text-form-ink">{requisition.scheduleType}</p>
-          </div>
-
-          <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
-            <p className="text-xs font-medium text-form-muted">Purpose</p>
-            <p className="text-sm text-form-ink">{requisition.purpose}</p>
-          </div>
-
-          {requisition.supportingDocumentDataUrl && (
-            <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
-              <p className="text-xs font-medium text-form-muted">Supporting Document</p>
-              <a
-                href={requisition.supportingDocumentDataUrl}
-                target="_blank"
-                rel="noreferrer"
-                download={requisition.supportingDocumentName || undefined}
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                {requisition.supportingDocumentName || "View document"}
-              </a>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-end justify-between gap-3 border-t border-form-rule pt-3 sm:col-span-2">
-            <div className="border-b border-form-rule pb-1.5">
-              <p className="text-xs font-medium text-form-muted">Signature</p>
-              {requester?.signatureDataUrl ? (
-                <img
-                  src={requester.signatureDataUrl}
-                  alt={`Signature of ${requisition.requesterName}`}
-                  className="mt-1 h-14 max-w-[220px] object-contain"
-                />
-              ) : (
-                <p className="mt-1 text-sm italic text-form-muted">No signature on file</p>
-              )}
-            </div>
-            <p className="text-xs text-form-muted">
-              Submitted: {new Date(requisition.createdAt).toLocaleString()}
-            </p>
-          </div>
-        </div>
-      </div>
+      <RequesterSummary requisition={requisition} requester={requester} />
 
       {requisition.recommenderName ? (
         <div className="rounded-md border border-success/30 bg-success-bg/40 p-4 text-sm text-success">
@@ -264,205 +171,37 @@ export default function RequisitionDetail({
               ? vehicles.find((item) => item.id === allocation.vehicleId)
               : undefined;
             const assignedDriver = allocation
-              ? driver.find((item) => item.id === allocation.driverId)
+              ? drivers.find((item) => item.id === allocation.driverId)
               : undefined;
 
             return (
-              <div key={trip.id} className="rounded-lg border border-form-rule bg-white p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-form-ink">
-                      Trip {index + 1} · {trip.date} · {trip.startTime}–{trip.endTime}
-                    </p>
-
-                    <p className="mt-1 text-sm text-form-muted">
-                      {trip.vehicleCategory} · {trip.route}
-                    </p>
-
-                    {trip.stoppageSequence.length > 0 && (
-                      <p className="mt-1 text-xs text-form-muted">
-                        {trip.stoppageSequence.join(" → ")}
-                      </p>
-                    )}
-
-                    {trip.passengerGroups.length > 0 && (
-                      <p className="mt-1 text-xs text-form-muted">
-                        Passengers: {trip.passengerGroups.join(", ")}
-                      </p>
-                    )}
-
-                    {trip.status === "Rejected" && (
-                      <p className="mt-2 text-xs font-medium text-error">
-                        Rejected — {trip.rejectionReason}
-                        {trip.rejectionRemarks ? `: ${trip.rejectionRemarks}` : ""}
-                      </p>
-                    )}
-
-                    {allocation && (
-                      <p
-                        className={`mt-2 text-xs font-medium ${
-                          trip.status === "Rejected"
-                            ? "text-form-muted line-through"
-                            : "text-success"
-                        }`}
-                      >
-                        Vehicle assigned —{" "}
-                        {vehicle
-                          ? `${vehicle.registrationNumber} (${vehicle.category})`
-                          : "Unknown vehicle"}
-                        {assignedDriver ? ` · Driver: ${assignedDriver.name}` : " · No driver"}
-                      </p>
-                    )}
-
-                    {!allocation &&
-                      trip.status === "Pending" &&
-                      mode === "transportAdministrator" && (
-                        <p className="mt-2 text-xs font-medium text-warning">
-                          No vehicle on file — this trip shouldn't have reached this queue without
-                          one. Send the application back to Transport In-Charge.
-                        </p>
-                      )}
-                  </div>
-
-                  <TripStatusBadge status={trip.status} />
-                </div>
-
-                {/* Transport In Charge — assign / change / remove vehicle */}
-                {mode === "transportInCharge" && trip.status === "Pending" && (
-                  <div className="mt-3 flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setAllocatingTrip(trip)}
-                      className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
-                    >
-                      {allocation ? "Change Vehicle" : "Assign Vehicle"}
-                    </button>
-
-                    {allocation && (
-                      <button
-                        type="button"
-                        onClick={() => onRemoveVehicleAssignment?.(trip.id)}
-                        className={buttonClass("danger", "sm")}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Transport Administrator — approve / reject using the
-                    vehicle already on file */}
-                {mode === "transportAdministrator" &&
-                  trip.status === "Pending" &&
-                  rejectingTripId !== trip.id && (
-                    <div className="mt-3 flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => onApproveTrip?.(trip.id)}
-                        disabled={!allocation}
-                        className={buttonClass("success", "sm")}
-                      >
-                        Approve
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => startReject(trip.id)}
-                        className={buttonClass("danger", "sm")}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  )}
-
-                {/* Transport Administrator — mark an approved trip
-                    Completed once it's actually happened (FRD §22),
-                    independent of approve/reject and of mileage */}
-                {mode === "transportAdministrator" && trip.status === "Approved" && (
-                  <div className="mt-3 flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => onCompleteTrip?.(trip.id)}
-                      className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
-                    >
-                      Mark Completed
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => onResetTripDecision?.(trip.id)}
-                      className="text-xs font-medium text-secondary hover:underline"
-                    >
-                      Undo decision
-                    </button>
-                  </div>
-                )}
-
-                {mode === "transportAdministrator" && trip.status === "Rejected" && (
-                  <div className="mt-3">
-                    <button
-                      type="button"
-                      onClick={() => onResetTripDecision?.(trip.id)}
-                      className="text-xs font-medium text-secondary hover:underline"
-                    >
-                      Undo decision
-                    </button>
-                  </div>
-                )}
-
+              <TripCard
+                key={trip.id}
+                trip={trip}
+                index={index}
+                mode={mode}
+                allocation={allocation}
+                vehicle={vehicle}
+                assignedDriver={assignedDriver}
+                isRejecting={rejectingTripId === trip.id}
+                onAssignVehicle={() => setAllocatingTrip(trip)}
+                onRemoveVehicle={() => onRemoveVehicleAssignment?.(trip.id)}
+                onApprove={() => onApproveTrip?.(trip.id)}
+                onStartReject={() => startReject(trip.id)}
+                onComplete={() => onCompleteTrip?.(trip.id)}
+                onResetDecision={() => onResetTripDecision?.(trip.id)}
+              >
                 {rejectingTripId === trip.id && (
-                  <div className="mt-3 space-y-2 rounded-md border border-form-rule bg-surface p-3">
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-form-muted">
-                        Rejection Reason
-                      </label>
-
-                      <select
-                        value={reason}
-                        onChange={(event) => setReason(event.target.value as RejectionReason)}
-                        className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
-                      >
-                        {REJECTION_REASONS.map((item) => (
-                          <option key={item} value={item}>
-                            {item}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-form-muted">
-                        Remarks (optional)
-                      </label>
-
-                      <input
-                        type="text"
-                        value={remarks}
-                        onChange={(event) => setRemarks(event.target.value)}
-                        className="h-9 w-full rounded-md border border-form-rule px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
-                      />
-                    </div>
-
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setRejectingTripId(null)}
-                        className={buttonClass("secondary", "sm")}
-                      >
-                        Cancel
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => confirmReject(trip.id)}
-                        className="h-8 rounded-md bg-error px-3 text-xs font-medium text-white hover:opacity-90"
-                      >
-                        Confirm Reject
-                      </button>
-                    </div>
-                  </div>
+                  <RejectTripForm
+                    reason={reason}
+                    remarks={remarks}
+                    onReasonChange={setReason}
+                    onRemarksChange={setRemarks}
+                    onCancel={() => setRejectingTripId(null)}
+                    onConfirm={() => confirmReject(trip.id)}
+                  />
                 )}
-              </div>
+              </TripCard>
             );
           })}
         </div>
@@ -553,151 +292,17 @@ export default function RequisitionDetail({
         </div>
       )}
 
-      {/* Documents */}
       {mode !== "transportInCharge" && (
-        <div className={SECTION_WRAP}>
-          <h2 className={`${SECTION_TITLE} mb-3`}>Documents</h2>
-
-          {mode === "transportAdministrator" && (
-            <>
-              {slipsGeneratable ? (
-                <button
-                  type="button"
-                  onClick={onGenerateConfirmationSlip}
-                  className="mb-3 h-9 rounded-md border border-form-rule px-3 text-sm font-medium text-secondary hover:bg-surface"
-                >
-                  Download Confirmation Slip
-                </button>
-              ) : (
-                <p className="mb-3 text-sm text-form-muted">
-                  Confirmation slip becomes available once at least one trip is approved.
-                </p>
-              )}
-            </>
-          )}
-
-          {dutySlipGroups.length === 0 ? (
-            <p className="text-sm text-form-muted">
-              No approved & allocated trips yet — duty slips become available once trips are
-              approved.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {dutySlipGroups.map((group) => {
-                const assignedDriver = driver.find((member) => member.id === group.driverId);
-                const history = getDutySlipHistory(requisition.id, group.driverId, dutySlips);
-                const latestSlip = history[0];
-                const stale = latestSlip
-                  ? hasStaleVehicleAssignment(latestSlip, allocations)
-                  : false;
-                const olderSlips = history.slice(1);
-                const historyOpen = !!expandedHistory[group.driverId];
-
-                function handleGenerateClick() {
-                  // §2.3 — regenerating replaces a slip a driver may
-                  // already be holding a printed copy of; first-time
-                  // generation has nothing to supersede, so only confirm
-                  // when there's an existing slip.
-                  if (
-                    latestSlip &&
-                    !window.confirm(
-                      `${assignedDriver?.name ?? "This driver"} already has a duty slip. ` +
-                        "Regenerating will mark the current one Superseded. Continue?",
-                    )
-                  ) {
-                    return;
-                  }
-                  onGenerateDutySlip?.(group.driverId);
-                }
-
-                return (
-                  <div
-                    key={group.driverId}
-                    className="rounded-md border border-form-rule px-3 py-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-form-ink">
-                          {assignedDriver?.name ?? "Unknown Driver"}
-                        </p>
-
-                        <p className="text-xs text-form-muted">
-                          {group.trips.length} assigned day(s)
-                        </p>
-
-                        {latestSlip && (
-                          <span
-                            className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                              stale
-                                ? "bg-warning-bg text-form-warn-text"
-                                : "bg-success-bg text-success"
-                            }`}
-                          >
-                            {stale ? "Vehicle changed — regenerate" : "Active"}
-                          </span>
-                        )}
-                      </div>
-
-                      {mode !== "transportAdministrator" && canDownloadDriverSlip && (
-                        <button
-                          type="button"
-                          onClick={() => onGenerateDutySlip?.(group.driverId)}
-                          className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
-                        >
-                          Download Driver Slip
-                        </button>
-                      )}
-
-                      {mode === "transportAdministrator" && (
-                        <button
-                          type="button"
-                          onClick={handleGenerateClick}
-                          className="h-8 rounded-md bg-form-action px-3 text-xs font-medium text-white hover:bg-secondary"
-                        >
-                          {latestSlip ? "Regenerate Duty Slip" : "Generate Duty Slip"}
-                        </button>
-                      )}
-                    </div>
-
-                    {olderSlips.length > 0 && (
-                      <div className="mt-2 border-t border-form-rule pt-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setExpandedHistory((current) => ({
-                              ...current,
-                              [group.driverId]: !current[group.driverId],
-                            }))
-                          }
-                          className="text-xs font-medium text-secondary hover:underline"
-                        >
-                          {historyOpen ? "Hide" : "Show"} slip history ({olderSlips.length}{" "}
-                          superseded)
-                        </button>
-
-                        {historyOpen && (
-                          <ul className="mt-2 space-y-1">
-                            {olderSlips.map((slip) => (
-                              <li
-                                key={slip.id}
-                                className="flex items-center justify-between text-xs text-form-muted"
-                              >
-                                <span>Generated {new Date(slip.generatedAt).toLocaleString()}</span>
-                                <span className="inline-flex rounded-full bg-error-bg px-2 py-0.5 font-medium text-error">
-                                  Superseded — see new slip
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <DutySlipsSection
+          requisition={requisition}
+          mode={mode}
+          drivers={drivers}
+          allocations={allocations}
+          dutySlips={dutySlips}
+          canDownloadDriverSlip={canDownloadDriverSlip}
+          onGenerateConfirmationSlip={onGenerateConfirmationSlip}
+          onGenerateDutySlip={onGenerateDutySlip}
+        />
       )}
 
       {allocatingTrip && (
@@ -711,85 +316,6 @@ export default function RequisitionDetail({
           />
         </Modal>
       )}
-    </div>
-  );
-}
-
-/**
- * Small shared form for the two "send the whole application back" flows.
- * `withReason` toggles the FRD-defined reason dropdown (used for
- * Transport In Charge → applicant, which reuses the recommender's
- * rejection-reason vocabulary); the Administrator → Transport In Charge
- * send-back is free-text remarks only, since the FRD doesn't define
- * fixed categories for that transition.
- */
-function SendBackForm({
-  withReason,
-  reason,
-  onReasonChange,
-  remarks,
-  onRemarksChange,
-  onCancel,
-  onConfirm,
-  noteOptional = false,
-}: {
-  noteOptional?: boolean;
-  withReason: boolean;
-  reason?: RejectionReason;
-  onReasonChange?: (reason: RejectionReason) => void;
-  remarks: string;
-  onRemarksChange: (remarks: string) => void;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <div className="space-y-2 rounded-md border border-form-rule bg-white p-3">
-      {withReason && reason && onReasonChange && (
-        <div>
-          <label className="mb-1 block text-xs font-medium text-form-muted">Reason</label>
-
-          <select
-            value={reason}
-            onChange={(event) => onReasonChange(event.target.value as RejectionReason)}
-            className="h-9 w-full rounded-md border border-form-rule bg-white px-3 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
-          >
-            {REJECTION_REASONS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <div>
-        <label className="mb-1 block text-xs font-medium text-form-muted">
-          {noteOptional ? "Note to applicant (optional)" : "Remarks (required)"}
-        </label>
-
-        <textarea
-          value={remarks}
-          onChange={(event) => onRemarksChange(event.target.value)}
-          rows={2}
-          placeholder={noteOptional ? "Explain what the applicant should correct" : undefined}
-          className="w-full rounded-md border border-form-rule px-3 py-2 text-sm text-form-ink outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
-        />
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className={buttonClass("secondary", "sm")}>
-          Cancel
-        </button>
-
-        <button
-          type="button"
-          disabled={!noteOptional && !remarks.trim()}
-          onClick={onConfirm}
-          className="h-8 rounded-md bg-error px-3 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Confirm Send Back
-        </button>
-      </div>
     </div>
   );
 }

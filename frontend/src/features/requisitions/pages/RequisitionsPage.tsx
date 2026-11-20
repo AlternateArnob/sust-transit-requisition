@@ -534,7 +534,7 @@ export default function RequisitionsPage() {
           <RequisitionDetail
             requisition={selected}
             vehicles={vehicles}
-            driver={drivers}
+            drivers={drivers}
             allocations={allocations}
             dutySlips={dutySlips}
             requester={findUserById(selected.requesterId)}
