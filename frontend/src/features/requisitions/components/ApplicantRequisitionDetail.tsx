@@ -1,0 +1,232 @@
+import type { Requisition, Vehicle, Driver, Allocation, UserAccount } from "@/types";
+import GovFormMasthead from "@/features/requisitions/components/application/GovFormMasthead";
+import { ApplicationStatusBadge, TripStatusBadge } from "@/shared/ui/StatusBadge";
+import {
+  SECTION_TITLE,
+  SECTION_WRAP,
+} from "@/features/requisitions/components/application/formTheme";
+import { buttonClass } from "@/shared/ui/buttonStyles";
+import { formatDateRange } from "@/features/requisitions/utils/requisitionUtils";
+import { canGenerateSlips } from "@/features/slips/utils/dutySlipUtils";
+
+interface ApplicantRequisitionDetailProps {
+  requisition: Requisition;
+  vehicles: Vehicle[];
+  drivers: Driver[];
+  allocations: Allocation[];
+  /** The applicant's own account, for the signature on file. */
+  requester?: UserAccount;
+  onDownloadConfirmationSlip: () => void;
+  /** Opens the edit-and-resubmit form for a requisition that was sent back. */
+  onEditAndResubmit?: () => void;
+}
+
+/**
+ * Read-only requisition detail for the applicant. Deliberately
+ * separate from the admin-facing `RequisitionDetail`, which exposes
+ * approve/reject/allocate actions that must never be reachable from an
+ * applicant's own view of their requisition.
+ */
+export default function ApplicantRequisitionDetail({
+  requisition,
+  vehicles,
+  drivers,
+  allocations,
+  requester,
+  onDownloadConfirmationSlip,
+  onEditAndResubmit,
+}: ApplicantRequisitionDetailProps) {
+  // "Final Approved" is retired; the confirmation slip is
+  // available as soon as the Administrator has approved anything,
+  // including a partially-approved multi-trip application (FRD §20
+  // shows per-trip Approved/Rejected/Pending on the same slip).
+  //
+  // This used to be its own copy of the same condition
+  // as RequisitionDetail.tsx and RequisitionsPage.tsx; now all three
+  // share canGenerateSlips() so they can't drift apart.
+  const canDownloadConfirmationSlip = canGenerateSlips(requisition);
+
+  return (
+    <div className="space-y-7">
+      <GovFormMasthead formTitle="Vehicle Requisition" applicationNo={requisition.id} />
+
+      <div className="flex justify-end">
+        <ApplicationStatusBadge status={requisition.status} />
+      </div>
+
+      {requisition.status === "Information Requested" ? (
+        <div
+          role="note"
+          className="rounded-md border border-form-warn-border bg-form-warn-bg px-4 py-3 text-sm text-form-warn-text"
+        >
+          <p className="font-semibold">
+            Returned for correction
+            {requisition.sentBackBy ? ` by ${requisition.sentBackBy}` : ""}
+          </p>
+          <p className="mt-1">
+            {requisition.sendBackNote ??
+              requisition.trips[0]?.rejectionRemarks ??
+              "No note was added. Please review your application and resubmit."}
+          </p>
+          {onEditAndResubmit ? (
+            <button
+              type="button"
+              onClick={onEditAndResubmit}
+              className={`${buttonClass("primary", "sm")} mt-3`}
+            >
+              Edit and Resubmit
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className={SECTION_WRAP}>
+        <h2 className={`${SECTION_TITLE} mb-3`}>Requester Information</h2>
+        <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Requester</p>
+            <p className="text-sm text-form-ink">{requisition.requesterName}</p>
+          </div>
+
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Type</p>
+            <p className="text-sm text-form-ink">{requisition.requisitionType}</p>
+          </div>
+
+          {requisition.department && (
+            <div className="border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Department / Office</p>
+              <p className="text-sm text-form-ink">{requisition.department}</p>
+            </div>
+          )}
+
+          <div className="border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Date</p>
+            <p className="text-sm text-form-ink">
+              {formatDateRange(requisition.startDate, requisition.endDate)}
+            </p>
+          </div>
+
+          {requisition.recommenderName && (
+            <div className="border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Recommended by</p>
+              <p className="text-sm text-form-ink">{requisition.recommenderName}</p>
+            </div>
+          )}
+
+          <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+            <p className="text-xs font-medium text-form-muted">Purpose</p>
+            <p className="text-sm text-form-ink">{requisition.purpose}</p>
+          </div>
+
+          {requisition.supportingDocumentDataUrl && (
+            <div className="sm:col-span-2 border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Supporting Document</p>
+              <a
+                href={requisition.supportingDocumentDataUrl}
+                target="_blank"
+                rel="noreferrer"
+                download={requisition.supportingDocumentName || undefined}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                {requisition.supportingDocumentName || "View document"}
+              </a>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-end justify-between gap-3 border-t border-form-rule pt-3 sm:col-span-2">
+            <div className="border-b border-form-rule pb-1.5">
+              <p className="text-xs font-medium text-form-muted">Signature</p>
+              {requester?.signatureDataUrl ? (
+                <img
+                  src={requester.signatureDataUrl}
+                  alt={`Signature of ${requisition.requesterName}`}
+                  className="mt-1 h-14 max-w-[220px] object-contain"
+                />
+              ) : (
+                <p className="mt-1 text-sm italic text-form-muted">No signature on file</p>
+              )}
+            </div>
+            <p className="text-xs text-form-muted">
+              Submitted: {new Date(requisition.createdAt).toLocaleString()}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className={SECTION_WRAP}>
+        <h2 className={`${SECTION_TITLE} mb-3`}>
+          Journey Details ({requisition.trips.length}{" "}
+          {requisition.trips.length === 1 ? "trip" : "trips"})
+        </h2>
+
+        <div className="space-y-3">
+          {requisition.trips.length === 0 ? (
+            <p className="text-sm text-form-muted">No trip details yet.</p>
+          ) : (
+            requisition.trips.map((trip, index) => {
+              const allocation = allocations.find((item) => item.tripId === trip.id);
+              const vehicle = allocation
+                ? vehicles.find((item) => item.id === allocation.vehicleId)
+                : undefined;
+              const assignedDriver = allocation?.driverId
+                ? drivers.find((item) => item.id === allocation.driverId)
+                : undefined;
+
+              return (
+                <div key={trip.id} className="rounded-lg border border-form-rule bg-white p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-form-ink">
+                        {requisition.trips.length > 1 ? `Trip ${index + 1} · ` : ""}
+                        {trip.date} · {trip.startTime}–{trip.endTime}
+                      </p>
+                      <p className="mt-1 text-sm text-form-muted">{trip.route}</p>
+
+                      {trip.status === "Rejected" && (
+                        <p className="mt-2 text-xs font-medium text-error">
+                          Rejected — {trip.rejectionReason}
+                          {trip.rejectionRemarks ? `: ${trip.rejectionRemarks}` : ""}
+                        </p>
+                      )}
+
+                      {trip.status === "Approved" && (
+                        <p className="mt-2 text-xs font-medium text-success">
+                          {vehicle
+                            ? `Vehicle: ${vehicle.registrationNumber} (${vehicle.category})`
+                            : "Approved — awaiting vehicle allocation"}
+                          {assignedDriver ? ` · Driver: ${assignedDriver.name}` : ""}
+                        </p>
+                      )}
+                    </div>
+
+                    <TripStatusBadge status={trip.status} />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      <div className={SECTION_WRAP}>
+        <h2 className={`${SECTION_TITLE} mb-3`}>Documents</h2>
+
+        {canDownloadConfirmationSlip ? (
+          <button
+            type="button"
+            onClick={onDownloadConfirmationSlip}
+            className="h-9 rounded-md bg-form-action px-3 text-sm font-medium text-white hover:bg-secondary"
+          >
+            Download Confirmation Slip
+          </button>
+        ) : (
+          <p className="text-sm text-form-muted">
+            The confirmation slip becomes available once the Transport Administrator approves at
+            least one trip.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
