@@ -1,0 +1,452 @@
+import { useMemo, useState } from "react";
+
+import GovFormMasthead from "@/features/requisitions/components/application/GovFormMasthead";
+import Step1Requester from "@/features/requisitions/components/application/Step1Requester";
+import Step2TransportUser, {
+  type TransportUserDraft,
+} from "@/features/requisitions/components/application/Step2TransportUser";
+import Step3Journey from "@/features/requisitions/components/application/Step3Journey";
+import Step4Details, {
+  type DetailsDraft,
+} from "@/features/requisitions/components/application/Step4Details";
+import {
+  ERROR_TEXT,
+  SECTION_TITLE,
+  SECTION_WRAP,
+} from "@/features/requisitions/components/application/formTheme";
+
+import useAuth from "@/features/auth/hooks/useAuth";
+import useNotifications from "@/features/notifications/hooks/useNotifications";
+import useUsers from "@/features/users/hooks/useUsers";
+import useRequisitions from "@/features/requisitions/hooks/useRequisitions";
+import { generateApplicationNumber } from "@/features/requisitions/utils/requisitionUtils";
+import { requiresRecommendation } from "@/features/auth/utils/authUtils";
+import {
+  buildRequisitionNotifications,
+  findDepartmentHeadsForRequisition,
+} from "@/features/notifications/utils/notificationUtils";
+import { isWithinHoldWindow } from "@/shared/utils/validators";
+
+import type { Requisition, RequisitionType, Trip, TripDraft } from "@/types";
+import { createEmptyTripDraft, tripToDraft } from "@/types";
+import { isValidRoute, parseRoute } from "@/features/requisitions/utils/routeUtils";
+
+interface RequisitionFormProps {
+  onSubmit: (requisition: Requisition) => void;
+  onCancel: () => void;
+  /**
+   * A requisition sent back for correction. When set the form is
+   * pre-filled with its data, keeps its application number, and submits
+   * as a resubmission instead of a new application.
+   */
+  initial?: Requisition;
+}
+
+/**
+ * Single-page applicant requisition form.
+ *
+ * All sections (requester, transport user, journey, details) are shown
+ * together on one page — like the paper form it replaces — rather than
+ * gated behind a multi-step wizard. Validation runs across every section
+ * at once when the applicant submits or saves a draft, and any errors are
+ * shown inline next to the relevant field plus summarised at the top.
+ *
+ * The legacy "paper form vs flexible multi-trip" branching from the
+ * previous implementation is intentionally removed; that path was the
+ * admin-only prototype and does not model this user journey.
+ */
+export default function RequisitionForm({ onSubmit, onCancel, initial }: RequisitionFormProps) {
+  const isResubmit = Boolean(initial);
+  const { currentUser } = useAuth();
+  const { addNotification } = useNotifications();
+  const { users } = useUsers();
+  const { requisitions: existingRequisitions } = useRequisitions();
+
+  // Shown in the form header and used as the requisition's id on submit.
+  // Computed once on mount so it doesn't change while the form is open.
+  const [applicationNumber] = useState(
+    () => initial?.id ?? generateApplicationNumber(existingRequisitions.map((item) => item.id)),
+  );
+
+  const [sameAsRequester, setSameAsRequester] = useState(true);
+  const [transportUser, setTransportUser] = useState<TransportUserDraft>({
+    fullName: "",
+    designation: "",
+    mobile: "",
+  });
+
+  const [requisitionType, setRequisitionType] = useState<RequisitionType>(
+    () =>
+      initial?.requisitionType ??
+      (currentUser?.applicantProfile === "Student" ? "Departmental/Official" : "Personal"),
+  );
+  const [trips, setTrips] = useState<TripDraft[]>(() =>
+    initial && initial.trips.length > 0
+      ? initial.trips.map((trip) => tripToDraft(trip, initial.requisitionType))
+      : [createEmptyTripDraft()],
+  );
+
+  /**
+   * Step 5 — "Personal" requisitions are always exactly one trip. When the
+   * applicant switches into Personal from Departmental/Official (which
+   * may have accumulated several trips), collapse back down to the first
+   * one rather than silently dropping the type check that used to
+   * enforce this. Switching the other way keeps whatever trips already
+   * exist — Departmental/Official starts from at least one and the
+   * applicant can add more.
+   */
+  function handleRequisitionTypeChange(next: RequisitionType) {
+    setRequisitionType(next);
+    if (next === "Personal") {
+      setTrips((prev) => [prev[0] ?? createEmptyTripDraft()]);
+    }
+  }
+
+  const [details, setDetails] = useState<DetailsDraft>({
+    reason: initial?.purpose ?? "",
+    supportingDocumentName: initial?.supportingDocumentName ?? "",
+    supportingDocumentDataUrl: initial?.supportingDocumentDataUrl,
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Fix 6 — replaces the old "reproduce a paper signature" block. The
+  // applicant already provided a signature once, in Profile Setup; this
+  // is a plain digital confirmation, not a re-enactment of it.
+  const [declarationConfirmed, setDeclarationConfirmed] = useState(false);
+
+  const requester = currentUser;
+  const requiresRecommender = useMemo(
+    () => requiresRecommendation(requester?.applicantProfile, requisitionType, requester?.role),
+    [requester?.applicantProfile, requester?.role, requisitionType],
+  );
+
+  if (!requester) {
+    return (
+      <div className="border border-error-bg bg-error-bg/50 px-4 py-3 text-sm text-error">
+        You must be signed in to apply for a vehicle. Please register or log in first.
+      </div>
+    );
+  }
+
+  const isPersonal = requisitionType === "Personal";
+
+  function validateAll(): Record<string, string> {
+    const next: Record<string, string> = {};
+
+    if (!sameAsRequester) {
+      if (!transportUser.fullName.trim()) {
+        next.fullName = "Transport user name is required.";
+      }
+      if (!transportUser.mobile.trim()) {
+        next.mobile = "Transport user mobile is required.";
+      }
+    }
+
+    for (const trip of trips) {
+      if (!trip.date) {
+        next[`date-${trip.id}`] = "Date is required.";
+      }
+      if (!trip.startTime || !trip.endTime) {
+        next[`time-${trip.id}`] = "Both From and To times are required.";
+      }
+
+      if (isPersonal) {
+        if (!trip.destination.trim()) {
+          next[`destination-${trip.id}`] = "Destination is required.";
+        }
+      } else if (!isValidRoute(trip.routeText)) {
+        next[`route-${trip.id}`] =
+          "Enter the route with at least two stops, separated by ->  (e.g. Campus -> Amborkhana -> Campus).";
+      }
+
+      // Step 7 — 3-hour vehicle-hold limit is a hard block, not a
+      // dismissible warning (folded into this step's validation per the
+      // fix plan's Step 5.6).
+      if (trip.startTime && trip.endTime && !isWithinHoldWindow(trip.startTime, trip.endTime)) {
+        next[`holdLimit-${trip.id}`] = "This trip exceeds the 3-hour vehicle-hold limit.";
+      }
+    }
+
+    if (!details.reason.trim()) {
+      next.reason = "Reason for requisition is required.";
+    }
+
+    // Fix 6 — required before submit (checked here, in validateAll(),
+    // which handleSaveDraft() never calls — so saving a draft still
+    // doesn't require it, only a full submit does).
+    if (!declarationConfirmed) {
+      next.declaration = "You must confirm the declaration before submitting.";
+    }
+
+    return next;
+  }
+
+  function buildTrip(draft: TripDraft): Trip {
+    const destination = draft.destination.trim();
+    const stoppageSequence = isPersonal
+      ? ["Campus", destination, "Campus"]
+      : parseRoute(draft.routeText);
+    const route = isPersonal
+      ? `Campus to ${destination} and Return to Campus`
+      : stoppageSequence.join(" → ");
+
+    return {
+      id: draft.id,
+      date: draft.date,
+      startTime: draft.startTime,
+      endTime: draft.endTime,
+      vehicleCategory: draft.vehicleCategory,
+      route,
+      stoppageSequence,
+      // The single route box replaced the separate passenger-groups
+      // list; the field stays on Trip so older requisitions and the
+      // confirmation slip keep working.
+      passengerGroups: [],
+      status: "Pending",
+    };
+  }
+
+  function buildRequisition(status: Requisition["status"]): Requisition {
+    const builtTrips = status === "Draft" ? [] : trips.map(buildTrip);
+    const departmentOrOffice = requester!.department ?? requester!.office ?? "";
+    const contactNumber = requester!.mobile ?? transportUser.mobile;
+    const firstTripDate = trips[0]?.date ?? "";
+    const hasSupportingDocument = Boolean(details.supportingDocumentDataUrl);
+
+    return {
+      id: applicationNumber,
+      requesterId: requester!.id,
+      requesterName:
+        requester!.fullName?.trim() || transportUser.fullName.trim() || requester!.email,
+      // Phase 6 — needed for mileage eligibility (FRD §23 scopes it to
+      // Teacher/Officer personal-use, not every "Personal" requisition).
+      applicantProfile: requester!.applicantProfile,
+      department: departmentOrOffice.trim() || undefined,
+      contactNumber: contactNumber?.trim() || undefined,
+      requisitionType,
+      purpose: details.reason.trim(),
+      startDate: firstTripDate,
+      endDate: firstTripDate,
+      scheduleType: "Single",
+      status,
+      createdAt: initial?.createdAt ?? new Date().toISOString(),
+      trips: builtTrips,
+      ...(hasSupportingDocument
+        ? {
+            supportingDocumentName: details.supportingDocumentName,
+            supportingDocumentDataUrl: details.supportingDocumentDataUrl,
+          }
+        : isResubmit
+          ? {
+              supportingDocumentName: undefined,
+              supportingDocumentDataUrl: undefined,
+            }
+          : {}),
+    };
+  }
+
+  function handleSaveDraft() {
+    setIsSubmitting(true);
+    try {
+      const draft = buildRequisition("Draft");
+      // Fix 2 — ApplyRequisitionPage.onSubmit already calls
+      // addRequisition(...) once persistence is handed to it below; this
+      // component only builds the object now. Calling addRequisition
+      // here too was writing every save (draft or full submit) into
+      // storage twice.
+      onSubmit(draft);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleSubmit() {
+    const next = validateAll();
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      // A requisition the Department/Office Head already recommended goes
+      // straight back to the Transport Office after correction; anything
+      // else follows the normal routing for its type.
+      const alreadyRecommended = Boolean(initial?.recommenderId);
+      const routeToRecommender = requiresRecommender && !alreadyRecommended;
+      const finalStatus = routeToRecommender
+        ? "Pending Recommendation"
+        : "Pending on Transport Office";
+
+      const requisition = buildRequisition(finalStatus);
+      // Fix 2 — see the comment in handleSaveDraft above; persistence
+      // happens once, in ApplyRequisitionPage's onSubmit.
+      onSubmit(requisition);
+
+      // When the recommender workflow applies, notify every DepartmentHead
+      // whose head-of-department / head-of-office matches this
+      // requisition's department. The Admin notification is dispatched in
+      // ApplyRequisitionPage after the requisition is added; here we only
+      // handle the recommender audience, and each is stamped with that
+      // user's id so useNotifications can filter per-recipient.
+      if (routeToRecommender) {
+        const heads = findDepartmentHeadsForRequisition(requisition, users);
+        for (const notification of buildRequisitionNotifications(heads, {
+          requisition,
+          type: "New Requisition",
+          message: `${requisition.requesterName} ${isResubmit ? "resubmitted a corrected" : "submitted an"} official requisition (${requisition.requisitionType.toLowerCase()}) awaiting your recommendation.`,
+        })) {
+          addNotification(notification);
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const errorCount = Object.keys(errors).length;
+  const submitLabel = isResubmit
+    ? "Resubmit Application"
+    : requiresRecommender
+      ? "Proceed to Recommendation"
+      : "Submit Application";
+
+  return (
+    <div className="mx-auto rounded-lg border border-form-rule bg-white px-5 py-6 shadow-sm sm:px-10 sm:py-9">
+      <GovFormMasthead formTitle="Vehicle Requisition Form" applicationNo={applicationNumber} />
+
+      <div className="mt-8 space-y-8">
+        {initial && initial.status === "Information Requested" ? (
+          <div
+            role="note"
+            className="rounded-md border border-form-warn-border bg-form-warn-bg px-4 py-3 text-sm text-form-warn-text"
+          >
+            <p className="font-semibold">
+              Returned for correction
+              {initial.sentBackBy ? ` by ${initial.sentBackBy}` : ""}
+            </p>
+            <p className="mt-1">
+              {initial.sendBackNote ??
+                initial.trips[0]?.rejectionRemarks ??
+                "No note was added. Please review your application and resubmit."}
+            </p>
+          </div>
+        ) : null}
+
+        {errorCount > 0 ? (
+          <div className="rounded-md border border-form-seal/30 bg-form-seal/5 px-4 py-3 text-sm text-form-seal">
+            Please fix {errorCount} field{errorCount === 1 ? "" : "s"} below before submitting.
+          </div>
+        ) : null}
+
+        <FormSection title="Requester Information">
+          <Step1Requester requester={requester} />
+        </FormSection>
+
+        <FormSection title="Transport User Information">
+          <Step2TransportUser
+            requester={requester}
+            value={transportUser}
+            sameAsRequester={sameAsRequester}
+            onSameAsRequesterChange={setSameAsRequester}
+            onChange={setTransportUser}
+            errors={{
+              fullName: errors.fullName,
+              mobile: errors.mobile,
+              designation: errors.designation,
+            }}
+          />
+        </FormSection>
+
+        <FormSection title="Journey Details">
+          <Step3Journey
+            requisitionType={requisitionType}
+            onRequisitionTypeChange={handleRequisitionTypeChange}
+            trips={trips}
+            onTripsChange={setTrips}
+            applicantProfile={requester.applicantProfile}
+            errors={errors}
+          />
+        </FormSection>
+
+        <FormSection title="Purpose and Supporting Document">
+          <Step4Details value={details} onChange={setDetails} errors={{ reason: errors.reason }} />
+        </FormSection>
+
+        {requiresRecommender ? (
+          <div
+            role="note"
+            className="flex items-start gap-2.5 rounded-md border border-form-warn-border bg-form-warn-bg px-3.5 py-2.5 text-sm text-form-warn-text"
+          >
+            <span
+              aria-hidden
+              className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-form-warn-text text-[10px] font-bold leading-none"
+            >
+              !
+            </span>
+            <p>
+              This requisition type requires your Department/Office Head to recommend it before
+              Admin can review it.
+            </p>
+          </div>
+        ) : null}
+
+        <div className={SECTION_WRAP}>
+          <h2 className={`${SECTION_TITLE} mb-3`}>Declaration</h2>
+          <label className="flex items-start gap-2.5 text-sm leading-relaxed text-form-ink">
+            <input
+              type="checkbox"
+              checked={declarationConfirmed}
+              onChange={(event) => setDeclarationConfirmed(event.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-form-rule text-primary focus:ring-primary"
+            />
+            I confirm the information above is accurate, and I accept responsibility for the vehicle
+            requested.
+          </label>
+          {errors.declaration ? <p className={`${ERROR_TEXT} ml-6`}>{errors.declaration}</p> : null}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-form-rule pt-5">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-10 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-muted hover:bg-form-band"
+          >
+            Cancel
+          </button>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {isResubmit ? null : (
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting}
+                className="h-10 rounded-md border border-form-rule bg-white px-4 text-sm font-medium text-form-ink hover:bg-form-band disabled:cursor-not-allowed"
+              >
+                Save Draft
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="h-10 rounded-md bg-form-action px-5 text-sm font-medium text-white hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {submitLabel} →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** One titled section of the form, with a divider under its heading. */
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className={SECTION_WRAP}>
+      <h2 className={`${SECTION_TITLE} mb-3`}>{title}</h2>
+      {children}
+    </div>
+  );
+}
