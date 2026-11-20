@@ -6,8 +6,9 @@ import type {
   ApplicationStatus,
 } from "../types";
 import { computeApplicationStatus } from "../utils/requisitionUtils";
+import { STORAGE_KEYS } from "../data/storageKeys";
 
-const STORAGE_KEY = "sust-transit-requisitions";
+const STORAGE_KEY = STORAGE_KEYS.requisitions;
 
 /**
  * Trimmed remarks so empty strings collapse to `undefined` — keeps the

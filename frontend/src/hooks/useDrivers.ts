@@ -1,9 +1,10 @@
 import useLocalStorageCollection from "./useLocalStorageCollection";
 import type { Driver } from "../types";
+import { STORAGE_KEYS } from "../data/storageKeys";
 
-const STORAGE_KEY = "sust-transit-driver";
+const STORAGE_KEY = STORAGE_KEYS.driver;
 
-export default function useDriver() {
+export default function useDrivers() {
   const { items, add, update, remove } =
     useLocalStorageCollection<Driver>(STORAGE_KEY);
 
@@ -24,7 +25,7 @@ export default function useDriver() {
   }
 
   return {
-    driver: items,
+    drivers: items,
     addDriver: add,
     updateDriver: update,
     deactivateDriver,

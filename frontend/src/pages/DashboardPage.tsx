@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import useAuth from "../hooks/useAuth";
 import useVehicles from "../hooks/useVehicles";
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useOffDays from "../hooks/useOffDays";
@@ -115,11 +115,11 @@ function SuperAdminDashboard() {
 
 function TransportAdministratorDashboard() {
   const { vehicles } = useVehicles();
-  const { driver } = useDriver();
+  const { drivers } = useDrivers();
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { offDays } = useOffDays();
-  const { routes } = useTransportSchedule();
+  const { schedules } = useTransportSchedule();
   const { unreadCount } = useNotifications();
 
   const today = todayString();
@@ -135,7 +135,7 @@ function TransportAdministratorDashboard() {
     requisitions,
     vehicles,
     offDays,
-    routes,
+    schedules,
   );
   const blockingConflicts = conflicts.filter(
     (conflict) => conflict.severity === "Blocking",
@@ -157,7 +157,7 @@ function TransportAdministratorDashboard() {
     }
 
     return (
-      driver.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
+      drivers.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
     );
   }
 
@@ -284,11 +284,11 @@ function TransportAdministratorDashboard() {
  */
 function TransportInChargeDashboard() {
   const { vehicles } = useVehicles();
-  const { driver } = useDriver();
+  const { drivers } = useDrivers();
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { offDays } = useOffDays();
-  const { routes } = useTransportSchedule();
+  const { schedules } = useTransportSchedule();
   const { unreadCount } = useNotifications();
 
   const today = todayString();
@@ -312,13 +312,13 @@ function TransportInChargeDashboard() {
     requisitions,
     vehicles,
     offDays,
-    routes,
+    schedules,
   );
   const blockingConflicts = conflicts.filter(
     (conflict) => conflict.severity === "Blocking",
   ).length;
 
-  const activeDrivers = driver.filter(
+  const activeDrivers = drivers.filter(
     (member) => member.status === "Active",
   ).length;
 
@@ -335,7 +335,7 @@ function TransportInChargeDashboard() {
     }
 
     return (
-      driver.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
+      drivers.find((member) => member.id === driverId)?.name ?? "Unknown Driver"
     );
   }
 

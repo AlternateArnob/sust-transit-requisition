@@ -64,9 +64,9 @@ function toMinutes(time: string): number {
 
 export function getStudentTransportEntry(
   vehicleId: string,
-  routes: StudentTransportVehicle[],
+  schedules: StudentTransportVehicle[],
 ): StudentTransportVehicle | undefined {
-  return routes.find((entry) => entry.vehicleId === vehicleId);
+  return schedules.find((entry) => entry.vehicleId === vehicleId);
 }
 
 /*
@@ -76,9 +76,9 @@ export function getStudentTransportEntry(
 export function getStudentTransportTimeForDate(
   vehicleId: string,
   dateString: string,
-  routes: StudentTransportVehicle[],
+  schedules: StudentTransportVehicle[],
 ): string | undefined {
-  const entry = getStudentTransportEntry(vehicleId, routes);
+  const entry = getStudentTransportEntry(vehicleId, schedules);
 
   if (!entry) {
     return undefined;
@@ -92,12 +92,12 @@ export function isVehicleFreeAtTime(
   vehicleId: string,
   dateString: string,
   requestedTime: string,
-  routes: StudentTransportVehicle[],
+  schedules: StudentTransportVehicle[],
 ): boolean {
   const freeAfter = getStudentTransportTimeForDate(
     vehicleId,
     dateString,
-    routes,
+    schedules,
   );
 
   if (!freeAfter) {

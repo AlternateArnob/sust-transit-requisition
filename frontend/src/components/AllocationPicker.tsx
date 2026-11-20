@@ -1,5 +1,5 @@
 import useVehicles from "../hooks/useVehicles";
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 import useTransportSchedule from "../hooks/useTransportSchedule";
 import useOffDays from "../hooks/useOffDays";
 
@@ -23,8 +23,8 @@ export default function AllocationPicker({
   onCancel,
 }: AllocationPickerProps) {
   const { vehicles } = useVehicles();
-  const { driver } = useDriver();
-  const { routes } = useTransportSchedule();
+  const { drivers } = useDrivers();
+  const { schedules } = useTransportSchedule();
   const { offDays } = useOffDays();
 
   const evaluated = vehicles
@@ -36,7 +36,7 @@ export default function AllocationPicker({
       getVehicleEligibility(vehicle, trip, {
         allocations,
         offDays,
-        routes,
+        schedules,
         excludeAllocationId,
       }),
     )
@@ -47,7 +47,7 @@ export default function AllocationPicker({
       return undefined;
     }
 
-    return driver.find((member) => member.id === driverId)?.name;
+    return drivers.find((member) => member.id === driverId)?.name;
   }
 
   return (

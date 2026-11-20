@@ -111,7 +111,7 @@ export function getVehicleEligibility(
   context: {
     allocations: Allocation[];
     offDays: VehicleOffDay[];
-    routes: StudentTransportVehicle[];
+    schedules: StudentTransportVehicle[];
     excludeAllocationId?: string;
   },
 ): VehicleEligibility {
@@ -170,12 +170,12 @@ export function getVehicleEligibility(
   const studentTransportTime = getStudentTransportTimeForDate(
     vehicle.id,
     trip.date,
-    context.routes,
+    context.schedules,
   );
 
   if (
     studentTransportTime &&
-    !isVehicleFreeAtTime(vehicle.id, trip.date, trip.startTime, context.routes)
+    !isVehicleFreeAtTime(vehicle.id, trip.date, trip.startTime, context.schedules)
   ) {
     blockers.push(
       `Used for student transport on ${trip.date} until ${formatTimeDisplay(

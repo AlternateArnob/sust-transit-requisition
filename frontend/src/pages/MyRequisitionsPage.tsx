@@ -5,7 +5,7 @@ import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 
 import Modal from "../components/Modal";
 import ApplicantRequisitionDetail from "../components/ApplicantRequisitionDetail";
@@ -33,7 +33,7 @@ export default function MyRequisitionsPage() {
   const { requisitions } = useRequisitions();
   const { allocations } = useAllocations();
   const { vehicles } = useVehicles();
-  const { driver } = useDriver();
+  const { drivers } = useDrivers();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -85,7 +85,7 @@ export default function MyRequisitionsPage() {
 
   function handleDownloadConfirmationSlip() {
     if (!selected) return;
-    generateConfirmationSlip(selected, allocations, vehicles, driver);
+    generateConfirmationSlip(selected, allocations, vehicles, drivers);
   }
 
   return (
@@ -171,7 +171,7 @@ export default function MyRequisitionsPage() {
           <ApplicantRequisitionDetail
             requisition={selected}
             vehicles={vehicles}
-            driver={driver}
+            driver={drivers}
             allocations={allocations}
             requester={currentUser}
             onDownloadConfirmationSlip={handleDownloadConfirmationSlip}

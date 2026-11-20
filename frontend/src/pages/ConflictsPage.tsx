@@ -19,7 +19,7 @@ export default function ConflictsPage() {
   const { allocations, addAllocation, removeAllocation } = useAllocations();
   const { vehicles } = useVehicles();
   const { offDays } = useOffDays();
-  const { routes } = useTransportSchedule();
+  const { schedules } = useTransportSchedule();
 
   const [reassignConflict, setReassignConflict] = useState<Conflict | null>(
     null,
@@ -30,7 +30,7 @@ export default function ConflictsPage() {
     requisitions,
     vehicles,
     offDays,
-    routes,
+    schedules,
   );
 
   function getVehicleLabel(vehicleId: string) {

@@ -1,7 +1,8 @@
 import useLocalStorageCollection from "./useLocalStorageCollection";
 import type { VehicleOffDay } from "../types";
+import { STORAGE_KEYS } from "../data/storageKeys";
 
-const STORAGE_KEY = "sust-transit-offdays";
+const STORAGE_KEY = STORAGE_KEYS.offDays;
 
 export default function useOffDays() {
   const { items, add, remove } =

@@ -34,7 +34,7 @@ export function detectConflicts(
   requisitions: Requisition[],
   vehicles: Vehicle[],
   offDays: VehicleOffDay[],
-  routes: StudentTransportVehicle[],
+  schedules: StudentTransportVehicle[],
 ): Conflict[] {
   const conflicts: Conflict[] = [];
 
@@ -134,7 +134,7 @@ export function detectConflicts(
       }
     });
 
-    if (!isVehicleFreeAtTime(vehicle.id, allocation.date, allocation.startTime, routes)) {
+    if (!isVehicleFreeAtTime(vehicle.id, allocation.date, allocation.startTime, schedules)) {
       conflicts.push({
         id: `student-transport-${allocation.id}`,
         type: "Student Transport Conflict",

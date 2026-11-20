@@ -1,4 +1,4 @@
-import type { ApplicationStatus, Requisition, Trip } from "../../types";
+import type { ApplicationStatus, Requisition, Trip, VehicleStatus } from "../../types";
 
 import {
   TONES,
@@ -35,4 +35,14 @@ export function TripStatusBadge({ status }: { status: Trip["status"] }) {
 
 export function RequisitionTypeBadge({ type }: { type: Requisition["requisitionType"] }) {
   return <StatusBadge tone={requisitionTypeTone(type)}>{type}</StatusBadge>;
+}
+
+const VEHICLE_STATUS_TONE: Record<VehicleStatus, BadgeTone> = {
+  Active: "success",
+  "Under Maintenance": "warning",
+  "Out-of-Service": "danger",
+};
+
+export function VehicleStatusBadge({ status }: { status: VehicleStatus }) {
+  return <StatusBadge tone={VEHICLE_STATUS_TONE[status]}>{status}</StatusBadge>;
 }

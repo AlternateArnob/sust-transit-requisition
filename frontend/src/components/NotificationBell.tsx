@@ -26,7 +26,7 @@ export default function NotificationBell() {
   const { allocations } = useAllocations();
   const { vehicles } = useVehicles();
   const { offDays } = useOffDays();
-  const { routes } = useTransportSchedule();
+  const { schedules } = useTransportSchedule();
 
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -38,7 +38,7 @@ export default function NotificationBell() {
       requisitions,
       vehicles,
       offDays,
-      routes,
+      schedules,
     );
     const notifiedConflictIds = new Set(
       notifications
@@ -60,7 +60,7 @@ export default function NotificationBell() {
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allocations, requisitions, vehicles, offDays, routes]);
+  }, [allocations, requisitions, vehicles, offDays, schedules]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -86,7 +86,7 @@ export default function NotificationBell() {
     setIsOpen(false);
 
     // Step 10 — an Applicant has no /admin access at all, so their
-    // notifications must resolve to applicant-facing routes instead of
+    // notifications must resolve to applicant-facing schedules instead of
     // the admin ones below.
     if (currentUser?.role === "Applicant") {
       if (notification.linkType === "requisition") {

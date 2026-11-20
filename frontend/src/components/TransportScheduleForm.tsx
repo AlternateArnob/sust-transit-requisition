@@ -46,7 +46,7 @@ export default function TransportScheduleForm({
   const isEditing = Boolean(route);
 
   const { vehicles } = useVehicles();
-  const { routes } = useTransportSchedule();
+  const { schedules } = useTransportSchedule();
 
   const initialDays: Record<Weekday, boolean> = {
     Sun: Boolean(route?.schedule.Sun),
@@ -102,7 +102,7 @@ export default function TransportScheduleForm({
       return;
     }
 
-    const duplicate = routes.find(
+    const duplicate = schedules.find(
       (entry) => entry.vehicleId === vehicleId && entry.id !== route?.id,
     );
 

@@ -1,5 +1,5 @@
 import type { AssignmentResult } from "../types";
-import useDriver from "./useDriver";
+import useDrivers from "./useDrivers";
 
 /**
  * Phase 2 (admin module) — the single place that enforces FRD §13's
@@ -23,7 +23,7 @@ import useDriver from "./useDriver";
  * silently no-op on add.
  */
 export default function useVehicleDriverAssignment() {
-  const { driver: drivers, updateDriver } = useDriver();
+  const { drivers, updateDriver } = useDrivers();
 
   function findDriver(driverId: string) {
     return drivers.find((item) => item.id === driverId);

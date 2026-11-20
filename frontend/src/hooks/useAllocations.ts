@@ -1,7 +1,8 @@
 import useLocalStorageCollection from "./useLocalStorageCollection";
 import type { Allocation } from "../types";
+import { STORAGE_KEYS } from "../data/storageKeys";
 
-const STORAGE_KEY = "sust-transit-allocations";
+const STORAGE_KEY = STORAGE_KEYS.allocations;
 
 export default function useAllocations() {
   // Phase 8, §3 — deliberately does not expose `update`. Reassignment

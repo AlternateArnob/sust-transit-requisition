@@ -12,4 +12,6 @@ export const STORAGE_KEYS = {
   users: "sust-transit-users",
   otpChallenges: "sust-transit-otp-challenges",
   session: "sust-transit-session",
+  offDays: "sust-transit-offdays",
+  pendingEmail: "sust-transit-pending-email",
 } as const;

@@ -1,11 +1,11 @@
 import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 import useAllocations from "../hooks/useAllocations";
 import useVehicleDriverAssignment from "../hooks/useVehicleDriverAssignment";
 
-import StatusBadge from "../components/StatusBadge";
+import { VehicleStatusBadge } from "../components/ui/StatusBadge";
 import Modal from "../components/Modal";
 import VehicleForm from "../components/VehicleForm";
 
@@ -20,7 +20,7 @@ import PageTitle from "../components/ui/PageTitle";
 export default function VehiclePage() {
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useVehicles();
 
-  const { driver } = useDriver();
+  const { drivers } = useDrivers();
   const { allocations } = useAllocations();
   const { applyDriverAssignment } = useVehicleDriverAssignment();
 
@@ -51,7 +51,7 @@ export default function VehiclePage() {
       return "No Driver";
     }
 
-    const foundDriver = driver.find((member) => member.id === driverId);
+    const foundDriver = drivers.find((member) => member.id === driverId);
 
     return foundDriver?.name ?? "No Driver";
   }
@@ -347,7 +347,7 @@ export default function VehiclePage() {
                     </td>
 
                     <td className="px-4 py-3">
-                      <StatusBadge status={vehicle.operationalStatus} />
+                      <VehicleStatusBadge status={vehicle.operationalStatus} />
                     </td>
 
                     <td className="px-4 py-3">

@@ -7,8 +7,9 @@ import type { UserAccount } from "../../types";
 import AuthShell, { AuthError, DevCodeNote } from "../../components/AuthShell";
 import Button from "../../components/ui/Button";
 import { FIELD_BOXED, FIELD_LABEL } from "../../components/application/formTheme";
+import { STORAGE_KEYS } from "../../data/storageKeys";
 
-const PENDING_EMAIL_KEY = "sust-transit-pending-email";
+const PENDING_EMAIL_KEY = STORAGE_KEYS.pendingEmail;
 
 export default function RegisterPage() {
   const navigate = useNavigate();

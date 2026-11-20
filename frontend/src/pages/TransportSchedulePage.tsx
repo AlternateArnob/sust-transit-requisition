@@ -24,7 +24,7 @@ type Tab = "schedule" | "offdays";
 
 export default function TransportSchedulePage() {
   const { vehicles } = useVehicles();
-  const { routes, addRoute, updateRoute, deleteRoute } = useTransportSchedule();
+  const { schedules, addSchedule, updateSchedule, deleteSchedule } = useTransportSchedule();
   const { offDays, addOffDay, deleteOffDay } = useOffDays();
 
   const [tab, setTab] = useState<Tab>("schedule");
@@ -49,10 +49,10 @@ export default function TransportSchedulePage() {
 
   function handleRouteSubmit(entry: StudentTransportVehicle) {
     if (editingRoute) {
-      updateRoute(entry);
+      updateSchedule(entry);
       setEditingRoute(null);
     } else {
-      addRoute(entry);
+      addSchedule(entry);
       setIsAddRouteOpen(false);
     }
   }
@@ -88,7 +88,7 @@ export default function TransportSchedulePage() {
     );
 
     if (confirmed) {
-      deleteRoute(entry.id);
+      deleteSchedule(entry.id);
     }
   }
 
@@ -136,7 +136,7 @@ export default function TransportSchedulePage() {
               : "text-text-muted hover:text-text"
           }`}
         >
-          Student Transport Vehicles ({routes.length})
+          Student Transport Vehicles ({schedules.length})
         </button>
 
         <button
@@ -168,7 +168,7 @@ export default function TransportSchedulePage() {
               </thead>
 
               <tbody>
-                {routes.length === 0 ? (
+                {schedules.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
                       <p className="font-medium text-text">
@@ -181,7 +181,7 @@ export default function TransportSchedulePage() {
                     </td>
                   </tr>
                 ) : (
-                  routes.map((entry, index) => {
+                  schedules.map((entry, index) => {
                     const vehicle = getVehicle(entry.vehicleId);
 
                     return (

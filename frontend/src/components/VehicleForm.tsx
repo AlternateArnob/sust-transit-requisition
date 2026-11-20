@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 
 import {
   VEHICLE_CATEGORIES,
@@ -30,7 +30,7 @@ export default function VehicleForm({
 }: VehicleFormProps) {
   const isEditing = Boolean(vehicle);
 
-  const { driver } = useDriver();
+  const { drivers } = useDrivers();
 
   /*
    * Only show:
@@ -38,7 +38,7 @@ export default function VehicleForm({
    * 2. Drivers who are unassigned
    * 3. The driver currently assigned to this vehicle when editing
    */
-  const availableDrivers = driver.filter(
+  const availableDrivers = drivers.filter(
     (member) =>
       member.status === "Active" &&
       (!member.permanentVehicleId || member.permanentVehicleId === vehicle?.id),

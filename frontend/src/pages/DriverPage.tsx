@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 import useVehicles from "../hooks/useVehicles";
 
 import Modal from "../components/Modal";
@@ -12,13 +12,13 @@ import PageTitle from "../components/ui/PageTitle";
 
 export default function DriverPage() {
   const {
-    driver,
+    drivers,
     addDriver,
     updateDriver,
     deactivateDriver,
     activateDriver,
     deleteDriver,
-  } = useDriver();
+  } = useDrivers();
   const { vehicles, updateVehicle } = useVehicles();
 
   const [search, setSearch] = useState("");
@@ -26,7 +26,7 @@ export default function DriverPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
 
-  const filteredDriver = driver.filter((member) => {
+  const filteredDriver = drivers.filter((member) => {
     const matchesSearch =
       member.name.toLowerCase().includes(search.toLowerCase()) ||
       member.designation.toLowerCase().includes(search.toLowerCase());
@@ -90,7 +90,7 @@ export default function DriverPage() {
   }
 
   function handleDriverSubmit(member: Driver) {
-    const existingMember = driver.find((item) => item.id === member.id);
+    const existingMember = drivers.find((item) => item.id === member.id);
 
     if (!existingMember) {
       addDriver(member);
@@ -105,7 +105,7 @@ export default function DriverPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <PageTitle title="Driver Management" subtitle={<>Manage university drivers ({driver.length} drivers)</>} />
+        <PageTitle title="Driver Management" subtitle={<>Manage university drivers ({drivers.length} drivers)</>} />
 
         <button
           type="button"

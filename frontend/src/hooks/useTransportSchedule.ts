@@ -3,12 +3,13 @@ import type {
   StudentTransportVehicle,
   StudentTransportSchedule,
 } from "../types";
+import { STORAGE_KEYS } from "../data/storageKeys";
 
 // Storage key intentionally left as the pre-Phase-3 name — renaming it
 // would silently drop any schedule entries already saved in a user's
 // browser under the old key. Only the file/export name changed to shed
 // the "Routes" nomenclature FR-38 retires.
-const STORAGE_KEY = "sust-transit-routes";
+const STORAGE_KEY = STORAGE_KEYS.routes;
 
 /*
  * Reshape any legacy entry that still carries a top-level freeAfterTime
@@ -67,20 +68,20 @@ export default function useTransportSchedule() {
       }
     >(STORAGE_KEY);
 
-  const routes = items.map(migrate);
+  const schedules = items.map(migrate);
 
-  function addRoute(entry: StudentTransportVehicle) {
+  function addSchedule(entry: StudentTransportVehicle) {
     add(migrate(entry));
   }
 
-  function updateRoute(entry: StudentTransportVehicle) {
+  function updateSchedule(entry: StudentTransportVehicle) {
     update(migrate(entry));
   }
 
   return {
-    routes,
-    addRoute,
-    updateRoute,
-    deleteRoute: remove,
+    schedules,
+    addSchedule,
+    updateSchedule,
+    deleteSchedule: remove,
   };
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import useVehicles from "../hooks/useVehicles";
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 import useTransportSchedule from "../hooks/useTransportSchedule";
 import useOffDays from "../hooks/useOffDays";
 import useAllocations from "../hooks/useAllocations";
@@ -20,8 +20,8 @@ type LookupMode = "vehicle" | "driver";
 
 export default function SchedulePage() {
   const { vehicles } = useVehicles();
-  const { driver } = useDriver();
-  const { routes } = useTransportSchedule();
+  const { drivers } = useDrivers();
+  const { schedules } = useTransportSchedule();
   const { offDays } = useOffDays();
   const { allocations } = useAllocations();
   const { requisitions } = useRequisitions();
@@ -31,7 +31,7 @@ export default function SchedulePage() {
   const [selectedDriverId, setSelectedDriverId] = useState("");
   const [date, setDate] = useState(todayString());
 
-  const activeDrivers = driver.filter((member) => member.status === "Active");
+  const activeDrivers = drivers.filter((member) => member.status === "Active");
 
   const selectedDriver = activeDrivers.find(
     (member) => member.id === selectedDriverId,
@@ -53,11 +53,11 @@ export default function SchedulePage() {
 
   const studentTransportTime =
     targetVehicleId && date
-      ? getStudentTransportTimeForDate(targetVehicleId, date, routes)
+      ? getStudentTransportTimeForDate(targetVehicleId, date, schedules)
       : undefined;
 
   const assignedDriver = targetVehicle?.permanentDriverId
-    ? driver.find((member) => member.id === targetVehicle.permanentDriverId)
+    ? drivers.find((member) => member.id === targetVehicle.permanentDriverId)
     : undefined;
 
   const dayAllocations =

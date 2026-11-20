@@ -4,7 +4,7 @@ import useAuth from "../hooks/useAuth";
 import useRequisitions from "../hooks/useRequisitions";
 import useAllocations from "../hooks/useAllocations";
 import useVehicles from "../hooks/useVehicles";
-import useDriver from "../hooks/useDriver";
+import useDrivers from "../hooks/useDrivers";
 import useDutySlips from "../hooks/useDutySlips";
 import useMileageEntries from "../hooks/useMileageEntries";
 import useUsers from "../hooks/useUsers";
@@ -70,7 +70,7 @@ export default function RequisitionsPage() {
   const { allocations, addAllocation, removeAllocation } =
     useAllocations();
   const { vehicles } = useVehicles();
-  const { driver } = useDriver();
+  const { drivers } = useDrivers();
   const { dutySlips, addDutySlip } = useDutySlips();
   const { mileageEntries, addMileageEntry } = useMileageEntries();
   const { users, findById: findUserById } = useUsers();
@@ -304,7 +304,7 @@ export default function RequisitionsPage() {
     if (modeFor(selected) !== "transportAdministrator") return;
     if (!canGenerateSlips(selected)) return;
 
-    generateConfirmationSlip(selected, allocations, vehicles, driver);
+    generateConfirmationSlip(selected, allocations, vehicles, drivers);
   }
 
   function handleGenerateDutySlip(driverId: string) {
@@ -320,7 +320,7 @@ export default function RequisitionsPage() {
     const group = getEligibleDutySlipGroups(selected, allocations).find(
       (item) => item.driverId === driverId,
     );
-    const driverMember = driver.find((member) => member.id === driverId);
+    const driverMember = drivers.find((member) => member.id === driverId);
 
     if (!group || !driverMember) return;
 
@@ -559,7 +559,7 @@ export default function RequisitionsPage() {
           <RequisitionDetail
             requisition={selected}
             vehicles={vehicles}
-            driver={driver}
+            driver={drivers}
             allocations={allocations}
             dutySlips={dutySlips}
             requester={findUserById(selected.requesterId)}

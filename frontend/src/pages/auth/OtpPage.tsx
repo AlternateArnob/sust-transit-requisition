@@ -12,13 +12,14 @@ import {
   OTP_LENGTH,
   OTP_MAX_ATTEMPTS,
 } from "../../types";
+import { STORAGE_KEYS } from "../../data/storageKeys";
 
 interface LocationState {
   email?: string;
   devCode?: string;
 }
 
-const PENDING_EMAIL_KEY = "sust-transit-pending-email";
+const PENDING_EMAIL_KEY = STORAGE_KEYS.pendingEmail;
 
 export default function OtpPage() {
   const navigate = useNavigate();
