@@ -12,9 +12,9 @@ cd backend
 cp .env.example .env          # then adjust values if needed
 docker compose up -d          # MySQL 8 (+ MailHog on :8025); creates sust_transit and sust_transit_test
 npm install
-npm run migrate               # create tables (available from Step 2)
+npm run migrate               # create tables (migrations arrive in Step 2)
 npm run seed                  # seed data (available from Step 16 of the plan's seeds)
-npm run dev                   # http://localhost:4000/api/v1  (server arrives in Step 1)
+npm run dev                   # http://localhost:4000/api/v1/health
 ```
 
 ## Scripts
