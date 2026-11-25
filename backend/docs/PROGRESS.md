@@ -41,3 +41,21 @@ Deviations / notes:
 - `/health` returns `status: "ok"` when the database is reachable and `status: "error"` (HTTP 503) otherwise.
 - `validate()` reports body problems with plain paths (`trips.0.startTime`) and prefixes params/query problems (`params.id`, `query.page`). A missing body is treated as `{}`.
 - Tests force `DB_NAME=sust_transit_test` (`tests/setup.ts`) so they can never touch the development database.
+
+## Step 2 — Database layer and migrations (all tables) — 2026-11-25
+
+- Six migrations create every table from Part 1 §10.2 as raw `CREATE TABLE` statements copied from the spec, each with `ENGINE=InnoDB`, `utf8mb4` and `utf8mb4_0900_ai_ci` stated explicitly: `001_directory_and_files`, `002_users_and_auth`, `003_fleet`, `004_requisitions`, `005_allocations_slips_mileage`, `006_notifications_and_audit`. `files` is created before `users` (signature FK); each `down` drops its tables in reverse dependency order.
+- `src/db/transaction.ts`: `withTransaction(fn)` commits on success and rolls back and re-throws on error.
+- Test infrastructure: `tests/globalSetup.ts` migrates the test database once per run; `tests/helpers/` has `truncateAll()` (refuses any database except `sust_transit_test`), a migration runner and row factories.
+- Tests (130 in total, 71 new): table list and `up -> down -> up`, ENGINE/collation, an enum drift guard comparing every `ENUM` column to `config/constants.ts`, every unique key, every `CHECK`, `ON DELETE` behaviour (CASCADE / SET NULL / RESTRICT), the history table surviving deletions, value round-tripping, and `withTransaction` commit and rollback.
+- New script `npm run migrate:rollback:all` (see below).
+
+Deviations / notes:
+
+- **21 tables, not 20.** The plan's checklist says "all 20 tables", but §10.2 defines 21 (`directory_units`, `files`, `users`, `otp_challenges`, `refresh_tokens`, `drivers`, `vehicles`, `vehicle_off_days`, `student_transport_vehicles`, `student_transport_slots`, `requisition_counters`, `requisitions`, `trips`, `allocations`, `allocation_history`, `duty_slips`, `duty_slip_trips`, `confirmation_slips`, `mileage_entries`, `notifications`, `audit_logs`). All 21 are created; Knex adds its own `knex_migrations` and `knex_migrations_lock`.
+- **Spec bug fixed in `notifications`:** §10.2 declares `UNIQUE KEY uq_notif_dedupe (dedupe_key)` but never defines the column, which MySQL rejects. Added `dedupe_key VARCHAR(190) NULL` (Step 19's `notifyUsers` takes an optional `dedupeKey`; MySQL allows many NULLs under a unique key).
+- **`npm run migrate:rollback --all` does not work as written in the plan:** npm consumes `--all` as its own flag, so the script rolls back only the last batch. Use `npm run migrate:rollback:all` (or `npm run migrate:rollback -- --all`).
+- Migrations use literal `ENUM` lists rather than importing `constants.ts`, so an old migration can never change meaning; the drift-guard test fails if the two disagree.
+- Tests run migrations through the Knex CLI in a child process (Vitest cannot hand TypeScript migration files to Knex), and test files run one at a time (`fileParallelism: false`) because they share one database.
+- `files.owner_user_id` has an index but no foreign key, exactly as in §10.2 (a FK would make `users` and `files` circular).
+- `dateStrings: true` means `DATETIME(3)` columns come back as `"2026-11-25 08:00:00.000"` (UTC, not ISO); services must convert when building API responses.

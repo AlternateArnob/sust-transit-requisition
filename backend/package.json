@@ -19,6 +19,7 @@
     "test": "vitest run",
     "migrate": "tsx node_modules/knex/bin/cli.js migrate:latest",
     "migrate:rollback": "tsx node_modules/knex/bin/cli.js migrate:rollback",
+    "migrate:rollback:all": "tsx node_modules/knex/bin/cli.js migrate:rollback --all",
     "seed": "tsx node_modules/knex/bin/cli.js seed:run",
     "db:reset": "tsx scripts/assert-dev.ts && tsx node_modules/knex/bin/cli.js migrate:rollback --all && tsx node_modules/knex/bin/cli.js migrate:latest && tsx node_modules/knex/bin/cli.js seed:run"
   },

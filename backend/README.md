@@ -19,19 +19,20 @@ npm run dev                   # http://localhost:4000/api/v1/health
 
 ## Scripts
 
-| Script                     | What it does                                                  |
-| -------------------------- | ------------------------------------------------------------- |
-| `npm run dev`              | Start the API with file watching (`tsx watch src/server.ts`)  |
-| `npm run build`            | Compile to `dist/`                                            |
-| `npm start`                | Run the compiled server                                       |
-| `npm run lint`             | ESLint                                                        |
-| `npm run format:check`     | Prettier check (`npm run format` to fix)                      |
-| `npm run typecheck`        | `tsc --noEmit`                                                |
-| `npm test`                 | Vitest                                                        |
-| `npm run migrate`          | Apply migrations                                              |
-| `npm run migrate:rollback` | Roll back the last batch (`-- --all` to roll back everything) |
-| `npm run seed`             | Run seeds                                                     |
-| `npm run db:reset`         | Roll back everything, migrate, seed. **Development only.**    |
+| Script                         | What it does                                                 |
+| ------------------------------ | ------------------------------------------------------------ |
+| `npm run dev`                  | Start the API with file watching (`tsx watch src/server.ts`) |
+| `npm run build`                | Compile to `dist/`                                           |
+| `npm start`                    | Run the compiled server                                      |
+| `npm run lint`                 | ESLint                                                       |
+| `npm run format:check`         | Prettier check (`npm run format` to fix)                     |
+| `npm run typecheck`            | `tsc --noEmit`                                               |
+| `npm test`                     | Vitest                                                       |
+| `npm run migrate`              | Apply migrations                                             |
+| `npm run migrate:rollback`     | Roll back the last batch                                     |
+| `npm run migrate:rollback:all` | Roll back every migration                                    |
+| `npm run seed`                 | Run seeds                                                    |
+| `npm run db:reset`             | Roll back everything, migrate, seed. **Development only.**   |
 
 ## Layout
 

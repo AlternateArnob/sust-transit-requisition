@@ -15,6 +15,6 @@ export const knexConfig: Knex.Config = {
     charset: "utf8mb4",
   },
   pool: { min: env.DB_POOL_MIN, max: env.DB_POOL_MAX },
-  migrations: { directory: "./migrations", extension: "ts" },
+  migrations: { directory: "./migrations", extension: "ts", loadExtensions: [".ts"] },
   seeds: { directory: "./seeds", extension: "ts" },
 };
