@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { withTransaction } from "../../src/db/transaction.js";
 import { db, truncateAll } from "../helpers/db.js";
@@ -66,6 +67,9 @@ describe("truncateAll", () => {
 
   it("keeps Knex's migration bookkeeping", async () => {
     await truncateAll();
-    expect(Number((await db("knex_migrations").count({ n: "*" }).first())?.n)).toBe(6);
+    const files = readdirSync(new URL("../../migrations", import.meta.url)).filter((name) =>
+      name.endsWith(".ts"),
+    );
+    expect(Number((await db("knex_migrations").count({ n: "*" }).first())?.n)).toBe(files.length);
   });
 });

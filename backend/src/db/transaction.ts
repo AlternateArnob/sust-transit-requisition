@@ -2,6 +2,8 @@ import type { Knex } from "knex";
 import { db } from "./knex.js";
 
 export type Trx = Knex.Transaction;
+/** Anything that can run queries: the shared pool or an open transaction. */
+export type DbExecutor = Knex | Knex.Transaction;
 
 /**
  * Runs `fn` in one database transaction: commits when it resolves, rolls back when it throws

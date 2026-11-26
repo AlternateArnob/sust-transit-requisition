@@ -11,7 +11,20 @@ export type ErrorCode =
   | "INVALID_STATE"
   | "VALIDATION_ERROR"
   | "RATE_LIMITED"
-  | "INTERNAL_ERROR";
+  | "INTERNAL_ERROR"
+  // Specific codes (Part 1 §8, §12). The HTTP status stays with the factory that creates them.
+  | "EMAIL_TAKEN"
+  | "EMAIL_DOMAIN_NOT_ALLOWED"
+  | "OTP_NOT_FOUND"
+  | "OTP_EXPIRED"
+  | "OTP_ATTEMPTS_EXCEEDED"
+  | "OTP_INVALID"
+  | "EMAIL_DELIVERY_FAILED"
+  | "PAYLOAD_TOO_LARGE"
+  | "DUPLICATE_REGISTRATION"
+  | "VEHICLE_HAS_HISTORY"
+  | "VEHICLE_HAS_UPCOMING_ALLOCATIONS"
+  | "DRIVER_IN_USE";
 
 export interface ErrorDetail {
   path?: string;
@@ -43,11 +56,9 @@ export const forbidden = (message = "You do not have permission to perform this 
 
 export const notFound = (message = "Resource not found") => new AppError(404, "NOT_FOUND", message);
 
-export const conflict = (
-  code: Extract<ErrorCode, "CONFLICT" | "VEHICLE_NOT_ELIGIBLE"> = "CONFLICT",
-  message = "Conflict",
-  details?: unknown,
-) => new AppError(409, code, message, details);
+/** 409 with a specific code, e.g. `conflict("EMAIL_TAKEN", "...")`. */
+export const conflict = (code: ErrorCode = "CONFLICT", message = "Conflict", details?: unknown) =>
+  new AppError(409, code, message, details);
 
 export const invalidState = (message = "This action is not allowed in the current status") =>
   new AppError(409, "INVALID_STATE", message);
@@ -55,5 +66,7 @@ export const invalidState = (message = "This action is not allowed in the curren
 export const validation = (details: ErrorDetail[], message = "Validation failed") =>
   new AppError(422, "VALIDATION_ERROR", message, details);
 
-export const rateLimited = (message = "Too many requests, please try again later") =>
-  new AppError(429, "RATE_LIMITED", message);
+export const rateLimited = (
+  message = "Too many requests, please try again later",
+  details?: unknown,
+) => new AppError(429, "RATE_LIMITED", message, details);

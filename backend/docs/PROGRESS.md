@@ -77,3 +77,26 @@ Deviations / notes:
 - **Additions beyond the step list:** `resolveSubmissionStatus` (rules 11.3 and 11.4 in one place), `snapshotDepartment`, `computeStatusAfterTripCompletion` (§11.7), `toAllocationConflictDetails` (the `details.allocations` shape of §11.9), `isApplicationNumber`, `assign_vehicle` in the transition table, and `APP_TIME_ZONE` / `MAX_TRIP_HOURS` in `config/constants.ts`.
 - **Not decided here:** when a requisition becomes `Ready for Accounts`. §11.2 says "when mileage is recorded for every Completed trip" while table row 13 says "after all trips Completed"; Step 18 (mileage) needs to settle which one applies when some trips are still `Approved`.
 - User-facing messages keep the frontend's wording, including the em/en dashes.
+
+## Step 4 — Passwords, OTP, email and tokens (services) — 2026-11-26
+
+- `services/password.ts`: argon2id `hashPassword` / `verifyPassword` (never throws; false for a missing or malformed hash), `assertPasswordPolicy` (min from `PASSWORD_MIN_LENGTH`, default 8; max 128), and `burnPasswordCheck` so Step 5 can make "unknown email" take as long as "wrong password".
+- `services/otp.ts` (Part 1 §8.2): `generateCode` (`crypto.randomInt`), `issueOtp` (replaces the single challenge per email, 10 min expiry, 60 s resend cooldown, max 5 sends per hour per email, `429 RATE_LIMITED` with `details.retryAfterSeconds`), `verifyOtp` (four failure reasons, attempt counter, deletes the challenge on success) and `otpFailureToError` (`OTP_NOT_FOUND` / `OTP_EXPIRED` / `OTP_INVALID` 422, `OTP_ATTEMPTS_EXCEEDED` 429). Only `salt:sha256(salt:email:code)` is stored.
+- `services/mailer.ts`: Nodemailer transport from env, `sendOtpEmail`; logs the code to the console in `development` only; tests use the JSON transport (no sockets) and can inject a stub with `setMailTransport`.
+- `services/tokens.ts` (§8.4): `signAccessToken` / `verifyAccessToken` (HS256 only, claims `sub`, `role`, `scope`, `jti`), refresh tokens (256-bit random, SHA-256 hash stored, `family_id`), `rotateRefreshToken` (reuse of a revoked token revokes the whole family and the revocation is committed before the 401), `revokeAllForUser`, `revokeByToken`, and cookie helpers (`httpOnly`, `secure`/`sameSite` from env, path `${API_BASE_PATH}/auth`).
+- `middleware/auth.ts`: `authenticate({ allowOnboarding })` loads the user from the database on every request (so deactivation and role changes apply on the next call) and uses the DB role; `requireRole(...)` and `requireCapability(predicate)`. `req.user` is typed through `src/types/express.d.ts`.
+- `middleware/rateLimit.ts`: `loginLimiter` (10 / 15 min per IP + email), `registerLimiter` (10 / hour per IP), `otpLimiter` (20 / 15 min per IP), and `resetRateLimitStores()` for tests.
+- Also added: `modules/users/user.repository.ts` (`UserRow` -> `UserRecord`), `db/time.ts` (`fromDbDateTime`, `toIso`), the `DbExecutor` type, and the specific error codes of Part 1 §8 / §12 in `AppError.ts`.
+- Tests: 97 new (544 in total) covering every item in the step plan, including "no plaintext OTP or token is ever stored".
+
+Deviations / notes:
+
+- **New migration `007_otp_send_window`.** §8.2 asks for "max 5 sends per hour per email", but §10.2's `otp_challenges` is a single replaced row per email, which loses the history needed to count. Two columns (`send_count`, `send_window_started_at`) keep the count, and the row is updated in place on resend. Rolling back drops them.
+- **argon2id instead of bcrypt**, so `BCRYPT_COST` is currently unused. Production uses the OWASP minimum (19 MiB, 2 passes); tests use the cheapest valid parameters.
+- **No 30-second user cache in `authenticate`.** The plan calls it acceptable, not required; one primary-key lookup per request is cheap and makes deactivation instant.
+- **A wrong code that uses the last attempt already returns `attempts-exceeded`** (not `wrong-code`), so the client learns immediately that it must request a new code.
+- `verifyOtp` returns the failure instead of throwing. Throwing inside a transaction would roll back the attempt counter; callers commit first, then call `otpFailureToError`.
+- Onboarding tokens live 30 minutes (access tokens 15): they have no refresh cookie behind them and the user needs time to read an email and draw a signature.
+- A refresh token that is replayed (even by a second browser tab racing the first) revokes the family. The frontend must serialise `/auth/refresh` calls.
+- **Bug found by the tests and fixed:** two parallel first requests for the same email could deadlock on InnoDB's gap lock (`ER_LOCK_DEADLOCK`); `issueOtp` now retries duplicate-key and deadlock errors, after which the loser is correctly told to wait for the cooldown.
+- Fixed Step 2's hard-coded "6 migrations" assertion so it counts the files in `migrations/` instead.
