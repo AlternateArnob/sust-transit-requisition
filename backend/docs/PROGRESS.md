@@ -59,3 +59,21 @@ Deviations / notes:
 - Tests run migrations through the Knex CLI in a child process (Vitest cannot hand TypeScript migration files to Knex), and test files run one at a time (`fileParallelism: false`) because they share one database.
 - `files.owner_user_id` has an index but no foreign key, exactly as in §10.2 (a FK would make `users` and `files` circular).
 - `dateStrings: true` means `DATETIME(3)` columns come back as `"2026-11-25 08:00:00.000"` (UTC, not ISO); services must convert when building API responses.
+
+## Step 3 — Domain layer (pure logic ported from the frontend) — 2026-11-26
+
+- `src/domain/` now holds every business rule that needs no database: `permissions`, `recommendation`, `requisitionStatus` (status computation, queues, and the §11.2 transition table as data with `assertTransition`), `validators` (3-hour rule, route parsing, `buildTripFromInput`), `schedule`, `vehicleEligibility`, `allocationGuards`, `mileage`, `applicationNumber` and `slips`.
+- `src/types/index.ts` defines the small camelCase shapes (`TripLike`, `AllocationLike`, `VehicleLike`, ...) the domain works on, so it never depends on database rows.
+- Tests: 317 domain tests (447 in total), no database. They include every mandatory case from the step plan, plus a purity test that fails if a domain file imports Express, Knex, the DB or the env config, touches `process.env`, or reads the clock.
+
+Deviations / notes:
+
+- **Stricter Administrator queue** (as the plan requires): `Partially Approved` is only in the queue while a trip is still `Pending`. The frontend helper `isInTransportAdministratorQueue` still uses the old rule and should be changed to match (Part 1 §20).
+- **`computeApplicationStatus` and Completed trips:** the frontend version ignores the `Completed` trip status. Here a `Completed` trip counts as approved, so deciding a sibling trip after another was completed cannot demote the requisition; if every trip is `Completed` the current status is kept (the completion rules own it).
+- **`isSustEmail` hardened:** exactly one `@` and a non-empty local part (the frontend accepted `@sust.edu`).
+- **`todayString(now)` takes the clock** and uses `Asia/Dhaka` (Part 1 §20); the guards take `today` as an argument. `getWeekdayFromDate` reads `YYYY-MM-DD` as a plain calendar date (via UTC), so it does not depend on the server's time zone, and it throws on invalid dates such as `2026-02-30`.
+- `toMinutes` ignores seconds (trips are entered as `HH:mm`; MySQL returns `HH:mm:00`).
+- `buildTripFromInput` throws a 422 `VALIDATION_ERROR` (`trips.N.destination` / `trips.N.routeText`) on unusable input, and takes an optional trip index.
+- **Additions beyond the step list:** `resolveSubmissionStatus` (rules 11.3 and 11.4 in one place), `snapshotDepartment`, `computeStatusAfterTripCompletion` (§11.7), `toAllocationConflictDetails` (the `details.allocations` shape of §11.9), `isApplicationNumber`, `assign_vehicle` in the transition table, and `APP_TIME_ZONE` / `MAX_TRIP_HOURS` in `config/constants.ts`.
+- **Not decided here:** when a requisition becomes `Ready for Accounts`. §11.2 says "when mileage is recorded for every Completed trip" while table row 13 says "after all trips Completed"; Step 18 (mileage) needs to settle which one applies when some trips are still `Approved`.
+- User-facing messages keep the frontend's wording, including the em/en dashes.

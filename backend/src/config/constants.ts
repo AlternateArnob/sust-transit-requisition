@@ -109,3 +109,9 @@ export const REQUEST_BODY_LIMIT = "100kb";
 export const GLOBAL_RATE_LIMIT = { windowMs: 60_000, limit: 300 } as const;
 export const DB_HEALTH_TIMEOUT_MS = 2_000;
 export const SHUTDOWN_TIMEOUT_MS = 10_000;
+
+// --- Domain rules (Part 1 §11, §20) ---
+/** "Today", application-number year and dashboard "today" all use the university's time zone. */
+export const APP_TIME_ZONE = "Asia/Dhaka";
+/** A trip may hold a vehicle for at most this many hours (and may not cross midnight). */
+export const MAX_TRIP_HOURS = 3;
