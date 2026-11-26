@@ -115,3 +115,11 @@ export const SHUTDOWN_TIMEOUT_MS = 10_000;
 export const APP_TIME_ZONE = "Asia/Dhaka";
 /** A trip may hold a vehicle for at most this many hours (and may not cross midnight). */
 export const MAX_TRIP_HOURS = 3;
+
+/** Part 1 §8.1: after this many consecutive wrong passwords the account is locked for a while. */
+export const LOGIN_MAX_FAILED_ATTEMPTS = 5;
+export const LOGIN_LOCKOUT_MINUTES = 15;
+
+/** Part 1 §8.4: /auth/refresh and /auth/logout require this header (a cheap CSRF defence). */
+export const CSRF_HEADER = "x-requested-with";
+export const CSRF_HEADER_VALUE = "fetch";

@@ -1,3 +1,4 @@
+import { v4 as uuid } from "uuid";
 import type { ApplicantProfile, UserRole } from "../../config/constants.js";
 import { db } from "../../db/knex.js";
 import type { DbExecutor } from "../../db/transaction.js";
@@ -108,4 +109,72 @@ export async function findUserByEmail(
   if (options.forUpdate) query.forUpdate();
   const row = await query;
   return row ? toUserRecord(row) : null;
+}
+
+const isDuplicateKey = (error: unknown): boolean =>
+  (error as { code?: string } | null)?.code === "ER_DUP_ENTRY";
+
+/**
+ * Creates the unverified Applicant row for a new registration (Part 1 §8.3 step 1). Returns the
+ * existing row instead when another request registered the same email a moment earlier.
+ */
+export async function createUnverifiedApplicant(
+  email: string,
+  executor: DbExecutor = db,
+): Promise<UserRecord> {
+  try {
+    await executor("users").insert({
+      id: uuid(),
+      email: normalizeEmail(email),
+      role: "Applicant",
+      is_verified: 0,
+      is_active: 1,
+    });
+  } catch (error) {
+    if (!isDuplicateKey(error)) throw error;
+  }
+  const user = await findUserByEmail(email, executor);
+  if (!user) throw new Error("User row vanished right after insert");
+  return user;
+}
+
+/** OTP proven: the email now belongs to this account. */
+export async function markEmailVerified(id: string, executor: DbExecutor = db): Promise<void> {
+  await executor("users").where({ id }).update({ is_verified: 1 });
+}
+
+/**
+ * Counts one wrong password. On the `maxAttempts`-th consecutive failure the account is locked
+ * until `lockUntil` and the counter starts again from zero, so the next lock needs a full set of
+ * new failures. The row is locked so parallel guesses cannot all read the same count.
+ */
+export async function recordFailedLogin(
+  id: string,
+  options: { maxAttempts: number; lockUntil: Date },
+): Promise<{ locked: boolean }> {
+  return db.transaction(async (trx) => {
+    const row = await trx<UserRow>("users").where({ id }).forUpdate().first();
+    if (!row) return { locked: false };
+
+    const failures = row.failed_login_count + 1;
+    if (failures >= options.maxAttempts) {
+      await trx("users")
+        .where({ id })
+        .update({ failed_login_count: 0, locked_until: options.lockUntil });
+      return { locked: true };
+    }
+    await trx("users").where({ id }).update({ failed_login_count: failures });
+    return { locked: false };
+  });
+}
+
+/** Successful login: clears the failure counter and any expired lock, stamps `last_login_at`. */
+export async function recordSuccessfulLogin(
+  id: string,
+  now: Date,
+  executor: DbExecutor = db,
+): Promise<void> {
+  await executor("users")
+    .where({ id })
+    .update({ failed_login_count: 0, locked_until: null, last_login_at: now });
 }

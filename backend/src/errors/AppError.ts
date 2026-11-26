@@ -70,3 +70,21 @@ export const rateLimited = (
   message = "Too many requests, please try again later",
   details?: unknown,
 ) => new AppError(429, "RATE_LIMITED", message, details);
+
+/** Wrong email or wrong password. One message for both so the response never reveals which (§8.5). */
+export const invalidCredentials = () =>
+  new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
+
+export const accountDeactivated = () =>
+  new AppError(
+    403,
+    "ACCOUNT_DEACTIVATED",
+    "Your account has been deactivated. Contact a Super Admin.",
+  );
+
+export const emailDeliveryFailed = () =>
+  new AppError(
+    502,
+    "EMAIL_DELIVERY_FAILED",
+    "We could not send the verification email. Please try again in a moment.",
+  );

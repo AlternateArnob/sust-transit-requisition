@@ -100,3 +100,31 @@ Deviations / notes:
 - A refresh token that is replayed (even by a second browser tab racing the first) revokes the family. The frontend must serialise `/auth/refresh` calls.
 - **Bug found by the tests and fixed:** two parallel first requests for the same email could deadlock on InnoDB's gap lock (`ER_LOCK_DEADLOCK`); `issueOtp` now retries duplicate-key and deadlock errors, after which the loser is correctly told to wait for the cooldown.
 - Fixed Step 2's hard-coded "6 migrations" assertion so it counts the files in `migrations/` instead.
+
+## Step 5 — Auth endpoints (register, OTP, login, refresh, logout, me) — 2026-11-26
+
+- `modules/auth/` (routes, controller, service, Zod schemas) mounted at `/api/v1/auth`:
+  - `POST /auth/register` — SUST-domain check (`422 EMAIL_DOMAIN_NOT_ALLOWED`), verified duplicate `409 EMAIL_TAKEN`, unverified duplicate reuses the account and sends a new code; creates `users(role='Applicant', is_verified=0)`; responds `202 { email, otpExpiresAt, resendAvailableAt, devCode? }`.
+  - `POST /auth/otp/verify` — code check and `is_verified = 1` commit together; returns `{ onboardingToken, user }`; failure codes per Part 1 §8.2.
+  - `POST /auth/otp/resend` — respects the 60 s cooldown (`429` with `details.retryAfterSeconds`).
+  - `POST /auth/login` — order: unknown email -> lock -> deactivated -> unverified / no password -> password check. 5 consecutive failures lock the account for 15 minutes (`429`), success resets the counter and sets `last_login_at`. Returns `{ accessToken, expiresIn, user }` and sets the refresh cookie.
+  - `POST /auth/refresh` — needs the cookie and `X-Requested-With: fetch`; rotates the token (family-revoke on reuse is in Step 4's `rotateRefreshToken`); re-reads the user, so a deactivated, unverified or deleted account is refused and all its tokens revoked.
+  - `POST /auth/logout` — needs `X-Requested-With: fetch`; revokes this browser's refresh-token family, clears the cookie, `204`.
+  - `GET /auth/me` — accepts onboarding tokens; returns `PublicUser` plus `nextStep` (`"otp"` / `"profile-setup"`) while onboarding is unfinished.
+- `loginLimiter`, `registerLimiter` and `otpLimiter` from Step 4 are applied to their routes.
+- New pieces: `domain/onboarding.ts` (pure `getNextStep` / `missingProfileFields`, reused later by `PUT /me/profile` and requisition submission), `modules/users/user.mapper.ts` (the single `toPublicUser`, never exposes the hash), `middleware/csrf.ts`, the new `user.repository` functions, and the `invalidCredentials` / `accountDeactivated` / `emailDeliveryFailed` error helpers.
+- Tests: 95 new (639 in total): 72 integration tests over the real app and MySQL, and 23 unit tests (onboarding rules, mapper, purity guard for the new domain file). Three deliberate bugs (lockout threshold, a leaked token, a missing CSRF check) were each caught by a test.
+
+Deviations / notes:
+
+- **Security fix: no onboarding token from `/auth/login`.** Part 1 §12.1 and Part 2 Step 5 return an `onboardingToken` (plus `user`) when an _unverified_ or _password-less_ account logs in, on nothing but an email address. Onboarding tokens may complete the profile and set the password, so anyone who knew an applicant's email could set a password on the account and later use it (for example for a verified applicant who closed the tab before choosing one). Instead, both cases now email a fresh code (`resume` purpose for verified accounts) and answer `200 { nextStep: "otp", email, otpExpiresAt, resendAvailableAt, devCode? }` with **no token and no user data**. The token is issued only by `POST /auth/otp/verify`, after the owner proved access to the mailbox. Consequence for the frontend: a `nextStep` of `"otp"` always means "go to the code screen"; `"profile-setup"` is learned from `GET /auth/me` after verification. **Step 6 must additionally reject `PUT /me/profile` and `POST /me/signature` for unverified accounts** (defence in depth).
+- **Lockout response:** a locked account gets `429 RATE_LIMITED` with a generic message and `details.retryAfterSeconds` (Part 1 §8.1 leaves `429` vs a dedicated code to the owner). After the lock is set the counter restarts at 0, so a new lock needs five new failures rather than one.
+- **`POST /auth/logout` does not require a bearer token.** The table says "any / onboarding", but an expired access token must not stop someone from ending their session. The cookie plus the `X-Requested-With` header is what authorises it; with no valid cookie it is a no-op `204`.
+- **`POST /auth/otp/resend` answers `202` for unknown, verified and deactivated addresses without sending anything**, so it cannot be used to list registered emails or to flood the owner of an active account with mail. The 60 s / 5-per-hour limits apply to real unverified accounts.
+- **Registering a deactivated, unverified account** returns `403 ACCOUNT_DEACTIVATED` (not covered by the plan).
+- **Mail delivery:** with `OTP_DEV_ECHO=false`, an SMTP failure returns `502 EMAIL_DELIVERY_FAILED` and deletes the challenge, so the user is not stuck behind the resend cooldown. With `OTP_DEV_ECHO=true` (development only) the failure is logged and ignored, because the code is in the response anyway.
+- **Login while a code is still cooling down** returns the `429` from the OTP service (a user who just registered and clicks "log in" within 60 s is told how long to wait).
+- The OTP `code` must be exactly `OTP_LENGTH` digits; anything else is `422 VALIDATION_ERROR` and does not cost an attempt.
+- `domain/onboarding.ts` was added to the Step 3 purity test's expected file list.
+- Not done here (belongs to later steps): audit rows for login success/failure (Step 7 adds `audit.log`, Step 21 completes the list), and the profile fields themselves (Step 6, so the full register -> verify -> profile -> login test lands there).
+- The global limiter allows 300 requests a minute per app instance, so each `describe` in `auth.test.ts` builds its own app.

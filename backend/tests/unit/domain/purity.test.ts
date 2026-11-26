@@ -13,6 +13,7 @@ describe("src/domain stays pure", () => {
         "allocationGuards.ts",
         "applicationNumber.ts",
         "mileage.ts",
+        "onboarding.ts",
         "permissions.ts",
         "recommendation.ts",
         "requisitionStatus.ts",
