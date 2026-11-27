@@ -27,6 +27,45 @@ const blank = (value: string | null | undefined): boolean => !value || value.tri
 
 export const needsApplicantProfile = (role: UserRole): boolean => PROFILE_ROLES.includes(role);
 
+/** The profile fields that describe where an applicant belongs (Part 1 §12.3). */
+export type AffiliationField = "department" | "office" | "designation" | "studentRegNumber";
+
+/**
+ * Which affiliation fields each applicant type uses. Student: department + registration number;
+ * Teacher: department + designation; Officer: office + designation. Every other field is not
+ * part of that profile and is stored empty, so a stale value can never leak into a requisition's
+ * `department ?? office` snapshot (an Officer's old department would otherwise win over the office).
+ */
+export const AFFILIATION_FIELDS: Readonly<Record<ApplicantProfile, readonly AffiliationField[]>> = {
+  Student: ["department", "studentRegNumber"],
+  Teacher: ["department", "designation"],
+  Officer: ["office", "designation"],
+};
+
+const ALL_AFFILIATION_FIELDS: readonly AffiliationField[] = [
+  "department",
+  "office",
+  "designation",
+  "studentRegNumber",
+];
+
+/**
+ * The four affiliation fields as they should be stored for `profile`: the ones that profile uses
+ * keep their (trimmed) value, the rest become `null`. Blank values become `null` too.
+ */
+export function pickAffiliation(
+  profile: ApplicantProfile,
+  values: Partial<Record<AffiliationField, string | null>>,
+): Record<AffiliationField, string | null> {
+  const used = AFFILIATION_FIELDS[profile];
+  const result = {} as Record<AffiliationField, string | null>;
+  for (const field of ALL_AFFILIATION_FIELDS) {
+    const value = used.includes(field) ? values[field]?.trim() : undefined;
+    result[field] = value ? value : null;
+  }
+  return result;
+}
+
 /**
  * Names (camelCase, as in the API) of the profile fields that are still empty. Student needs a
  * department and registration number, Teacher a department and designation, Officer an office and
@@ -40,21 +79,12 @@ export function missingProfileFields(user: OnboardingSubject): string[] {
   if (blank(user.mobile)) missing.push("mobile");
   if (!user.hasSignature) missing.push("signature");
 
-  switch (user.applicantProfile) {
-    case "Student":
-      if (blank(user.department)) missing.push("department");
-      if (blank(user.studentRegNumber)) missing.push("studentRegNumber");
-      break;
-    case "Teacher":
-      if (blank(user.department)) missing.push("department");
-      if (blank(user.designation)) missing.push("designation");
-      break;
-    case "Officer":
-      if (blank(user.office)) missing.push("office");
-      if (blank(user.designation)) missing.push("designation");
-      break;
-    default:
-      missing.push("applicantProfile");
+  if (!user.applicantProfile) {
+    missing.push("applicantProfile");
+    return missing;
+  }
+  for (const field of AFFILIATION_FIELDS[user.applicantProfile]) {
+    if (blank(user[field])) missing.push(field);
   }
   return missing;
 }

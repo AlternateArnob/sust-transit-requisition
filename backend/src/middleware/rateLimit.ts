@@ -95,3 +95,26 @@ export const otpLimiter = createRateLimiter({
   keyGenerator: clientIp,
   store: trackedStore(),
 });
+
+// --- Per-user limiters (Part 1 §8.5) --------------------------------------------------------------
+
+/** Limits by the logged-in user, falling back to the IP. Run after `authenticate`. */
+const userKey = (req: Request): string => req.user?.id ?? clientIp(req);
+
+/** 10 password changes per 15 minutes per user: the current password is a guessable secret. */
+export const passwordChangeLimiter = createRateLimiter({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 10,
+  message: "Too many password change attempts. Please try again later.",
+  keyGenerator: userKey,
+  store: trackedStore(),
+});
+
+/** 30 uploads per 15 minutes per user. */
+export const uploadLimiter = createRateLimiter({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 30,
+  message: "Too many uploads. Please try again later.",
+  keyGenerator: userKey,
+  store: trackedStore(),
+});

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { z } from "zod";
+import { DEFAULT_SEED_ADMIN_PASSWORD } from "./constants.js";
 
 /** "true" / "false" strings -> boolean. Defaults are applied to the parsed boolean. */
 const booleanString = z.enum(["true", "false"]).transform((value) => value === "true");
@@ -91,7 +92,7 @@ const baseSchema = z.object({
   MAX_DOCUMENT_BYTES: positiveInt.default(5_242_880),
 
   // --- Seed ---
-  SEED_ADMIN_PASSWORD: z.string().min(1).default("Admin@123"),
+  SEED_ADMIN_PASSWORD: z.string().min(1).default(DEFAULT_SEED_ADMIN_PASSWORD),
 });
 
 export const envSchema = baseSchema.superRefine((cfg, ctx) => {

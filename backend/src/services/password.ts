@@ -40,15 +40,18 @@ export async function burnPasswordCheck(plain: string): Promise<void> {
   await verifyPassword(await dummyHash, plain);
 }
 
+/** The first policy violation as a message for the user, or `null` when the password is acceptable. */
+export function checkPasswordPolicy(password: string): string | null {
+  const min = env.PASSWORD_MIN_LENGTH;
+  if (password.length < min) return `Password must be at least ${min} characters`;
+  if (password.length > PASSWORD_MAX_LENGTH) {
+    return `Password must be at most ${PASSWORD_MAX_LENGTH} characters`;
+  }
+  return null;
+}
+
 /** Throws a 422 for a password that breaks the policy; `path` names the offending field. */
 export function assertPasswordPolicy(password: string, path = "password"): void {
-  const min = env.PASSWORD_MIN_LENGTH;
-  if (password.length < min) {
-    throw validation([{ path, message: `Password must be at least ${min} characters` }]);
-  }
-  if (password.length > PASSWORD_MAX_LENGTH) {
-    throw validation([
-      { path, message: `Password must be at most ${PASSWORD_MAX_LENGTH} characters` },
-    ]);
-  }
+  const message = checkPasswordPolicy(password);
+  if (message) throw validation([{ path, message }]);
 }

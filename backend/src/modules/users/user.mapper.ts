@@ -33,6 +33,9 @@ export interface MeResponse extends PublicUser {
   nextStep?: OnboardingStep;
 }
 
+/** Where a stored file is served (Part 1 §12.17). */
+export const signatureUrlFor = (fileId: string): string => `${env.API_BASE_PATH}/files/${fileId}`;
+
 /** Built once and used by every endpoint that returns a user. */
 export function toPublicUser(user: UserRecord): PublicUser {
   return {
@@ -49,9 +52,7 @@ export function toPublicUser(user: UserRecord): PublicUser {
     ...(user.headOfDepartment ? { headOfDepartment: user.headOfDepartment } : {}),
     ...(user.headOfOffice ? { headOfOffice: user.headOfOffice } : {}),
     hasSignature: user.signatureFileId !== null,
-    ...(user.signatureFileId
-      ? { signatureUrl: `${env.API_BASE_PATH}/files/${user.signatureFileId}` }
-      : {}),
+    ...(user.signatureFileId ? { signatureUrl: signatureUrlFor(user.signatureFileId) } : {}),
     isVerified: user.isVerified,
     isActive: user.isActive,
     createdAt: toIso(user.createdAt) ?? user.createdAt,

@@ -123,3 +123,9 @@ export const LOGIN_LOCKOUT_MINUTES = 15;
 /** Part 1 §8.4: /auth/refresh and /auth/logout require this header (a cheap CSRF defence). */
 export const CSRF_HEADER = "x-requested-with";
 export const CSRF_HEADER_VALUE = "fetch";
+
+/**
+ * Part 1 §16.2: the development-only password of the seeded accounts. The seed refuses to run in
+ * production while `SEED_ADMIN_PASSWORD` still has this value.
+ */
+export const DEFAULT_SEED_ADMIN_PASSWORD = "Admin@123";

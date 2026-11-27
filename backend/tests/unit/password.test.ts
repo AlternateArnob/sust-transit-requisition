@@ -4,6 +4,7 @@ import { AppError } from "../../src/errors/AppError.js";
 import {
   assertPasswordPolicy,
   burnPasswordCheck,
+  checkPasswordPolicy,
   hashPassword,
   PASSWORD_MAX_LENGTH,
   verifyPassword,
@@ -73,5 +74,21 @@ describe("assertPasswordPolicy", () => {
 
   it("defaults to a minimum of 8 characters (Part 1 §8.1)", () => {
     expect(env.PASSWORD_MIN_LENGTH).toBe(8);
+  });
+});
+
+describe("checkPasswordPolicy", () => {
+  it("returns null for an acceptable password", () => {
+    expect(checkPasswordPolicy("x".repeat(env.PASSWORD_MIN_LENGTH))).toBeNull();
+    expect(checkPasswordPolicy("x".repeat(PASSWORD_MAX_LENGTH))).toBeNull();
+  });
+
+  it("returns the message for a too-short or too-long password, without throwing", () => {
+    expect(checkPasswordPolicy("x".repeat(env.PASSWORD_MIN_LENGTH - 1))).toBe(
+      `Password must be at least ${env.PASSWORD_MIN_LENGTH} characters`,
+    );
+    expect(checkPasswordPolicy("x".repeat(PASSWORD_MAX_LENGTH + 1))).toBe(
+      `Password must be at most ${PASSWORD_MAX_LENGTH} characters`,
+    );
   });
 });

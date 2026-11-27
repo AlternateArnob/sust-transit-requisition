@@ -178,3 +178,49 @@ export async function recordSuccessfulLogin(
     .where({ id })
     .update({ failed_login_count: 0, locked_until: null, last_login_at: now });
 }
+
+/** The profile columns a user may change about themselves (Part 1 §12.3). Omitted keys stay as they are. */
+export interface ProfileUpdate {
+  fullName: string;
+  mobile: string;
+  applicantProfile?: ApplicantProfile;
+  department?: string | null;
+  office?: string | null;
+  designation?: string | null;
+  studentRegNumber?: string | null;
+  passwordHash?: string;
+}
+
+export async function updateProfileColumns(
+  id: string,
+  update: ProfileUpdate,
+  executor: DbExecutor = db,
+): Promise<void> {
+  const columns: Record<string, unknown> = {
+    full_name: update.fullName,
+    mobile: update.mobile,
+  };
+  if (update.applicantProfile !== undefined) columns.applicant_profile = update.applicantProfile;
+  if (update.department !== undefined) columns.department = update.department;
+  if (update.office !== undefined) columns.office = update.office;
+  if (update.designation !== undefined) columns.designation = update.designation;
+  if (update.studentRegNumber !== undefined) columns.student_reg_number = update.studentRegNumber;
+  if (update.passwordHash !== undefined) columns.password_hash = update.passwordHash;
+  await executor("users").where({ id }).update(columns);
+}
+
+export async function setPasswordHash(
+  id: string,
+  passwordHash: string,
+  executor: DbExecutor = db,
+): Promise<void> {
+  await executor("users").where({ id }).update({ password_hash: passwordHash });
+}
+
+export async function setSignatureFileId(
+  id: string,
+  fileId: string | null,
+  executor: DbExecutor = db,
+): Promise<void> {
+  await executor("users").where({ id }).update({ signature_file_id: fileId });
+}

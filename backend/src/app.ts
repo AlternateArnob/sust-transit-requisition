@@ -32,7 +32,13 @@ export function createApp(): Express {
   );
   app.use(helmet());
   app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
-  app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
+  // The signature route accepts a larger JSON body (a base64 image) and parses it itself, after
+  // authentication (middleware/upload.ts). Every other JSON body is capped at REQUEST_BODY_LIMIT.
+  const jsonParser = express.json({ limit: REQUEST_BODY_LIMIT });
+  const signatureJsonPath = `${env.API_BASE_PATH}/me/signature`;
+  app.use((req, res, next) =>
+    req.path === signatureJsonPath ? next() : jsonParser(req, res, next),
+  );
   app.use(cookieParser());
   app.use(hpp());
   app.use(createGlobalRateLimiter());

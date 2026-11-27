@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  AFFILIATION_FIELDS,
   getNextStep,
   isOnboardingComplete,
   missingProfileFields,
   needsApplicantProfile,
+  pickAffiliation,
   type OnboardingSubject,
 } from "../../../src/domain/onboarding.js";
 
@@ -132,5 +134,59 @@ describe("getNextStep", () => {
     const admin = complete({ role: "TransportInCharge", applicantProfile: null, fullName: null });
     expect(getNextStep(admin)).toBeNull();
     expect(getNextStep({ ...admin, hasPassword: false })).toBe("profile-setup");
+  });
+});
+
+describe("AFFILIATION_FIELDS and pickAffiliation", () => {
+  const everything = {
+    department: "Physics",
+    office: "Central Library",
+    designation: "Lecturer",
+    studentRegNumber: "2019331001",
+  };
+
+  it("lists the fields each applicant type uses", () => {
+    expect(AFFILIATION_FIELDS.Student).toEqual(["department", "studentRegNumber"]);
+    expect(AFFILIATION_FIELDS.Teacher).toEqual(["department", "designation"]);
+    expect(AFFILIATION_FIELDS.Officer).toEqual(["office", "designation"]);
+  });
+
+  it("keeps a Student's department and registration number and empties the rest", () => {
+    expect(pickAffiliation("Student", everything)).toEqual({
+      department: "Physics",
+      office: null,
+      designation: null,
+      studentRegNumber: "2019331001",
+    });
+  });
+
+  it("keeps a Teacher's department and designation and empties the rest", () => {
+    expect(pickAffiliation("Teacher", everything)).toEqual({
+      department: "Physics",
+      office: null,
+      designation: "Lecturer",
+      studentRegNumber: null,
+    });
+  });
+
+  it("keeps an Officer's office and designation, so a stale department cannot win later", () => {
+    expect(pickAffiliation("Officer", everything)).toEqual({
+      department: null,
+      office: "Central Library",
+      designation: "Lecturer",
+      studentRegNumber: null,
+    });
+  });
+
+  it("trims values and turns blank or missing ones into null", () => {
+    expect(
+      pickAffiliation("Teacher", { department: "  Physics  ", designation: "   ", office: "x" }),
+    ).toEqual({ department: "Physics", office: null, designation: null, studentRegNumber: null });
+    expect(pickAffiliation("Student", {})).toEqual({
+      department: null,
+      office: null,
+      designation: null,
+      studentRegNumber: null,
+    });
   });
 });

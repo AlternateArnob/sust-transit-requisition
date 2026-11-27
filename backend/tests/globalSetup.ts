@@ -1,8 +1,13 @@
+import { mkdirSync, rmSync } from "node:fs";
 import "./testEnv.js";
 import { migrateLatest } from "./helpers/migrate.js";
 
 /** Runs once per test run, before any test file: brings the test database up to date. */
-export default function globalSetup(): void {
+export default function globalSetup(): () => void {
+  const uploadDir = process.env.UPLOAD_DIR as string;
+  rmSync(uploadDir, { recursive: true, force: true });
+  mkdirSync(uploadDir, { recursive: true });
+
   try {
     migrateLatest();
   } catch (error) {
@@ -13,4 +18,6 @@ export default function globalSetup(): void {
         `        ${String((error as Error).message).split("\n")[0]}\n`,
     );
   }
+
+  return () => rmSync(uploadDir, { recursive: true, force: true });
 }

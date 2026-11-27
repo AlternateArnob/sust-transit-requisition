@@ -1,6 +1,8 @@
 import type { ErrorRequestHandler } from "express";
+import multer from "multer";
 import { ZodError } from "zod";
 import { AppError, type ErrorCode, type ErrorDetail } from "../errors/AppError.js";
+import { toUploadError } from "./upload.js";
 
 interface ErrorBody {
   error: { code: ErrorCode; message: string; details?: unknown; requestId: string };
@@ -53,6 +55,9 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     code = "VALIDATION_ERROR";
     message = "Validation failed";
     details = zodDetails(err);
+  } else if (err instanceof multer.MulterError) {
+    const upload = toUploadError(err);
+    if (upload instanceof AppError) ({ status, code, message, details } = upload);
   } else if (isDuplicateEntry(err)) {
     status = 409;
     code = "CONFLICT";
