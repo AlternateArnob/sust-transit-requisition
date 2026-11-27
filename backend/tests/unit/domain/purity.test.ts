@@ -10,6 +10,7 @@ describe("src/domain stays pure", () => {
   it("contains the expected modules", () => {
     expect(files.sort()).toEqual(
       [
+        "accountStatus.ts",
         "allocationGuards.ts",
         "applicationNumber.ts",
         "mileage.ts",

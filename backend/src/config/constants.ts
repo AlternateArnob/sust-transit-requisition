@@ -129,3 +129,24 @@ export const CSRF_HEADER_VALUE = "fetch";
  * production while `SEED_ADMIN_PASSWORD` still has this value.
  */
 export const DEFAULT_SEED_ADMIN_PASSWORD = "Admin@123";
+
+// Part 1 §13. `notifications.type` is a VARCHAR (new types need no migration), but every writer
+// goes through this list so a typo cannot create a type the frontend does not know.
+export const NOTIFICATION_TYPES = [
+  "New Requisition",
+  "Resubmission",
+  "Recommendation",
+  "Sent Back to Applicant",
+  "Forwarded to Administrator",
+  "Trip Approved",
+  "Trip Rejected",
+  // The hyphen-less spelling is the stored value kept for the frontend's type union (§13 note).
+  "Sent Back to Transport In Charge",
+  "Account Status Changed",
+  "Configuration",
+  "Mileage Recorded",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export const NOTIFICATION_LINK_TYPES = ["requisition", "user"] as const;
+export type NotificationLinkType = (typeof NOTIFICATION_LINK_TYPES)[number];

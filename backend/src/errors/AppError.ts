@@ -25,7 +25,9 @@ export type ErrorCode =
   | "DUPLICATE_REGISTRATION"
   | "VEHICLE_HAS_HISTORY"
   | "VEHICLE_HAS_UPCOMING_ALLOCATIONS"
-  | "DRIVER_IN_USE";
+  | "DRIVER_IN_USE"
+  | "LAST_SUPER_ADMIN"
+  | "USER_HAS_HISTORY";
 
 export interface ErrorDetail {
   path?: string;
