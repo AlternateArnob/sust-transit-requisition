@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { directoryRouter } from "./modules/directory/directory.routes.js";
+import { driversRouter } from "./modules/drivers/driver.routes.js";
 import { filesRouter } from "./modules/files/file.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { meRouter } from "./modules/users/profile.routes.js";
@@ -15,3 +16,4 @@ apiRouter.use("/directory", directoryRouter);
 apiRouter.use("/me", meRouter);
 apiRouter.use("/files", filesRouter);
 apiRouter.use("/users", usersRouter);
+apiRouter.use("/drivers", driversRouter);

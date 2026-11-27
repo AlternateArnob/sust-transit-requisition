@@ -1,3 +1,4 @@
+import { PHONE_PATTERN } from "../../http/fields.js";
 import { z } from "zod";
 import { USER_ROLES } from "../../config/constants.js";
 import { paginationShape } from "../../http/pagination.js";
@@ -11,7 +12,7 @@ export const APPOINTABLE_ROLES = [
   "SuperAdmin",
 ] as const;
 
-const MOBILE_PATTERN = /^[0-9+()\- ]{5,30}$/;
+const MOBILE_PATTERN = PHONE_PATTERN;
 
 /** Lower-cased and trimmed, like the `users.email` column (Part 1 §10.2). */
 const email = z

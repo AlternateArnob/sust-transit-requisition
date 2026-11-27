@@ -1,3 +1,4 @@
+import { PHONE_PATTERN } from "../../http/fields.js";
 import { z } from "zod";
 import { APPLICANT_PROFILES } from "../../config/constants.js";
 import { PASSWORD_MAX_LENGTH } from "../../services/password.js";
@@ -5,7 +6,7 @@ import { PASSWORD_MAX_LENGTH } from "../../services/password.js";
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 
 /** Digits plus the usual separators, e.g. `01712-345678` or `+880 1712 345678`. */
-const MOBILE_PATTERN = /^[0-9+()\- ]{5,30}$/;
+const MOBILE_PATTERN = PHONE_PATTERN;
 
 /**
  * Part 1 §12.3. `fullName` and `mobile` are always required. The other fields depend on the

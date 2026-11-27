@@ -174,3 +174,26 @@ Deviations / notes:
 - `user.reactivated` is an extra audit action (the plan lists only deactivation).
 - A stale head scope on a non-head role is ignored and cleared rather than rejected.
 - Through HTTP the last-Super-Admin guard is only reachable in a race (the caller is always an active Super Admin and cannot change themselves), so its unit-level tests call the service directly.
+
+## Step 8 — Drivers — 2026-11-27
+
+- `modules/drivers/` (routes, controller, service, repository, schemas, mapper) mounted at `/api/v1/drivers`, behind `authenticate()` and `requireCapability(canManageDrivers)` (Transport In-Charge, Administrator, Super Admin; everyone else `403`, onboarding tokens `403`):
+  - `GET /drivers` — `{ data: DriverDto[] }`, unpaginated (Part 1 §7.2 allows it for small reference lists), sorted by name. Filters `status` and `q` (name, designation or phone, case-insensitive, `%` and `_` matched literally). Unknown query keys are `422`.
+  - `POST /drivers` — `{ name, designation, phone? }`; the driver is created `Active`. `201` with the DTO.
+  - `PATCH /drivers/:id` — `name`, `designation`, `phone` (`null` or `""` removes it). A request that changes nothing writes nothing.
+  - `POST /drivers/:id/deactivate` — sets `Inactive` **and** runs `UPDATE vehicles SET permanent_driver_id = NULL WHERE permanent_driver_id = ?` in the same transaction as the status change and its audit row. Already inactive: `200`, nothing written.
+  - `POST /drivers/:id/activate` — sets `Active` (the old vehicle link is not restored; assign it again on the vehicle). Already active: `200`, nothing written.
+  - `DELETE /drivers/:id` — `204`, or `409 DRIVER_IN_USE` with `details: { vehicles, allocations, dutySlips, allocationHistory }` (counts) while anything still points at the driver.
+- DTO: `{ id, name, designation, phone?, status, permanentVehicleId? }`. `permanentVehicleId` is never stored on `drivers`; it is computed by `LEFT JOIN vehicles ON vehicles.permanent_driver_id = drivers.id`, so the vehicle row stays the single source of truth.
+- Every write is one transaction that locks the driver row first (`SELECT … FOR UPDATE`) and writes its audit row (`driver.created`, `driver.updated`, `driver.deactivated`, `driver.activated`, `driver.deleted`, each with a before/after snapshot). Lock order for everything that touches both tables is **driver first, vehicle second** (Step 9's assignment code must follow it).
+- `src/http/fields.ts`: one `PHONE_PATTERN` and the `phoneNumber` / `clearablePhoneNumber` schema helpers. The two private copies in `profile.schemas.ts` and `user.admin.schemas.ts` now import the pattern (behaviour unchanged).
+- Tests: 62 new (1,028 in total): 51 integration (access control by role, create, list filters and search, update, activate/deactivate, delete blockers, audit rows, parallel requests) and 11 unit (schemas, mapper). Three deliberate bugs (deactivate not clearing the link, clearing it outside the transaction, delete ignoring allocations) were caught by 5, 3 and 1 tests.
+
+Deviations / notes:
+
+- **The "deactivation clears the vehicle link" test is a real test now, not `it.todo`.** The plan postponed it to Step 9 because it assumed no way to create a vehicle yet; the `vehicles` table and a test factory exist, so the test inserts the vehicle directly. Step 9 adds the same check through the vehicle API.
+- **`DELETE` also looks at `allocation_history`.** The plan lists allocations, duty slips and vehicles. History rows keep a bare `driver_id` (no foreign key, no name snapshot), so deleting the driver would leave rows that point at nobody; this mirrors the rule for vehicles (§10.3). `allocations.driver_id` is `ON DELETE SET NULL` and `duty_slips.driver_id` has no foreign key at all, so the database would silently blank those references; the service refuses before that can happen. A driver who only ever drove can be kept as `Inactive`.
+- **Status and the vehicle link are not accepted by `POST` or `PATCH`** (`422 Unrecognized key`). The frontend's form sends them back along with the rest of the driver object; Step 23 must send only `name`, `designation` and `phone`, and use the activate/deactivate endpoints.
+- **No `GET /drivers/:id`**: it is not in Part 1 §12.6 and the frontend works from the list.
+- Phone numbers use the same pattern as mobile numbers (5-30 characters from digits, `+`, `(`, `)`, `-`, space); the frontend form had no format rule.
+- Activate/deactivate are idempotent (`200`, no audit row when nothing changes) rather than `409`, so a double click does no harm.
