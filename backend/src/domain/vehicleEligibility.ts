@@ -123,3 +123,18 @@ export function canForwardToAdministrator(
 ): boolean {
   return getTripsMissingVehicleAssignment(requisition, allocations).length === 0;
 }
+
+/** A vehicle can take requisitions only while it is Active and its availability flag is on. */
+export function isVehicleEligibleForRequisition(
+  vehicle: Pick<VehicleLike, "operationalStatus" | "availableForRequisition">,
+): boolean {
+  return vehicle.operationalStatus === "Active" && vehicle.availableForRequisition;
+}
+
+/** True when a change moves a vehicle from "can take requisitions" to "cannot" (Part 1 §11.9). */
+export function becomesUnavailable(
+  before: Pick<VehicleLike, "operationalStatus" | "availableForRequisition">,
+  after: Pick<VehicleLike, "operationalStatus" | "availableForRequisition">,
+): boolean {
+  return isVehicleEligibleForRequisition(before) && !isVehicleEligibleForRequisition(after);
+}

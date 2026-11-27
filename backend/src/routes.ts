@@ -6,6 +6,7 @@ import { filesRouter } from "./modules/files/file.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { meRouter } from "./modules/users/profile.routes.js";
 import { usersRouter } from "./modules/users/user.admin.routes.js";
+import { vehiclesRouter } from "./modules/vehicles/vehicle.routes.js";
 
 /** Mounted at env.API_BASE_PATH by app.ts. Later steps register their module routers here. */
 export const apiRouter = Router();
@@ -17,3 +18,4 @@ apiRouter.use("/me", meRouter);
 apiRouter.use("/files", filesRouter);
 apiRouter.use("/users", usersRouter);
 apiRouter.use("/drivers", driversRouter);
+apiRouter.use("/vehicles", vehiclesRouter);

@@ -197,3 +197,25 @@ Deviations / notes:
 - **No `GET /drivers/:id`**: it is not in Part 1 §12.6 and the frontend works from the list.
 - Phone numbers use the same pattern as mobile numbers (5-30 characters from digits, `+`, `(`, `)`, `-`, space); the frontend form had no format rule.
 - Activate/deactivate are idempotent (`200`, no audit row when nothing changes) rather than `409`, so a double click does no harm.
+
+## Step 9 — Vehicles — 2026-11-27
+
+**Status: written but NOT yet run.** It was produced in a sandbox with no network, so `npm install`, MySQL, lint, typecheck and the tests were not available. Run the gate locally (`npm run lint && npm run typecheck && npm test`) and fix anything it reports before starting Step 10.
+
+- `modules/vehicles/` (routes, controller, service, repository, schemas, mapper) mounted at `/api/v1/vehicles`, behind `authenticate()` and `requireCapability(canManageVehicles)`:
+  - `GET /vehicles` — `{ data }`, unpaginated, sorted by registration; filters `q` (registration or category, `%`/`_` literal), `category`, `status`.
+  - `GET /vehicles/:id` — the DTO plus `permanentDriver` summary `{ id, name, designation, phone?, status }`.
+  - `POST /vehicles`, `PATCH /vehicles/:id`, `DELETE /vehicles/:id`.
+- DTO `{ id, registrationNumber, category, fuelType?, operationalStatus, availableForRequisition, permanentDriverId? }`; no `reservedFor` (`422` if sent).
+- Registration is trimmed, inner whitespace collapsed, upper-cased; duplicates (any case) → `409 DUPLICATE_REGISTRATION`, including the unique-key race.
+- Driver assignment: driver must exist and be `Active` (`422` on `permanentDriverId` otherwise) and not be another vehicle's driver (`409 DRIVER_ALREADY_ASSIGNED`, new error code). `null` clears it. Locks driver first, vehicle second, as Step 8 requires.
+- `DELETE` → `409 VEHICLE_HAS_HISTORY` with `details: { allocations, allocationHistory }` when any such row exists.
+- `modules/allocationGuards/allocationGuard.service.ts`: `assertVehicleCanBecomeUnavailable` is a no-op stub (Step 18), called inside the update transaction only when a vehicle moves from available to unavailable (`becomesUnavailable` in `domain/vehicleEligibility.ts`).
+- Audit: `vehicle.created`, `vehicle.updated`, `vehicle.deleted` with before/after snapshots.
+- Tests added: `tests/integration/vehicles.test.ts`, `tests/unit/vehicleSchemas.test.ts`.
+
+Deviations / notes:
+
+- The optional demo-fleet seed (§16.3) is **not** included: the §16.3 data was not in the supplied plan files and I would have had to invent it.
+- `GET /vehicles/:id` returns the driver summary only; off-days arrive in Step 10.
+- Inner whitespace in registrations is collapsed (an addition to trim + upper-case).
