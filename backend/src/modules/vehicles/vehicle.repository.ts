@@ -1,7 +1,4 @@
-import type {
-  VehicleCategory,
-  VehicleOperationalStatus,
-} from "../../config/constants.js";
+import type { VehicleCategory, VehicleOperationalStatus } from "../../config/constants.js";
 import { db } from "../../db/knex.js";
 import type { DbExecutor } from "../../db/transaction.js";
 import { escapeLike } from "../../http/pagination.js";

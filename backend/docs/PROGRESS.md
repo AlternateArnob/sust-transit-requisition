@@ -200,7 +200,7 @@ Deviations / notes:
 
 ## Step 9 — Vehicles — 2026-11-27
 
-**Status: written but NOT yet run.** It was produced in a sandbox with no network, so `npm install`, MySQL, lint, typecheck and the tests were not available. Run the gate locally (`npm run lint && npm run typecheck && npm test`) and fix anything it reports before starting Step 10.
+**Status: verified before Step 10.** It was first written in a sandbox without network. Before starting Step 10 the full gate was run against MySQL 8.0: all 1,061 tests passed; the only findings were one typecheck error in `tests/integration/vehicles.test.ts` (an `unknown`-typed id) and Prettier formatting in three files. Both were fixed in the commit `Step 9 follow-up`, with no behaviour change.
 
 - `modules/vehicles/` (routes, controller, service, repository, schemas, mapper) mounted at `/api/v1/vehicles`, behind `authenticate()` and `requireCapability(canManageVehicles)`:
   - `GET /vehicles` — `{ data }`, unpaginated, sorted by registration; filters `q` (registration or category, `%`/`_` literal), `category`, `status`.
@@ -219,3 +219,30 @@ Deviations / notes:
 - The optional demo-fleet seed (§16.3) is **not** included: the §16.3 data was not in the supplied plan files and I would have had to invent it.
 - `GET /vehicles/:id` returns the driver summary only; off-days arrive in Step 10.
 - Inner whitespace in registrations is collapsed (an addition to trim + upper-case).
+
+## Step 10 — Off-days and student-transport schedule — 2026-11-27
+
+- `modules/offDays/` mounted at `/api/v1/off-days`, behind `authenticate()` and `requireCapability(canManageOffDays)` (In-Charge, Administrator, Super Admin; reads too):
+  - `GET /off-days` — `{ data }`, oldest first. Filters `vehicleId`, `from`, `to` (inclusive, `from <= to` else `422`). A One-time off-day must fall inside the range; a Recurring one is kept when some date in the range has its weekday (an open-ended range keeps every Recurring one). Logic: `offDayFallsInRange` in `domain/schedule.ts`.
+  - `POST /off-days` — `{ vehicleId, type, date?, weekday?, reason? }`, `201`. One-time needs `date` and forbids `weekday`; Recurring the reverse (Zod gives the `422`, the DB `ck_offday_shape` check backs it up). Unknown vehicle → `422` on `vehicleId`.
+  - `PATCH /off-days/:id` — `type`, `date`, `weekday`, `reason`. Switching type needs the new type's field in the same request and drops the old one. A request that changes nothing writes nothing. `404` for an unknown id.
+  - `DELETE /off-days/:id` — `204`.
+- `modules/transportSchedule/` mounted at `/api/v1/transport-schedule` and `/api/v1/schedule`, same roles:
+  - `GET /transport-schedule` — `{ data: [{ id, vehicleId, schedule }] }`, ordered by registration number; weekdays always Sun..Sat, `HH:mm`.
+  - `PUT /transport-schedule/:vehicleId` — `{ schedule: { Sun?: "HH:mm", … } }`; replaces the whole entry in one transaction (upsert `student_transport_vehicles`, delete + insert slots), keeping the entry id. `201` when created, `200` when replaced. `""` and `null` count as "free all day". Sending the schedule already stored writes nothing. Unknown vehicle → `404`.
+  - `DELETE /transport-schedule/:vehicleId` — `204`; `404` if the vehicle or its entry does not exist.
+  - `GET /schedule/lookup?date=YYYY-MM-DD` — `{ date, weekday, data: [{ vehicleId, registrationNumber, onOffDay, offDayInfo?, studentTransportFreeAfter?, allocations: [{ tripId, requisitionId, startTime, endTime, purpose }] }] }`. Four queries regardless of fleet size; the off-day and free-after rules use the same domain functions as allocation. Works already against the (still empty) `allocations` table.
+- `GET /vehicles/:id` now also returns `offDays` (Part 1 §12.5; promised in Step 9).
+- `allocationGuardService` gained `assertOffDayAllowed(vehicleId, offDay, trx)` and `assertScheduleAllowed(vehicleId, schedule, trx)`, both **stubs until Step 18**. They are called inside the transaction, after the vehicle row is locked (`SELECT … FOR UPDATE`) and only when something actually changes. Delete never calls a guard (it only frees the vehicle).
+- Shared helpers: `calendarDate()` / `timeOfDay()` in `http/fields.ts` (a real `YYYY-MM-DD` date; 24-hour `HH:mm`), `toHourMinute()` in `db/time.ts`, `addDays()` in `domain/schedule.ts`.
+- Audit: `off_day.created|updated|deleted` (entity `off_day`) and `transport_schedule.created|updated|deleted` (entity `transport_schedule`), each with before/after.
+- Tests: 115 new (1,176 in total): 45 off-day and 44 schedule/lookup integration tests, 26 unit tests (schemas, mapper, date-range logic). Four deliberate bugs (merge instead of replace, no vehicle lock, lookup ignoring recurring off-days, stale date on type switch) were each caught by 1-4 tests. The concurrency test passed 8 of 8 repeated runs.
+
+Deviations / notes:
+
+- **`purpose` added to each allocation in `/schedule/lookup`.** §12.12 lists `tripId, requisitionId, startTime, endTime`; the frontend's Schedule Lookup page also shows the requisition purpose, and without it Step 23 would need an extra request per allocation. It is additive.
+- **Lookup returns `{ date, weekday, data }`** rather than a bare `{ data }`, so the client need not recompute the weekday.
+- **`PATCH /off-days/:id` does not accept `vehicleId`** (`422`): an off-day stays with its vehicle; delete and re-create to move it. Part 1 does not say either way.
+- **`PUT /transport-schedule` requires at least one weekday with a time** (`422`), matching the frontend form ("Select at least one weekday"). To make a vehicle free all day again, `DELETE` the entry.
+- No duplicate check on off-days (two identical rows for one vehicle are allowed): neither Part 1 nor the DB schema forbids it.
+- The tests mock the guard stubs to prove they run inside the transaction and that a guard failure rolls back the write and its audit row. Step 18 replaces the stubs and adds the real clash tests.

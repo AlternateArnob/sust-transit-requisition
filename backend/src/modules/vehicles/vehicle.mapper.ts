@@ -4,6 +4,7 @@ import type {
   VehicleCategory,
   VehicleOperationalStatus,
 } from "../../config/constants.js";
+import type { OffDayDto } from "../offDays/offDay.mapper.js";
 
 /** A `vehicles` row joined with its permanent driver (if any). */
 export interface VehicleRow {
@@ -41,6 +42,8 @@ export interface DriverSummary {
 
 export interface VehicleDetailDto extends VehicleDto {
   permanentDriver?: DriverSummary;
+  /** All off-days of this vehicle (Part 1 §12.5); empty when there are none. */
+  offDays: OffDayDto[];
 }
 
 export function toVehicleDto(row: VehicleRow): VehicleDto {
@@ -55,8 +58,8 @@ export function toVehicleDto(row: VehicleRow): VehicleDto {
   };
 }
 
-export function toVehicleDetailDto(row: VehicleRow): VehicleDetailDto {
-  const dto: VehicleDetailDto = toVehicleDto(row);
+export function toVehicleDetailDto(row: VehicleRow, offDays: OffDayDto[] = []): VehicleDetailDto {
+  const dto: VehicleDetailDto = { ...toVehicleDto(row), offDays };
   if (row.permanent_driver_id && row.driver_name && row.driver_designation && row.driver_status) {
     dto.permanentDriver = {
       id: row.permanent_driver_id,

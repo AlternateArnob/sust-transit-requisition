@@ -30,6 +30,34 @@ export async function createVehicle(overrides: Row = {}): Promise<Row> {
   return row;
 }
 
+export async function createOffDay(vehicleId: string, overrides: Row = {}): Promise<Row> {
+  const row = {
+    id: randomUUID(),
+    vehicle_id: vehicleId,
+    type: "One-time",
+    off_date: "2026-10-22",
+    ...overrides,
+  };
+  await db("vehicle_off_days").insert(row);
+  return row;
+}
+
+/** A student-transport entry for a vehicle, e.g. `{ Mon: "18:50", Thu: "17:00" }`. */
+export async function createScheduleEntry(
+  vehicleId: string,
+  schedule: Record<string, string>,
+): Promise<Row> {
+  const row = { id: randomUUID(), vehicle_id: vehicleId };
+  await db("student_transport_vehicles").insert(row);
+  const slots = Object.entries(schedule).map(([weekday, free_after]) => ({
+    entry_id: row.id,
+    weekday,
+    free_after,
+  }));
+  if (slots.length > 0) await db("student_transport_slots").insert(slots);
+  return row;
+}
+
 export async function createRequisition(requesterId: string, overrides: Row = {}): Promise<Row> {
   const row = {
     id: `TRS-2026-${String(next()).padStart(3, "0")}`,

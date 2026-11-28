@@ -5,6 +5,8 @@ import { conflict, notFound, validation } from "../../errors/AppError.js";
 import { audit, type AuditEntry } from "../../services/audit.js";
 import { findDriver } from "../drivers/driver.repository.js";
 import { allocationGuardService } from "../allocationGuards/allocationGuard.service.js";
+import { toOffDayDto } from "../offDays/offDay.mapper.js";
+import { listOffDayRows } from "../offDays/offDay.repository.js";
 import {
   toVehicleDetailDto,
   toVehicleDto,
@@ -102,7 +104,8 @@ export async function list(query: ListVehiclesQuery): Promise<{ data: VehicleDto
 export async function get(id: string): Promise<VehicleDetailDto> {
   const row = await findVehicle(id);
   if (!row) throw vehicleNotFound();
-  return toVehicleDetailDto(row);
+  const offDays = await listOffDayRows({ vehicleId: id });
+  return toVehicleDetailDto(row, offDays.map(toOffDayDto));
 }
 
 export async function create(ctx: RequestContext, body: CreateVehicleBody): Promise<VehicleDto> {

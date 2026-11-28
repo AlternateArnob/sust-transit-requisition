@@ -46,6 +46,40 @@ export function todayString(now: Date, timeZone: string = APP_TIME_ZONE): string
   }).format(now);
 }
 
+/** `YYYY-MM-DD` plus `days` calendar days (negative goes back). Throws on an invalid date. */
+export function addDays(dateString: string, days: number): string {
+  getWeekdayFromDate(dateString); // validates the input
+  const [year = 0, month = 1, day = 1] = dateString.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+/**
+ * Whether an off-day touches the date range `from`..`to` (both inclusive, both optional). A
+ * One-time off-day must fall inside the range. A Recurring one matches when some date in the range
+ * has its weekday, so an open-ended range (a missing bound) matches every weekday.
+ */
+export function offDayFallsInRange(
+  offDay: Pick<OffDayLike, "type" | "date" | "weekday">,
+  range: { from?: string; to?: string } = {},
+): boolean {
+  const { from, to } = range;
+  if (offDay.type === "One-time") {
+    if (!offDay.date) return false;
+    if (from && offDay.date < from) return false;
+    if (to && offDay.date > to) return false;
+    return true;
+  }
+  if (!offDay.weekday) return false;
+  if (!from || !to) return true;
+  // A window of seven days or more contains every weekday, so looking at seven dates is enough.
+  let date = from;
+  for (let step = 0; step < 7 && date <= to; step += 1) {
+    if (getWeekdayFromDate(date) === offDay.weekday) return true;
+    date = addDays(date, 1);
+  }
+  return false;
+}
+
 export function getOffDayForVehicleOnDate(
   vehicleId: string,
   dateString: string,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addDays,
   formatTimeDisplay,
   getOffDayForVehicleOnDate,
   getScheduledDays,
@@ -8,6 +9,7 @@ import {
   getWeekdayFromDate,
   isVehicleFreeAtTime,
   isVehicleOnOffDay,
+  offDayFallsInRange,
   todayString,
   toMinutes,
 } from "../../../src/domain/schedule.js";
@@ -141,5 +143,61 @@ describe("formatTimeDisplay", () => {
     ["23:59", "11:59 PM"],
   ])("%s -> %s", (input, expected) => {
     expect(formatTimeDisplay(input)).toBe(expected);
+  });
+});
+
+describe("addDays", () => {
+  it("moves across month, year and leap-day boundaries", () => {
+    expect(addDays("2026-10-22", 1)).toBe("2026-10-23");
+    expect(addDays("2026-10-31", 1)).toBe("2026-11-01");
+    expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+    expect(addDays("2028-02-28", 1)).toBe("2028-02-29");
+    expect(addDays("2026-02-28", 1)).toBe("2026-03-01");
+    expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
+    expect(addDays("2026-10-22", 0)).toBe("2026-10-22");
+  });
+
+  it("throws on an invalid date", () => {
+    expect(() => addDays("2026-02-30", 1)).toThrow(RangeError);
+    expect(() => addDays("tomorrow", 1)).toThrow(RangeError);
+  });
+});
+
+describe("offDayFallsInRange", () => {
+  const oneTime = { type: "One-time", date: "2026-10-22", weekday: null } as const;
+  // 2026-10-22 is a Thursday.
+  const thursdays = { type: "Recurring", date: null, weekday: "Thu" } as const;
+
+  it("matches a one-time off-day only inside the inclusive range", () => {
+    expect(offDayFallsInRange(oneTime, { from: "2026-10-22", to: "2026-10-22" })).toBe(true);
+    expect(offDayFallsInRange(oneTime, { from: "2026-10-20", to: "2026-10-25" })).toBe(true);
+    expect(offDayFallsInRange(oneTime, { from: "2026-10-23" })).toBe(false);
+    expect(offDayFallsInRange(oneTime, { to: "2026-10-21" })).toBe(false);
+    expect(offDayFallsInRange(oneTime, { from: "2026-10-22" })).toBe(true);
+    expect(offDayFallsInRange(oneTime, { to: "2026-10-22" })).toBe(true);
+  });
+
+  it("matches everything when there is no range", () => {
+    expect(offDayFallsInRange(oneTime)).toBe(true);
+    expect(offDayFallsInRange(thursdays)).toBe(true);
+    expect(offDayFallsInRange(thursdays, {})).toBe(true);
+  });
+
+  it("matches a recurring off-day when some date in the range has its weekday", () => {
+    expect(offDayFallsInRange(thursdays, { from: "2026-10-22", to: "2026-10-22" })).toBe(true);
+    expect(offDayFallsInRange(thursdays, { from: "2026-10-23", to: "2026-10-23" })).toBe(false);
+    expect(offDayFallsInRange(thursdays, { from: "2026-10-23", to: "2026-10-28" })).toBe(false);
+    expect(offDayFallsInRange(thursdays, { from: "2026-10-23", to: "2026-10-29" })).toBe(true);
+  });
+
+  it("treats a missing bound as open-ended, so every weekday occurs", () => {
+    expect(offDayFallsInRange(thursdays, { from: "2026-10-23" })).toBe(true);
+    expect(offDayFallsInRange(thursdays, { to: "2026-10-23" })).toBe(true);
+  });
+
+  it("does not match an inverted range or a row missing its date/weekday", () => {
+    expect(offDayFallsInRange(thursdays, { from: "2026-10-30", to: "2026-10-22" })).toBe(false);
+    expect(offDayFallsInRange({ type: "One-time", date: null, weekday: null })).toBe(false);
+    expect(offDayFallsInRange({ type: "Recurring", date: null, weekday: null })).toBe(false);
   });
 });
