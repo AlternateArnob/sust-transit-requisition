@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { toVehicleDetailDto, toVehicleDto, type VehicleRow } from "../../src/modules/vehicles/vehicle.mapper.js";
+import {
+  toVehicleDetailDto,
+  toVehicleDto,
+  type VehicleRow,
+} from "../../src/modules/vehicles/vehicle.mapper.js";
 import {
   createVehicleBody,
   normalizeRegistration,
   updateVehicleBody,
 } from "../../src/modules/vehicles/vehicle.schemas.js";
-import { becomesUnavailable, isVehicleEligibleForRequisition } from "../../src/domain/vehicleEligibility.js";
+import {
+  becomesUnavailable,
+  isVehicleEligibleForRequisition,
+} from "../../src/domain/vehicleEligibility.js";
 
 describe("vehicle schemas", () => {
   it("normalizes registrations", () => {
@@ -21,7 +28,9 @@ describe("vehicle schemas", () => {
   });
 
   it("rejects bad categories, statuses and unknown keys", () => {
-    expect(() => createVehicleBody.parse({ registrationNumber: "A", category: "Tractor" })).toThrow();
+    expect(() =>
+      createVehicleBody.parse({ registrationNumber: "A", category: "Tractor" }),
+    ).toThrow();
     expect(() =>
       createVehicleBody.parse({ registrationNumber: "A", category: "Car", reservedFor: "x" }),
     ).toThrow();

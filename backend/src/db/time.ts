@@ -18,3 +18,6 @@ export function fromDbDateTime(value: string | Date | null | undefined): Date | 
 export function toIso(value: string | Date | null | undefined): string | null {
   return fromDbDateTime(value)?.toISOString() ?? null;
 }
+
+/** MySQL TIME ("09:00:00") -> the API's "HH:mm" ("09:00"). Seconds are never used (Part 1 §7.1). */
+export const toHourMinute = (time: string): string => time.slice(0, 5);

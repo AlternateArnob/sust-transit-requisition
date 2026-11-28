@@ -4,6 +4,11 @@ import { directoryRouter } from "./modules/directory/directory.routes.js";
 import { driversRouter } from "./modules/drivers/driver.routes.js";
 import { filesRouter } from "./modules/files/file.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
+import { offDaysRouter } from "./modules/offDays/offDay.routes.js";
+import {
+  scheduleLookupRouter,
+  transportScheduleRouter,
+} from "./modules/transportSchedule/transportSchedule.routes.js";
 import { meRouter } from "./modules/users/profile.routes.js";
 import { usersRouter } from "./modules/users/user.admin.routes.js";
 import { vehiclesRouter } from "./modules/vehicles/vehicle.routes.js";
@@ -19,3 +24,6 @@ apiRouter.use("/files", filesRouter);
 apiRouter.use("/users", usersRouter);
 apiRouter.use("/drivers", driversRouter);
 apiRouter.use("/vehicles", vehiclesRouter);
+apiRouter.use("/off-days", offDaysRouter);
+apiRouter.use("/transport-schedule", transportScheduleRouter);
+apiRouter.use("/schedule", scheduleLookupRouter);

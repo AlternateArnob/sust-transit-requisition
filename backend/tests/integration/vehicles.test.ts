@@ -118,7 +118,7 @@ describe("create", () => {
   it("rejects an inactive or missing driver with 422", async () => {
     const user = await staff("TransportInCharge");
     const inactive = await createDriver({ status: "Inactive" });
-    for (const id of [inactive.id, randomUUID()]) {
+    for (const id of [String(inactive.id), randomUUID()]) {
       const res = await post(user, {
         registrationNumber: `B-${id.slice(0, 4)}`,
         category: "Jeep",
@@ -180,7 +180,11 @@ describe("list and get", () => {
     const vehicle = await createVehicle({ permanent_driver_id: driver.id });
     const res = await get(user, `/${vehicle.id}`);
     expect(res.status).toBe(200);
-    expect(res.body.permanentDriver).toMatchObject({ id: driver.id, name: "Rahim", status: "Active" });
+    expect(res.body.permanentDriver).toMatchObject({
+      id: driver.id,
+      name: "Rahim",
+      status: "Active",
+    });
     expect((await get(user, `/${randomUUID()}`)).status).toBe(404);
     expect((await get(user, "/not-a-uuid")).status).toBe(422);
   });
